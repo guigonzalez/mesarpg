@@ -535,3 +535,290 @@ body {
 [data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
   background: var(--bs-primary);
 }
+
+/* Accessibility Improvements */
+
+/* High Contrast Colors for Better Readability */
+:root {
+  /* Accessibility colors with WCAG AA compliance */
+  --accessible-primary: #5a359a; /* Higher contrast version of purple */
+  --accessible-text: #1a1a1a; /* Darker text for better contrast */
+  --accessible-secondary: #4a5568; /* Better contrast secondary */
+  --focus-color: #ff6b35; /* High visibility focus color */
+  --error-color: #e53e3e; /* WCAG compliant error red */
+  --success-color: #38a169; /* WCAG compliant success green */
+}
+
+[data-bs-theme="dark"] {
+  --accessible-text: #f7fafc; /* Light text for dark theme */
+  --accessible-secondary: #a0aec0; /* Light secondary for dark theme */
+}
+
+/* Focus States for Keyboard Navigation */
+.btn:focus,
+.form-control:focus,
+.form-select:focus,
+.nav-link:focus,
+.dropdown-toggle:focus,
+.navbar-brand:focus {
+  outline: 3px solid var(--focus-color) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.3) !important;
+}
+
+/* Skip to main content link for screen readers */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--focus-color);
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 1000;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Improved Text Contrast */
+.text-muted {
+  color: var(--accessible-secondary) !important;
+}
+
+.card-text {
+  color: var(--accessible-text) !important;
+}
+
+/* Button Accessibility */
+.btn {
+  min-height: 44px; /* Minimum touch target size */
+  min-width: 44px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Form Accessibility */
+.form-label {
+  color: var(--accessible-text) !important;
+  font-weight: 600;
+}
+
+.form-control,
+.form-select {
+  min-height: 44px; /* Accessible touch target */
+}
+
+.form-control:invalid {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 0.2rem rgba(229, 62, 62, 0.25);
+}
+
+.form-control:valid {
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 0.2rem rgba(56, 161, 105, 0.25);
+}
+
+/* Error and Success States */
+.is-invalid {
+  border-color: var(--error-color) !important;
+}
+
+.is-valid {
+  border-color: var(--success-color) !important;
+}
+
+.invalid-feedback {
+  color: var(--error-color) !important;
+  font-weight: 500;
+}
+
+.valid-feedback {
+  color: var(--success-color) !important;
+  font-weight: 500;
+}
+
+/* Navigation Accessibility */
+.navbar-nav .nav-link {
+  padding: 12px 16px; /* Larger touch targets */
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* Dropdown Accessibility */
+.dropdown-menu {
+  border: 2px solid var(--bs-primary);
+}
+
+.dropdown-item:focus,
+.dropdown-item:hover {
+  background-color: var(--bs-primary);
+  color: white;
+  outline: none;
+}
+
+/* Card Accessibility */
+.card:focus-within {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+/* Alert Accessibility */
+.alert {
+  border: 2px solid transparent;
+}
+
+.alert-success {
+  border-color: var(--success-color);
+  background-color: rgba(56, 161, 105, 0.1);
+  color: var(--success-color);
+}
+
+.alert-danger {
+  border-color: var(--error-color);
+  background-color: rgba(229, 62, 62, 0.1);
+  color: var(--error-color);
+}
+
+.alert-warning {
+  border-color: #d69e2e;
+  background-color: rgba(214, 158, 46, 0.1);
+  color: #744210;
+}
+
+.alert-info {
+  border-color: #3182ce;
+  background-color: rgba(49, 130, 206, 0.1);
+  color: #2a4365;
+}
+
+/* Dark Theme Alert Adjustments */
+[data-bs-theme="dark"] .alert-success {
+  background-color: rgba(56, 161, 105, 0.2);
+  color: #68d391;
+}
+
+[data-bs-theme="dark"] .alert-danger {
+  background-color: rgba(229, 62, 62, 0.2);
+  color: #fc8181;
+}
+
+[data-bs-theme="dark"] .alert-warning {
+  background-color: rgba(214, 158, 46, 0.2);
+  color: #f6e05e;
+}
+
+[data-bs-theme="dark"] .alert-info {
+  background-color: rgba(49, 130, 206, 0.2);
+  color: #90cdf4;
+}
+
+/* Badge Accessibility */
+.badge {
+  min-width: 20px;
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Loading State Accessibility */
+.loading::after {
+  content: '';
+}
+
+.loading[aria-label]::before {
+  content: attr(aria-label);
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Screen Reader Only Content */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .loading::after {
+    animation: none;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .btn {
+    border: 2px solid currentColor;
+  }
+  
+  .card {
+    border: 2px solid var(--bs-dark);
+  }
+  
+  [data-bs-theme="dark"] .card {
+    border-color: var(--bs-light);
+  }
+}
+
+/* Dark Theme Text Improvements */
+[data-bs-theme="dark"] {
+  --bs-body-color: #f7fafc;
+  --bs-body-bg: #1a202c;
+}
+
+[data-bs-theme="dark"] .text-muted {
+  color: #a0aec0 !important;
+}
+
+[data-bs-theme="dark"] .card-text {
+  color: #f7fafc !important;
+}
+
+[data-bs-theme="dark"] .form-label {
+  color: #f7fafc !important;
+}
+
+/* Theme Toggle Button Accessibility */
+#theme-toggle-btn {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#theme-toggle-btn:focus {
+  outline: 3px solid var(--focus-color);
+  outline-offset: 2px;
+}

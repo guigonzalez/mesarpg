@@ -15,8 +15,11 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    <!-- Skip to main content for screen readers -->
+    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+    
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm" role="navigation" aria-label="Navegação principal">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
                 <span class="fw-bold">🎲 MesaRPG</span>
@@ -84,8 +87,13 @@
                     
                     <!-- Dark mode toggle -->
                     <li class="nav-item">
-                        <button class="btn btn-link nav-link" onclick="toggleTheme()" title="Alternar tema">
-                            <i class="fas fa-moon" id="theme-icon"></i>
+                        <button class="btn btn-link nav-link" 
+                                onclick="toggleTheme()" 
+                                id="theme-toggle-btn"
+                                aria-label="Alternar entre tema claro e escuro"
+                                title="Alternar tema">
+                            <i class="fas fa-moon" id="theme-icon" aria-hidden="true"></i>
+                            <span class="sr-only">Alternar tema</span>
                         </button>
                     </li>
                 </ul>
@@ -108,7 +116,7 @@
     </div>
 
     <!-- Main content -->
-    <main>
+    <main id="main-content" role="main">
         {% block content %}{% endblock %}
     </main>
 
