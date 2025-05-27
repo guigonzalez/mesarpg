@@ -56,7 +56,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-label="Notificações">
                             <i class="fas fa-bell"></i>
-                            {% set unread_count = current_user.notifications.filter_by(is_read=False).count() %}
+                            {% set unread_count = current_user.notifications|selectattr('is_read', 'equalto', false)|list|length %}
                             {% if unread_count > 0 %}
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                 {{ unread_count }}
@@ -66,7 +66,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><h6 class="dropdown-header">Notificações</h6></li>
-                            {% set recent_notifications = current_user.notifications.order_by('created_at desc').limit(5).all() %}
+                            {% set recent_notifications = current_user.notifications|sort(attribute='created_at', reverse=true)|list[:5] %}
                             {% if recent_notifications %}
                                 {% for notification in recent_notifications %}
                                 <li>
