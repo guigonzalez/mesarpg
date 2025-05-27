@@ -56,18 +56,25 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-label="Notificações">
                             <i class="fas fa-bell"></i>
-                            {% set unread_count = current_user.notifications|selectattr('is_read', 'equalto', false)|list|length %}
-                            {% if unread_count > 0 %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                {{ unread_count }}
-                                <span class="sr-only">notificações não lidas</span>
-                            </span>
+                            {% if current_user.notifications %}
+                                {% set unread_count = 0 %}
+                                {% for notification in current_user.notifications %}
+                                    {% if not notification.is_read %}
+                                        {% set unread_count = unread_count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if unread_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ unread_count }}
+                                    <span class="sr-only">notificações não lidas</span>
+                                </span>
+                                {% endif %}
                             {% endif %}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><h6 class="dropdown-header">Notificações</h6></li>
-                            {% set recent_notifications = current_user.notifications|sort(attribute='created_at', reverse=true)|list[:5] %}
-                            {% if recent_notifications %}
+                            {% if current_user.notifications %}
+                                {% set recent_notifications = current_user.notifications[:5] %}
                                 {% for notification in recent_notifications %}
                                 <li>
                                     <a class="dropdown-item {{ 'bg-light' if not notification.is_read else '' }}" 
