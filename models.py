@@ -48,7 +48,7 @@ class Session(db.Model):
     session_type = db.Column(db.String(20), default='one-shot')  # 'one-shot', 'campaign'
     max_players = db.Column(db.Integer, default=4)
     current_players = db.Column(db.Integer, default=0)
-    level_range = db.Column(db.String(20))  # e.g., "1-5"
+    level_range = db.Column(db.String(50))  # e.g., "1-5", "Iniciantes", "Qualquer"
     tags = db.Column(db.String(255))  # JSON string of tags
     is_paid = db.Column(db.Boolean, default=False)
     price = db.Column(db.Float)
