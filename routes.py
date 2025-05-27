@@ -200,6 +200,29 @@ def manage_applications(id):
     
     return render_template('sessions/manage.html', session=session, applications=applications)
 
+@sessions_bp.route('/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_session(id):
+    session = Session.query.get_or_404(id)
+    
+    # Only the master can delete the session
+    if current_user.id != session.master_id:
+        flash('Apenas o mestre pode deletar esta sessão.', 'warning')
+        return redirect(url_for('sessions.detail', id=id))
+    
+    # Delete related applications and notes first
+    SessionApplication.query.filter_by(session_id=id).delete()
+    SessionNote.query.filter_by(session_id=id).delete()
+    CampaignDiary.query.filter_by(session_id=id).delete()
+    
+    # Delete the session
+    session_title = session.title
+    db.session.delete(session)
+    db.session.commit()
+    
+    flash(f'Sessão "{session_title}" foi deletada com sucesso.', 'success')
+    return redirect(url_for('sessions.list'))
+
 @sessions_bp.route('/<int:id>/apply', methods=['POST'])
 @login_required
 def apply(id):

@@ -212,6 +212,9 @@
                         <a href="{{ url_for('sessions.manage_applications', id=session.id) }}" class="btn btn-warning btn-lg w-100 mb-2">
                             <i class="fas fa-users me-2"></i>Gerenciar Candidatos
                         </a>
+                        <button type="button" class="btn btn-danger btn-lg w-100" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="fas fa-trash me-2"></i>Deletar Sessão
+                        </button>
                         {% elif user_application %}
                             {% if user_application.status == 'pending' %}
                             <div class="alert alert-warning small mb-3">
@@ -301,6 +304,42 @@
                     {{ application_form.submit(class="btn btn-primary") }}
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal de Confirmação para Deletar Sessão -->
+{% if current_user.is_authenticated and current_user.id == session.master_id %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Deletar Sessão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                </div>
+                <p>Tem certeza que deseja deletar permanentemente a sessão <strong>"{{ session.title }}"</strong>?</p>
+                <p class="text-muted small">Isso também irá remover:</p>
+                <ul class="text-muted small">
+                    <li>Todas as candidaturas de jogadores</li>
+                    <li>Todas as notas da sessão</li>
+                    <li>Todo o diário da campanha</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" action="{{ url_for('sessions.delete_session', id=session.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Sim, Deletar Sessão
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
