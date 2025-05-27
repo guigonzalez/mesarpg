@@ -156,10 +156,29 @@ function initializeAccessibility() {
 // Dice Rolling Functions for Live Sessions
 function rollDice(notation) {
     try {
-        // Parse dice notation like "1d20", "2d6+3", etc.
-        const match = notation.match(/(\d+)?d(\d+)(\+\d+|\-\d+)?/i);
+        // If notation is passed as parameter from button, use it directly
+        if (typeof notation === 'string') {
+            // Clean the notation
+            notation = notation.trim().toLowerCase();
+        } else {
+            // Get from input field if no parameter
+            const diceInput = document.getElementById('dice-notation');
+            if (diceInput) {
+                notation = diceInput.value.trim().toLowerCase();
+            } else {
+                notation = '1d20'; // Default
+            }
+        }
+        
+        if (!notation) {
+            alert('Digite uma notação de dados (exemplo: 1d20, 2d6+3)');
+            return;
+        }
+        
+        // Parse dice notation like "1d20", "2d6+3", "d20" etc.
+        const match = notation.match(/^(\d+)?d(\d+)([+\-]\d+)?$/i);
         if (!match) {
-            alert('Formato inválido. Use: XdY ou XdY+Z (exemplo: 1d20, 2d6+3)');
+            alert('Formato inválido. Use: XdY ou XdY+Z (exemplo: 1d20, 2d6+3, d20)');
             return;
         }
         
@@ -167,8 +186,14 @@ function rollDice(notation) {
         const diceSize = parseInt(match[2]);
         const modifier = parseInt(match[3]) || 0;
         
-        if (numDice > 20 || diceSize > 100) {
-            alert('Máximo 20 dados de 100 lados cada');
+        // Validate input
+        if (numDice < 1 || numDice > 20) {
+            alert('Número de dados deve estar entre 1 e 20');
+            return;
+        }
+        
+        if (diceSize < 2 || diceSize > 100) {
+            alert('Tamanho do dado deve estar entre 2 e 100');
             return;
         }
         
@@ -189,8 +214,15 @@ function rollDice(notation) {
         // Announce to screen readers
         announceToScreenReader(`Resultado: ${notation} = ${total}`);
         
+        // Clear input if it exists
+        const diceInput = document.getElementById('dice-notation');
+        if (diceInput) {
+            diceInput.value = '';
+        }
+        
     } catch (error) {
-        alert('Erro ao rolar dados. Verifique o formato.');
+        console.error('Erro ao rolar dados:', error);
+        alert('Erro ao rolar dados. Tente novamente.');
     }
 }
 
