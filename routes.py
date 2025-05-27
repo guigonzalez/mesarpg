@@ -165,6 +165,41 @@ def detail(id):
                          application_form=application_form, rating_form=rating_form,
                          user_application=user_application)
 
+@sessions_bp.route('/<int:id>/manage', methods=['GET', 'POST'])
+@login_required
+def manage_applications(id):
+    session = Session.query.get_or_404(id)
+    
+    # Only the master can manage applications
+    if current_user.id != session.master_id:
+        flash('Apenas o mestre pode gerenciar candidaturas.', 'warning')
+        return redirect(url_for('sessions.detail', id=id))
+    
+    if request.method == 'POST':
+        application_id = request.form.get('application_id')
+        action = request.form.get('action')
+        
+        application = SessionApplication.query.get_or_404(application_id)
+        
+        if action == 'approve':
+            if session.current_players < session.max_players:
+                application.status = 'approved'
+                session.current_players += 1
+                flash(f'Jogador {application.player.username} aprovado!', 'success')
+            else:
+                flash('Sessão já está lotada!', 'warning')
+        elif action == 'reject':
+            application.status = 'rejected'
+            flash(f'Candidatura de {application.player.username} rejeitada.', 'info')
+        
+        db.session.commit()
+        return redirect(url_for('sessions.manage_applications', id=id))
+    
+    # Get all applications for this session
+    applications = SessionApplication.query.filter_by(session_id=id).order_by(SessionApplication.applied_at.desc()).all()
+    
+    return render_template('sessions/manage.html', session=session, applications=applications)
+
 @sessions_bp.route('/<int:id>/apply', methods=['POST'])
 @login_required
 def apply(id):

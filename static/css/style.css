@@ -902,3 +902,55 @@ body {
   outline: 3px solid var(--focus-color);
   outline-offset: 2px;
 }
+
+/* Stats cards for management page */
+.stats-card {
+  background: var(--bs-light);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.stats-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--bs-primary);
+  line-height: 1;
+}
+
+.stats-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--bs-secondary);
+  margin-top: 0.25rem;
+}
+
+[data-bs-theme="dark"] .stats-card {
+  background: var(--bs-gray-800);
+  border-color: var(--bs-gray-700);
+}
+
+/* Application management styles */
+.application-item {
+  transition: all 0.3s ease;
+}
+
+.application-item:hover {
+  background-color: var(--bs-gray-50);
+}
+
+[data-bs-theme="dark"] .application-item:hover {
+  background-color: var(--bs-gray-800);
+}

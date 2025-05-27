@@ -148,6 +148,11 @@
                             <a href="{{ url_for('campaign.diary', session_id=session.id) }}" class="btn btn-outline-primary">
                                 <i class="fas fa-book me-2"></i>Diário da Campanha
                             </a>
+                            {% if is_master %}
+                            <a href="{{ url_for('sessions.manage_applications', id=session.id) }}" class="btn btn-outline-warning">
+                                <i class="fas fa-users me-2"></i>Gerenciar Candidatos
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

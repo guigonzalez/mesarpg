@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Candidaturas - {{ session.title }} - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 fw-bold mb-1">Gerenciar Candidaturas</h1>
+                    <p class="text-muted mb-0">{{ session.title }}</p>
+                </div>
+                <a href="{{ url_for('sessions.detail', id=session.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar à Sessão
+                </a>
+            </div>
+
+            <!-- Session Status -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <span class="stats-number">{{ session.current_players }}</span>
+                        <span class="stats-label">Jogadores Aprovados</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <span class="stats-number">{{ session.max_players - session.current_players }}</span>
+                        <span class="stats-label">Vagas Restantes</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <span class="stats-number">{{ applications | selectattr('status', 'equalto', 'pending') | list | length }}</span>
+                        <span class="stats-label">Pendentes</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <span class="stats-number">{{ applications | length }}</span>
+                        <span class="stats-label">Total de Candidaturas</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applications List -->
+            {% if applications %}
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-users me-2"></i>Candidaturas
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% for application in applications %}
+                    <div class="border-bottom p-4 {% if loop.last %}border-bottom-0{% endif %}">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="avatar-md rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3">
+                                        {{ application.player.username[0].upper() }}
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ application.player.full_name or application.player.username }}</h6>
+                                        <small class="text-muted">@{{ application.player.username }}</small>
+                                    </div>
+                                </div>
+                                
+                                {% if application.message %}
+                                <div class="bg-light rounded p-3 mb-2">
+                                    <small class="text-muted d-block mb-1">Mensagem:</small>
+                                    <p class="mb-0 small">{{ application.message }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Candidatou-se em {{ application.applied_at.strftime('%d/%m/%Y às %H:%M') }}
+                                </small>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    {% if application.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark px-3 py-2">
+                                            <i class="fas fa-clock me-1"></i>Pendente
+                                        </span>
+                                    {% elif application.status == 'approved' %}
+                                        <span class="badge bg-success px-3 py-2">
+                                            <i class="fas fa-check me-1"></i>Aprovado
+                                        </span>
+                                    {% elif application.status == 'rejected' %}
+                                        <span class="badge bg-danger px-3 py-2">
+                                            <i class="fas fa-times me-1"></i>Rejeitado
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                {% if application.status == 'pending' %}
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <form method="POST" class="d-inline">
+                                        <input type="hidden" name="application_id" value="{{ application.id }}">
+                                        <input type="hidden" name="action" value="approve">
+                                        <button type="submit" class="btn btn-success btn-sm" 
+                                                {% if session.current_players >= session.max_players %}disabled{% endif %}
+                                                onclick="return confirm('Aprovar este jogador?')">
+                                            <i class="fas fa-check me-1"></i>Aprovar
+                                        </button>
+                                    </form>
+                                    
+                                    <form method="POST" class="d-inline">
+                                        <input type="hidden" name="application_id" value="{{ application.id }}">
+                                        <input type="hidden" name="action" value="reject">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Rejeitar esta candidatura?')">
+                                            <i class="fas fa-times me-1"></i>Rejeitar
+                                        </button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <div class="text-end">
+                                    <a href="{{ url_for('profile.view', user_id=application.player.id) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-user me-1"></i>Ver Perfil
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <div class="text-muted mb-3">
+                        <i class="fas fa-inbox fa-3x"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Nenhuma candidatura ainda</h5>
+                    <p class="text-muted">Quando jogadores se candidatarem à sua sessão, eles aparecerão aqui.</p>
+                    <a href="{{ url_for('sessions.detail', id=session.id) }}" class="btn btn-primary">
+                        <i class="fas fa-share me-2"></i>Compartilhar Sessão
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="fw-bold mb-2">Links da Sessão</h6>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <a href="{{ url_for('sessions.live', id=session.id) }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-play me-1"></i>Sessão Ao Vivo
+                                </a>
+                                <a href="{{ url_for('campaign.diary', session_id=session.id) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-book me-1"></i>Diário
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="fw-bold mb-2">Configurações</h6>
+                            <a href="{{ url_for('sessions.detail', id=session.id) }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-cog me-1"></i>Editar Sessão
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
