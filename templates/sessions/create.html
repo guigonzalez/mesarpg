@@ -112,13 +112,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     {{ form.scheduled_date.label(class="form-label fw-semibold") }}
-                                    {{ form.scheduled_date(class="form-control datepicker" + (" is-invalid" if form.scheduled_date.errors else ""), id="scheduled_date") }}
+                                    {{ form.scheduled_date(class="form-control" + (" is-invalid" if form.scheduled_date.errors else ""), id="scheduled_date", type="datetime-local") }}
                                     {% if form.scheduled_date.errors %}
                                         <div class="invalid-feedback">
                                             {% for error in form.scheduled_date.errors %}{{ error }}{% endfor %}
                                         </div>
                                     {% endif %}
-                                    <div class="form-text">Formato: DD/MM/AAAA HH:MM</div>
+                                    <div class="form-text">Selecione a data e horário da sessão</div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     {{ form.duration_hours.label(class="form-label fw-semibold") }}

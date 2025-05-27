@@ -75,44 +75,38 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeDatepicker() {
     const dateInput = document.getElementById('scheduled_date');
     if (dateInput) {
-        // Set minimum date to today
+        // Set minimum date to today for datetime-local input
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        
-        const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Adjust for timezone
+        const minDateTime = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
         dateInput.min = minDateTime;
-        
-        // Add helpful placeholder
-        dateInput.placeholder = 'DD/MM/AAAA HH:MM';
         
         // Add change event to validate date
         dateInput.addEventListener('change', function() {
-            const selectedDate = new Date(this.value);
-            const currentDate = new Date();
-            
-            if (selectedDate < currentDate) {
-                this.setCustomValidity('A data deve ser no futuro');
-                this.classList.add('is-invalid');
-                announceToScreenReader('Data inválida: deve ser no futuro');
-            } else {
-                this.setCustomValidity('');
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
+            if (this.value) {
+                const selectedDate = new Date(this.value);
+                const currentDate = new Date();
                 
-                // Format and announce the selected date
-                const formattedDate = selectedDate.toLocaleDateString('pt-BR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                announceToScreenReader(`Data selecionada: ${formattedDate}`);
+                if (selectedDate < currentDate) {
+                    this.setCustomValidity('A data deve ser no futuro');
+                    this.classList.add('is-invalid');
+                    announceToScreenReader('Data inválida: deve ser no futuro');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                    
+                    // Format and announce the selected date
+                    const formattedDate = selectedDate.toLocaleDateString('pt-BR', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    announceToScreenReader(`Data selecionada: ${formattedDate}`);
+                }
             }
         });
     }
