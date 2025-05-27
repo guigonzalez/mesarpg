@@ -808,6 +808,68 @@ body {
   color: #f7fafc !important;
 }
 
+/* Dark Theme Landing Page Improvements */
+[data-bs-theme="dark"] .hero-section {
+  background: linear-gradient(135deg, #2d1b3e 0%, #1a202c 50%, #0d1117 100%);
+}
+
+[data-bs-theme="dark"] .bg-light {
+  background-color: #2d3748 !important;
+}
+
+[data-bs-theme="dark"] .feature-card {
+  background-color: #2d3748 !important;
+  color: #f7fafc !important;
+}
+
+[data-bs-theme="dark"] .hero-stats .bg-white {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-bs-theme="dark"] .display-4,
+[data-bs-theme="dark"] .h1,
+[data-bs-theme="dark"] h1,
+[data-bs-theme="dark"] h2,
+[data-bs-theme="dark"] h3,
+[data-bs-theme="dark"] h4,
+[data-bs-theme="dark"] h5 {
+  color: #f7fafc !important;
+}
+
+[data-bs-theme="dark"] .lead {
+  color: #e2e8f0 !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-light {
+  border-color: #e2e8f0;
+  color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .btn-outline-light:hover {
+  background-color: #e2e8f0;
+  color: #1a202c;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+  border-color: #a0aec0;
+  color: #a0aec0;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary:hover {
+  background-color: #a0aec0;
+  color: #1a202c;
+}
+
+[data-bs-theme="dark"] .btn-outline-primary {
+  border-color: #9561e2;
+  color: #9561e2;
+}
+
+[data-bs-theme="dark"] .btn-outline-primary:hover {
+  background-color: #9561e2;
+  color: white;
+}
+
 /* Theme Toggle Button Accessibility */
 #theme-toggle-btn {
   min-width: 44px;
