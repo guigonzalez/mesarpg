@@ -148,7 +148,11 @@
                             <a href="{{ url_for('campaign.diary', session_id=session.id) }}" class="btn btn-outline-primary">
                                 <i class="fas fa-book me-2"></i>Diário da Campanha
                             </a>
-
+                            {% if is_master %}
+                            <a href="{{ url_for('sessions.manage_applications', id=session.id) }}" class="btn btn-outline-warning">
+                                <i class="fas fa-users me-2"></i>Gerenciar Candidatos
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -210,7 +214,9 @@
                             <i class="fas fa-info-circle me-1"></i>
                             Esta é sua sessão
                         </div>
-
+                        <a href="{{ url_for('sessions.manage_applications', id=session.id) }}" class="btn btn-warning btn-lg w-100 mb-2">
+                            <i class="fas fa-users me-2"></i>Gerenciar Candidatos
+                        </a>
                         {% elif user_application %}
                             {% if user_application.status == 'pending' %}
                             <div class="alert alert-warning small mb-3">
