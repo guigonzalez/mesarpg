@@ -211,7 +211,9 @@
                     {% if current_user.is_authenticated %}
                         <!-- Debug info - remove later -->
                         <div class="alert alert-secondary small mb-2">
-                            Debug: User ID = {{ current_user.id }}, Master ID = {{ session.master_id }}
+                            Debug: Logado como {{ current_user.username }} (ID: {{ current_user.id }})<br>
+                            Mestre da sessão: ID {{ session.master_id }}<br>
+                            São iguais? {{ current_user.id == session.master_id }}
                         </div>
                         {% if current_user.id == session.master_id %}
                         <div class="alert alert-info small mb-3">
