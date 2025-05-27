@@ -109,34 +109,43 @@ def create():
     
     form = SessionForm()
     if form.validate_on_submit():
-        session = Session(
-            title=form.title.data,
-            description=form.description.data,
-            system=form.system.data,
-            session_type=form.session_type.data,
-            max_players=form.max_players.data,
-            level_range=form.level_range.data,
-            is_paid=form.is_paid.data,
-            price=form.price.data if form.is_paid.data else None,
-            scheduled_date=form.scheduled_date.data,
-            duration_hours=form.duration_hours.data,
-            is_beginner_friendly=form.is_beginner_friendly.data,
-            content_warnings=form.content_warnings.data,
-            tools_required=form.tools_required.data,
-            tone=form.tone.data,
-            master_id=current_user.id
-        )
-        
-        # Handle tags
-        if form.tags.data:
-            tags_list = [tag.strip() for tag in form.tags.data.split(',')]
-            session.set_tags_list(tags_list)
-        
-        db.session.add(session)
-        db.session.commit()
-        
-        flash('Sessão criada com sucesso!', 'success')
-        return redirect(url_for('sessions.detail', id=session.id))
+        try:
+            session = Session(
+                title=form.title.data,
+                description=form.description.data,
+                system=form.system.data,
+                session_type=form.session_type.data,
+                max_players=form.max_players.data,
+                level_range=form.level_range.data,
+                is_paid=form.is_paid.data,
+                price=form.price.data if form.is_paid.data else None,
+                scheduled_date=form.scheduled_date.data,
+                duration_hours=form.duration_hours.data,
+                is_beginner_friendly=form.is_beginner_friendly.data,
+                content_warnings=form.content_warnings.data,
+                tools_required=form.tools_required.data,
+                tone=form.tone.data,
+                master_id=current_user.id
+            )
+            
+            # Handle tags
+            if form.tags.data:
+                tags_list = [tag.strip() for tag in form.tags.data.split(',')]
+                session.set_tags_list(tags_list)
+            
+            db.session.add(session)
+            db.session.commit()
+            
+            flash('Sessão criada com sucesso!', 'success')
+            return redirect(url_for('sessions.detail', id=session.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao criar sessão: {str(e)}', 'danger')
+    elif request.method == 'POST':
+        # Show form validation errors
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'Erro no campo {field}: {error}', 'danger')
     
     return render_template('sessions/create.html', form=form)
 
