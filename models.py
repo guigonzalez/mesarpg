@@ -139,26 +139,3 @@ class CampaignDiary(db.Model):
 
     def __repr__(self):
         return f'<CampaignDiary {self.title}>'
-
-
-class Notification(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    title = db.Column(db.String(100), nullable=False)
-    message = db.Column(db.Text)
-    type = db.Column(db.String(20), default='info')  # 'info', 'success', 'warning', 'error'
-    is_read = db.Column(db.Boolean, default=False)
-    action_url = db.Column(db.String(255))  # URL for action button
-    action_text = db.Column(db.String(50))  # Text for action button
-    related_id = db.Column(db.Integer)  # ID of related object (session, application, etc.)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationships
-    user = db.relationship('User', backref='notifications')
-    
-    def mark_as_read(self):
-        self.is_read = True
-        db.session.commit()
-    
-    def __repr__(self):
-        return f'<Notification {self.title}>'
