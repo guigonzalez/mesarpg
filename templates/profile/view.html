@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.full_name or user.username }} - Perfil - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Informações principais do perfil -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center p-4">
+                    <!-- Avatar -->
+                    <div class="avatar-xl bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        {% if user.avatar_url %}
+                        <img src="{{ user.avatar_url }}" alt="{{ user.username }}" class="rounded-circle w-100 h-100 object-fit-cover">
+                        {% else %}
+                        <i class="fas fa-user fa-3x text-white"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Nome e username -->
+                    <h3 class="fw-bold mb-1">{{ user.full_name or user.username }}</h3>
+                    {% if user.full_name %}
+                    <p class="text-muted mb-2">@{{ user.username }}</p>
+                    {% endif %}
+                    
+                    <!-- Role -->
+                    <div class="mb-3">
+                        {% if user.role == 'player' %}
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-dice me-1"></i>Jogador
+                        </span>
+                        {% elif user.role == 'master' %}
+                        <span class="badge bg-warning fs-6">
+                            <i class="fas fa-crown me-1"></i>Mestre
+                        </span>
+                        {% else %}
+                        <span class="badge bg-info fs-6">
+                            <i class="fas fa-dice me-1"></i>Jogador
+                        </span>
+                        <span class="badge bg-warning fs-6">
+                            <i class="fas fa-crown me-1"></i>Mestre
+                        </span>
+                        {% endif %}
+                        
+                        {% if user.is_premium %}
+                        <span class="badge bg-primary fs-6">
+                            <i class="fas fa-star me-1"></i>Premium
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Biografia -->
+                    {% if user.bio %}
+                    <p class="text-muted mb-3">{{ user.bio }}</p>
+                    {% endif %}
+                    
+                    <!-- Estatísticas -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <div class="bg-light rounded p-2">
+                                <div class="fw-bold">{{ average_rating|round(1) if average_rating > 0 else 'N/A' }}</div>
+                                <small class="text-muted">Avaliação</small>
+                                {% if average_rating > 0 %}
+                                <div><i class="fas fa-star text-warning"></i></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="bg-light rounded p-2">
+                                <div class="fw-bold">{{ created_sessions|length }}</div>
+                                <small class="text-muted">Sessões</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="bg-light rounded p-2">
+                                <div class="fw-bold">{{ user.created_at.strftime('%Y') }}</div>
+                                <small class="text-muted">Desde</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões de ação -->
+                    {% if current_user.is_authenticated and current_user.id == user.id %}
+                    <a href="{{ url_for('profile.edit') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i>Editar Perfil
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Data de cadastro -->
+                    <div class="mt-3 pt-3 border-top">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            Membro desde {{ user.created_at.strftime('%B de %Y') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sistemas preferidos -->
+            {% if user.preferred_systems %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-heart me-2 text-danger"></i>Sistemas Favoritos</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for system in user.preferred_systems.split(',') %}
+                        <span class="badge bg-light text-dark">{{ system.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Conteúdo principal -->
+        <div class="col-lg-8">
+            <!-- Sessões criadas (se for mestre) -->
+            {% if user.role in ['master', 'both'] and created_sessions %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-crown me-2 text-warning"></i>
+                        Sessões como Mestre
+                    </h5>
+                    {% if created_sessions|length > 5 %}
+                    <a href="{{ url_for('sessions.list', master=user.id) }}" class="btn btn-sm btn-outline-primary">
+                        Ver Todas
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for session in created_sessions %}
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <span class="badge bg-primary">{{ session.system }}</span>
+                                        <span class="badge bg-{{ 'success' if session.status == 'open' else 'secondary' if session.status == 'completed' else 'warning' }}">
+                                            {% if session.status == 'open' %}Aberta
+                                            {% elif session.status == 'full' %}Lotada
+                                            {% elif session.status == 'completed' %}Concluída
+                                            {% elif session.status == 'in_progress' %}Em Andamento
+                                            {% else %}{{ session.status.title() }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    
+                                    <h6 class="fw-bold mb-2">{{ session.title }}</h6>
+                                    <p class="small text-muted mb-2">
+                                        {{ session.description[:80] }}{% if session.description|length > 80 %}...{% endif %}
+                                    </p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center small text-muted">
+                                        <span>
+                                            <i class="fas fa-users me-1"></i>
+                                            {{ session.current_players }}/{{ session.max_players }}
+                                        </span>
+                                        <span>{{ session.created_at.strftime('%d/%m/%Y') }}</span>
+                                    </div>
+                                    
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('sessions.detail', id=session.id) }}" class="btn btn-primary btn-sm">
+                                            Ver Detalhes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Seção vazia para jogadores ou mestres sem sessões -->
+            {% if not created_sessions and user.role in ['master', 'both'] %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center py-5">
+                    <div class="mb-3">
+                        <i class="fas fa-crown fa-3x text-muted"></i>
+                    </div>
+                    <h5 class="text-muted">Nenhuma sessão criada ainda</h5>
+                    <p class="text-muted mb-3">
+                        {% if current_user.is_authenticated and current_user.id == user.id %}
+                        Comece criando sua primeira sessão como mestre!
+                        {% else %}
+                        {{ user.username }} ainda não criou nenhuma sessão.
+                        {% endif %}
+                    </p>
+                    {% if current_user.is_authenticated and current_user.id == user.id %}
+                    <a href="{{ url_for('sessions.create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Criar Primeira Sessão
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Atividade recente -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2 text-info"></i>
+                        Atividade Recente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <!-- Timeline seria populada com atividades reais do usuário -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Perfil criado</h6>
+                                <p class="text-muted small mb-0">
+                                    {{ user.username }} se juntou ao MesaRPG em {{ user.created_at.strftime('%d de %B de %Y') }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {% if created_sessions %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Primeira sessão criada</h6>
+                                <p class="text-muted small mb-0">
+                                    "{{ created_sessions[0].title }}" em {{ created_sessions[0].created_at.strftime('%d de %B de %Y') }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if user.last_seen %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Última atividade</h6>
+                                <p class="text-muted small mb-0">
+                                    Visto por último em {{ user.last_seen.strftime('%d de %B de %Y às %H:%M') }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.avatar-xl {
+    width: 120px;
+    height: 120px;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -36px;
+    top: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 3px #e9ecef;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: -31px;
+    top: 15px;
+    bottom: 15px;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-content h6 {
+    color: #495057;
+}
+</style>
+{% endblock %}

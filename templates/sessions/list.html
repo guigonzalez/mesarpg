@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Sessões - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">Sessões de RPG</h1>
+            <p class="text-muted mb-0">Encontre a aventura perfeita para você</p>
+        </div>
+        {% if current_user.is_authenticated and current_user.role in ['master', 'both'] %}
+        <a href="{{ url_for('sessions.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Criar Sessão
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <!-- Filtros -->
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Sistema</label>
+                            <select name="system" class="form-select">
+                                <option value="">Todos os sistemas</option>
+                                <option value="D&D 5e" {{ 'selected' if system_filter == 'D&D 5e' }}>D&D 5e</option>
+                                <option value="Tormenta20" {{ 'selected' if system_filter == 'Tormenta20' }}>Tormenta20</option>
+                                <option value="Pathfinder" {{ 'selected' if system_filter == 'Pathfinder' }}>Pathfinder</option>
+                                <option value="Call of Cthulhu" {{ 'selected' if system_filter == 'Call of Cthulhu' }}>Call of Cthulhu</option>
+                                <option value="Vampire" {{ 'selected' if system_filter == 'Vampire' }}>Vampire</option>
+                                <option value="3D&T" {{ 'selected' if system_filter == '3D&T' }}>3D&T Alpha</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="open" {{ 'selected' if status_filter == 'open' }}>Abertas</option>
+                                <option value="full" {{ 'selected' if status_filter == 'full' }}>Lotadas</option>
+                                <option value="in_progress" {{ 'selected' if status_filter == 'in_progress' }}>Em andamento</option>
+                                <option value="completed" {{ 'selected' if status_filter == 'completed' }}>Concluídas</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="beginner" value="true" 
+                                       {{ 'checked' if beginner_filter == 'true' }} id="beginnerFilter">
+                                <label class="form-check-label" for="beginnerFilter">
+                                    Amigável para iniciantes
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Filtrar
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sistemas Populares -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Sistemas Populares</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-1">
+                        <a href="{{ url_for('sessions.list', system='D&D 5e') }}" class="badge bg-primary text-decoration-none">D&D 5e</a>
+                        <a href="{{ url_for('sessions.list', system='Tormenta20') }}" class="badge bg-success text-decoration-none">Tormenta20</a>
+                        <a href="{{ url_for('sessions.list', system='Call of Cthulhu') }}" class="badge bg-dark text-decoration-none">Call of Cthulhu</a>
+                        <a href="{{ url_for('sessions.list', system='Pathfinder') }}" class="badge bg-warning text-decoration-none">Pathfinder</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Sessões -->
+        <div class="col-lg-9">
+            {% if sessions.items %}
+            <div class="row g-3">
+                {% for session in sessions.items %}
+                <div class="col-md-6 col-xl-4">
+                    <div class="card h-100 session-card">
+                        <div class="card-body">
+                            <!-- Header do card -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-primary">{{ session.system }}</span>
+                                <div class="d-flex gap-1">
+                                    {% if session.is_beginner_friendly %}
+                                    <span class="badge bg-success">Iniciantes</span>
+                                    {% endif %}
+                                    {% if session.is_paid %}
+                                    <span class="badge bg-warning">Paga</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Título e descrição -->
+                            <h5 class="card-title fw-bold mb-2">{{ session.title }}</h5>
+                            <p class="card-text text-muted small mb-3">
+                                {{ session.description[:100] }}{% if session.description|length > 100 %}...{% endif %}
+                            </p>
+
+                            <!-- Informações da sessão -->
+                            <div class="row g-2 small text-muted mb-3">
+                                <div class="col-6">
+                                    <i class="fas fa-users me-1"></i>
+                                    {{ session.current_players }}/{{ session.max_players }} jogadores
+                                </div>
+                                <div class="col-6">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ session.duration_hours }}h duração
+                                </div>
+                                {% if session.level_range %}
+                                <div class="col-6">
+                                    <i class="fas fa-star me-1"></i>
+                                    Nível {{ session.level_range }}
+                                </div>
+                                {% endif %}
+                                <div class="col-6">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ session.session_type.title() }}
+                                </div>
+                            </div>
+
+                            <!-- Tags -->
+                            {% if session.get_tags_list() %}
+                            <div class="mb-3">
+                                {% for tag in session.get_tags_list()[:3] %}
+                                <span class="badge bg-light text-dark">{{ tag }}</span>
+                                {% endfor %}
+                                {% if session.get_tags_list()|length > 3 %}
+                                <span class="badge bg-light text-dark">+{{ session.get_tags_list()|length - 3 }}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Mestre -->
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    <i class="fas fa-crown text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Mestre</small><br>
+                                    <strong class="small">{{ session.master.username }}</strong>
+                                </div>
+                            </div>
+
+                            <!-- Preço -->
+                            <div class="text-center">
+                                {% if session.is_paid %}
+                                <div class="h5 text-success fw-bold mb-2">R$ {{ "%.2f"|format(session.price) }}</div>
+                                {% else %}
+                                <div class="h5 text-success fw-bold mb-2">Gratuito</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Footer do card -->
+                        <div class="card-footer bg-transparent">
+                            <a href="{{ url_for('sessions.detail', id=session.id) }}" class="btn btn-primary btn-sm w-100">
+                                Ver Detalhes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Paginação -->
+            {% if sessions.pages > 1 %}
+            <nav aria-label="Navegação das sessões" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if sessions.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('sessions.list', page=sessions.prev_num, 
+                                                           system=system_filter, beginner=beginner_filter, status=status_filter) }}">
+                            Anterior
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in sessions.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != sessions.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('sessions.list', page=page_num,
+                                                                   system=system_filter, beginner=beginner_filter, status=status_filter) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if sessions.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('sessions.list', page=sessions.next_num,
+                                                           system=system_filter, beginner=beginner_filter, status=status_filter) }}">
+                            Próxima
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <!-- Estado vazio -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-search fa-3x text-muted"></i>
+                </div>
+                <h4 class="text-muted">Nenhuma sessão encontrada</h4>
+                <p class="text-muted mb-4">Tente ajustar os filtros ou volte mais tarde para ver novas sessões.</p>
+                <a href="{{ url_for('sessions.list') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-refresh me-2"></i>Limpar Filtros
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.session-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+</style>
+{% endblock %}

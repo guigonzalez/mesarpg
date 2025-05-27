@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Entrar</h2>
+                        <p class="text-muted">Acesse sua conta MesaRPG</p>
+                    </div>
+
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label fw-semibold") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label fw-semibold") }}
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.password.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.remember_me(class="form-check-input") }}
+                            {{ form.remember_me.label(class="form-check-label") }}
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+
+                    <hr>
+
+                    <div class="text-center">
+                        <p class="mb-2">Entrar com redes sociais:</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button class="btn btn-outline-danger" onclick="alert('Login com Google em desenvolvimento')">
+                                <i class="fab fa-google me-1"></i>Google
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="alert('Login com Facebook em desenvolvimento')">
+                                <i class="fab fa-facebook me-1"></i>Facebook
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="text-center">
+                        <p class="mb-0">
+                            Não tem uma conta? 
+                            <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Registre-se aqui</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

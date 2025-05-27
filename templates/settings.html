@@ -1,0 +1,626 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Navegação lateral -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>Configurações
+                    </h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#general" class="list-group-item list-group-item-action active" data-bs-toggle="pill">
+                        <i class="fas fa-user me-2"></i>Geral
+                    </a>
+                    <a href="#notifications" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                        <i class="fas fa-bell me-2"></i>Notificações
+                    </a>
+                    <a href="#privacy" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                        <i class="fas fa-shield-alt me-2"></i>Privacidade
+                    </a>
+                    <a href="#subscription" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                        <i class="fas fa-credit-card me-2"></i>Assinatura
+                    </a>
+                    <a href="#support" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                        <i class="fas fa-question-circle me-2"></i>Suporte
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conteúdo principal -->
+        <div class="col-lg-9">
+            <div class="tab-content">
+                <!-- Configurações Gerais -->
+                <div class="tab-pane fade show active" id="general">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user me-2"></i>Configurações Gerais
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <!-- Aparência -->
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3">Aparência</h6>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Tema</label>
+                                            <select class="form-select" id="themeSelect">
+                                                <option value="auto">Automático (sistema)</option>
+                                                <option value="light">Claro</option>
+                                                <option value="dark">Escuro</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Idioma</label>
+                                            <select class="form-select">
+                                                <option value="pt-BR" selected>Português (Brasil)</option>
+                                                <option value="en" disabled>English (em breve)</option>
+                                                <option value="es" disabled>Español (em breve)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Preferências de Jogo -->
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3">Preferências de Jogo</h6>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="autoJoinPublic" checked>
+                                        <label class="form-check-label" for="autoJoinPublic">
+                                            Permitir que outros vejam minhas sessões públicas
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="showOnline" checked>
+                                        <label class="form-check-label" for="showOnline">
+                                            Mostrar quando estou online
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="allowMessages" checked>
+                                        <label class="form-check-label" for="allowMessages">
+                                            Permitir mensagens diretas de outros usuários
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="shareStats" checked>
+                                        <label class="form-check-label" for="shareStats">
+                                            Compartilhar estatísticas no perfil público
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Sons e Efeitos -->
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3">Sons e Efeitos</h6>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Volume dos dados</label>
+                                            <input type="range" class="form-range" min="0" max="100" value="50" id="diceVolume">
+                                            <div class="d-flex justify-content-between text-muted small">
+                                                <span>Mudo</span>
+                                                <span>Alto</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Volume do chat</label>
+                                            <input type="range" class="form-range" min="0" max="100" value="30" id="chatVolume">
+                                            <div class="d-flex justify-content-between text-muted small">
+                                                <span>Mudo</span>
+                                                <span>Alto</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mt-3">
+                                        <input class="form-check-input" type="checkbox" id="enableAnimations" checked>
+                                        <label class="form-check-label" for="enableAnimations">
+                                            Habilitar animações de interface
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Salvar Configurações
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notificações -->
+                <div class="tab-pane fade" id="notifications">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bell me-2"></i>Notificações
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <!-- Email -->
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3">Notificações por Email</h6>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="emailNewSessions" checked>
+                                        <label class="form-check-label" for="emailNewSessions">
+                                            Novas sessões compatíveis com minhas preferências
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="emailApplications" checked>
+                                        <label class="form-check-label" for="emailApplications">
+                                            Status de inscrições em sessões
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="emailReminders" checked>
+                                        <label class="form-check-label" for="emailReminders">
+                                            Lembretes de sessões (1 hora antes)
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="emailNewsletter">
+                                        <label class="form-check-label" for="emailNewsletter">
+                                            Newsletter semanal com novidades
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="emailMarketing">
+                                        <label class="form-check-label" for="emailMarketing">
+                                            Ofertas especiais e promoções
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Push/Browser -->
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3">Notificações do Navegador</h6>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Para receber notificações do navegador, você precisa permitir nas configurações do seu navegador.
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="pushMessages" checked>
+                                        <label class="form-check-label" for="pushMessages">
+                                            Mensagens diretas
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="pushSessions" checked>
+                                        <label class="form-check-label" for="pushSessions">
+                                            Início de sessões
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="pushUpdates">
+                                        <label class="form-check-label" for="pushUpdates">
+                                            Atualizações importantes
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Frequência -->
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3">Frequência</h6>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Resumo de atividades</label>
+                                            <select class="form-select">
+                                                <option value="never">Nunca</option>
+                                                <option value="daily">Diário</option>
+                                                <option value="weekly" selected>Semanal</option>
+                                                <option value="monthly">Mensal</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Horário preferido</label>
+                                            <select class="form-select">
+                                                <option value="morning">Manhã (8h-12h)</option>
+                                                <option value="afternoon" selected>Tarde (12h-18h)</option>
+                                                <option value="evening">Noite (18h-22h)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Salvar Preferências
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Privacidade -->
+                <div class="tab-pane fade" id="privacy">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-shield-alt me-2"></i>Privacidade e Segurança
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Visibilidade do Perfil -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-3">Visibilidade do Perfil</h6>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="profileVisibility" id="profilePublic" value="public" checked>
+                                    <label class="form-check-label" for="profilePublic">
+                                        <strong>Público</strong> - Qualquer pessoa pode ver meu perfil
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="profileVisibility" id="profileMembers" value="members">
+                                    <label class="form-check-label" for="profileMembers">
+                                        <strong>Apenas membros</strong> - Somente usuários cadastrados
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="profileVisibility" id="profilePrivate" value="private">
+                                    <label class="form-check-label" for="profilePrivate">
+                                        <strong>Privado</strong> - Apenas eu posso ver
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Dados Pessoais -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-3">Controle de Dados</h6>
+                                
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="showEmail">
+                                    <label class="form-check-label" for="showEmail">
+                                        Mostrar email no perfil público
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="showActivity" checked>
+                                    <label class="form-check-label" for="showActivity">
+                                        Mostrar última atividade
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="allowSearch" checked>
+                                    <label class="form-check-label" for="allowSearch">
+                                        Permitir que me encontrem por busca
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Segurança -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-3">Segurança da Conta</h6>
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Senha</label>
+                                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                            <span class="text-muted">••••••••</span>
+                                            <button class="btn btn-outline-primary btn-sm" onclick="alert('Alteração de senha em desenvolvimento')">
+                                                Alterar
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Autenticação de 2 Fatores</label>
+                                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                            <span class="text-muted">Desativada</span>
+                                            <button class="btn btn-outline-success btn-sm" onclick="alert('2FA em desenvolvimento')">
+                                                Ativar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Bloqueios -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-3">Usuários Bloqueados</h6>
+                                <div class="text-muted">
+                                    <i class="fas fa-user-slash me-2"></i>
+                                    Nenhum usuário bloqueado.
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Salvar Configurações
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Assinatura -->
+                <div class="tab-pane fade" id="subscription">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-credit-card me-2"></i>Assinatura e Cobrança
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if current_user.is_premium %}
+                            <!-- Usuário Premium -->
+                            <div class="alert alert-success">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-star fa-2x me-3"></i>
+                                    <div>
+                                        <h6 class="mb-1">Conta Premium Ativa</h6>
+                                        <p class="mb-0">Você tem acesso a todos os recursos para mestres.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">Plano Atual</h6>
+                                    <p class="mb-0">Mestre Premium</p>
+                                    <small class="text-muted">R$ 9,90/mês</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">Próxima Cobrança</h6>
+                                    <p class="mb-0">15 de dezembro de 2024</p>
+                                    <small class="text-muted">Renovação automática</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6 class="fw-bold">Recursos Inclusos</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Criar sessões ilimitadas</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Sessões pagas</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Ferramentas avançadas de mestre</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Vitrine de mestre</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Suporte prioritário</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-primary" onclick="alert('Gerenciar cobrança em desenvolvimento')">
+                                    <i class="fas fa-edit me-2"></i>Alterar Método de Pagamento
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="alert('Cancelamento em desenvolvimento')">
+                                    <i class="fas fa-times me-2"></i>Cancelar Assinatura
+                                </button>
+                            </div>
+                            
+                            {% else %}
+                            <!-- Usuário Gratuito -->
+                            <div class="alert alert-info">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user fa-2x me-3"></i>
+                                    <div>
+                                        <h6 class="mb-1">Conta Gratuita</h6>
+                                        <p class="mb-0">Você pode participar de sessões e usar recursos básicos.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-lg-6">
+                                    <div class="card border-warning">
+                                        <div class="card-header bg-warning text-dark text-center">
+                                            <h6 class="mb-0 fw-bold">Mestre Premium</h6>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            <div class="display-6 fw-bold mb-2">R$ 9,90</div>
+                                            <p class="text-muted mb-3">por mês</p>
+                                            
+                                            <ul class="list-unstyled text-start mb-4">
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Tudo do plano gratuito</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Criar sessões ilimitadas</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Sessões pagas</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Ferramentas avançadas</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Vitrine de mestre</li>
+                                            </ul>
+                                            
+                                            <button class="btn btn-warning btn-lg w-100" onclick="alert('Assinatura Premium em desenvolvimento')">
+                                                <i class="fas fa-crown me-2"></i>Assinar Agora
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Histórico de cobranças -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold">Histórico de Cobranças</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Descrição</th>
+                                                <th>Valor</th>
+                                                <th>Status</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">
+                                                    Nenhuma cobrança encontrada.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Suporte -->
+                <div class="tab-pane fade" id="support">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-question-circle me-2"></i>Suporte e Ajuda
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-light h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-book fa-3x text-primary mb-3"></i>
+                                            <h6 class="fw-bold">Central de Ajuda</h6>
+                                            <p class="text-muted small mb-3">Encontre respostas para as perguntas mais comuns.</p>
+                                            <button class="btn btn-outline-primary" onclick="alert('Central de ajuda em desenvolvimento')">
+                                                Acessar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-light h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-headset fa-3x text-success mb-3"></i>
+                                            <h6 class="fw-bold">Falar com Suporte</h6>
+                                            <p class="text-muted small mb-3">Entre em contato direto com nossa equipe.</p>
+                                            <button class="btn btn-outline-success" onclick="alert('Chat de suporte em desenvolvimento')">
+                                                Iniciar Chat
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-light h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-bug fa-3x text-warning mb-3"></i>
+                                            <h6 class="fw-bold">Reportar Bug</h6>
+                                            <p class="text-muted small mb-3">Encontrou um problema? Nos ajude a corrigi-lo.</p>
+                                            <button class="btn btn-outline-warning" onclick="alert('Report de bug em desenvolvimento')">
+                                                Reportar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-light h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-lightbulb fa-3x text-info mb-3"></i>
+                                            <h6 class="fw-bold">Sugerir Recurso</h6>
+                                            <p class="text-muted small mb-3">Tem uma ideia para melhorar a plataforma?</p>
+                                            <button class="btn btn-outline-info" onclick="alert('Sugestões em desenvolvimento')">
+                                                Sugerir
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Informações do sistema -->
+                            <div class="mt-4 pt-4 border-top">
+                                <h6 class="fw-bold mb-3">Informações do Sistema</h6>
+                                <div class="row text-muted small">
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <strong>Versão da Plataforma:</strong> 1.0.0-beta
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Navegador:</strong> <span id="browserInfo">Detectando...</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <strong>Última Atualização:</strong> 15/11/2024
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Status do Servidor:</strong> 
+                                            <span class="text-success">
+                                                <i class="fas fa-circle me-1"></i>Online
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Detectar informações do navegador
+    const browserInfo = navigator.userAgent.split(' ').slice(-2).join(' ');
+    document.getElementById('browserInfo').textContent = browserInfo;
+    
+    // Salvar configurações de tema
+    const themeSelect = document.getElementById('themeSelect');
+    const savedTheme = localStorage.getItem('theme') || 'auto';
+    themeSelect.value = savedTheme;
+    
+    themeSelect.addEventListener('change', function() {
+        const theme = this.value;
+        localStorage.setItem('theme', theme);
+        applyTheme(theme);
+    });
+    
+    // Aplicar tema inicial
+    applyTheme(savedTheme);
+    
+    function applyTheme(theme) {
+        const html = document.documentElement;
+        
+        if (theme === 'dark') {
+            html.setAttribute('data-bs-theme', 'dark');
+        } else if (theme === 'light') {
+            html.setAttribute('data-bs-theme', 'light');
+        } else {
+            // Auto - usar preferência do sistema
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                html.setAttribute('data-bs-theme', 'dark');
+            } else {
+                html.setAttribute('data-bs-theme', 'light');
+            }
+        }
+    }
+    
+    // Escutar mudanças na preferência do sistema
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+        if (themeSelect.value === 'auto') {
+            applyTheme('auto');
+        }
+    });
+});
+</script>
+{% endblock %}

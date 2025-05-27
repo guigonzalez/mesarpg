@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Perfil - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h2 class="fw-bold mb-1">Editar Perfil</h2>
+                    <p class="text-muted mb-0">Atualize suas informações pessoais e preferências</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Informações Pessoais -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-user me-2 text-primary"></i>
+                                Informações Pessoais
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.full_name.label(class="form-label fw-semibold") }}
+                                    {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+                                    {% if form.full_name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.full_name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.role.label(class="form-label fw-semibold") }}
+                                    {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                                    {% if form.role.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.role.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <small>
+                                            Alterar para "Mestre" ou "Ambos" requer assinatura Premium (R$ 9,90/mês)
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.bio.label(class="form-label fw-semibold") }}
+                                {{ form.bio(class="form-control" + (" is-invalid" if form.bio.errors else "")) }}
+                                {% if form.bio.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.bio.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Conte um pouco sobre você, sua experiência com RPG e estilo de jogo.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Preferências de Jogo -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-dice-d20 me-2 text-success"></i>
+                                Preferências de Jogo
+                            </h5>
+                            
+                            <div class="mb-3">
+                                {{ form.preferred_systems.label(class="form-label fw-semibold") }}
+                                {{ form.preferred_systems(class="form-control" + (" is-invalid" if form.preferred_systems.errors else "")) }}
+                                {% if form.preferred_systems.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.preferred_systems.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Separe os sistemas por vírgula. Ex: D&D 5e, Tormenta20, Call of Cthulhu</div>
+                            </div>
+                            
+                            <!-- Sugestões de sistemas -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Sistemas Populares</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm system-tag" data-system="D&D 5e">
+                                        D&D 5e
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success btn-sm system-tag" data-system="Tormenta20">
+                                        Tormenta20
+                                    </button>
+                                    <button type="button" class="btn btn-outline-dark btn-sm system-tag" data-system="Call of Cthulhu">
+                                        Call of Cthulhu
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning btn-sm system-tag" data-system="Pathfinder">
+                                        Pathfinder
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm system-tag" data-system="Vampire: The Masquerade">
+                                        Vampire
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm system-tag" data-system="3D&T Alpha">
+                                        3D&T Alpha
+                                    </button>
+                                </div>
+                                <div class="form-text">Clique nos sistemas para adicioná-los às suas preferências.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Avatar (placeholder para implementação futura) -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-image me-2 text-warning"></i>
+                                Avatar
+                            </h5>
+                            
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-lg bg-primary rounded-circle d-flex align-items-center justify-content-center">
+                                    {% if current_user.avatar_url %}
+                                    <img src="{{ current_user.avatar_url }}" alt="Avatar" class="rounded-circle w-100 h-100 object-fit-cover">
+                                    {% else %}
+                                    <i class="fas fa-user fa-2x text-white"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="alert('Upload de avatar em desenvolvimento')">
+                                        <i class="fas fa-upload me-1"></i>Alterar Avatar
+                                    </button>
+                                    <div class="form-text">Formatos aceitos: JPG, PNG. Máximo 2MB.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notificações -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-bell me-2 text-info"></i>
+                                Preferências de Notificação
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="notifyNewSessions" checked>
+                                        <label class="form-check-label" for="notifyNewSessions">
+                                            Novas sessões compatíveis
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="notifyApplications" checked>
+                                        <label class="form-check-label" for="notifyApplications">
+                                            Status de inscrições
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="notifyMessages" checked>
+                                        <label class="form-check-label" for="notifyMessages">
+                                            Mensagens de outros usuários
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="notifyReminders" checked>
+                                        <label class="form-check-label" for="notifyReminders">
+                                            Lembretes de sessões
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="notifyNewFeatures">
+                                        <label class="form-check-label" for="notifyNewFeatures">
+                                            Novos recursos da plataforma
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="notifyNewsletter">
+                                        <label class="form-check-label" for="notifyNewsletter">
+                                            Newsletter semanal
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Botões de ação -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Salvar Alterações
+                            </button>
+                            <a href="{{ url_for('profile.view', user_id=current_user.id) }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Seção de Privacidade e Segurança -->
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-shield-alt me-2 text-danger"></i>
+                        Privacidade e Segurança
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Alterar Senha</h6>
+                            <p class="text-muted small mb-2">Mantenha sua conta segura com uma senha forte.</p>
+                            <button class="btn btn-outline-primary btn-sm" onclick="alert('Alteração de senha em desenvolvimento')">
+                                <i class="fas fa-key me-1"></i>Alterar Senha
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Excluir Conta</h6>
+                            <p class="text-muted small mb-2">Esta ação é irreversível e removerá todos os seus dados.</p>
+                            <button class="btn btn-outline-danger btn-sm" onclick="alert('Exclusão de conta em desenvolvimento')">
+                                <i class="fas fa-trash me-1"></i>Excluir Conta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sistema de tags para sistemas preferidos
+    const systemTags = document.querySelectorAll('.system-tag');
+    const preferredSystemsInput = document.getElementById('preferred_systems');
+    
+    systemTags.forEach(tag => {
+        tag.addEventListener('click', function() {
+            const system = this.dataset.system;
+            const currentSystems = preferredSystemsInput.value ? preferredSystemsInput.value.split(',').map(s => s.trim()) : [];
+            
+            if (currentSystems.includes(system)) {
+                // Remove o sistema
+                const index = currentSystems.indexOf(system);
+                currentSystems.splice(index, 1);
+                this.classList.remove('active');
+            } else {
+                // Adiciona o sistema
+                currentSystems.push(system);
+                this.classList.add('active');
+            }
+            
+            preferredSystemsInput.value = currentSystems.filter(s => s !== '').join(', ');
+        });
+    });
+    
+    // Marcar tags ativas baseado no valor atual
+    const currentSystems = preferredSystemsInput.value ? preferredSystemsInput.value.split(',').map(s => s.trim()) : [];
+    systemTags.forEach(tag => {
+        if (currentSystems.includes(tag.dataset.system)) {
+            tag.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.avatar-lg {
+    width: 80px;
+    height: 80px;
+}
+
+.system-tag.active {
+    background-color: var(--bs-primary);
+    color: white;
+    border-color: var(--bs-primary);
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white position-relative overflow-hidden">
+    <div class="hero-bg position-absolute top-0 start-0 w-100 h-100 opacity-25">
+        <img src="{{ url_for('static', filename='images/hero-bg.svg') }}" alt="" class="w-100 h-100 object-fit-cover">
+    </div>
+    <div class="container position-relative py-5">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Encontre sua <span class="text-warning">Mesa de RPG</span> Ideal
+                </h1>
+                <p class="lead mb-4">
+                    A primeira plataforma brasileira dedicada a conectar jogadores e mestres de RPG. 
+                    Descubra sessões, construa sua comunidade e viva aventuras épicas!
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('sessions.list') }}" class="btn btn-warning btn-lg px-4">
+                        <i class="fas fa-dice-d20 me-2"></i>Encontrar Sessões
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fas fa-user-plus me-2"></i>Criar Conta
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-stats row g-3 mt-4">
+                    <div class="col-4">
+                        <div class="bg-white bg-opacity-10 rounded p-3">
+                            <h3 class="h4 mb-1">500+</h3>
+                            <small>Jogadores</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-white bg-opacity-10 rounded p-3">
+                            <h3 class="h4 mb-1">150+</h3>
+                            <small>Mestres</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-white bg-opacity-10 rounded p-3">
+                            <h3 class="h4 mb-1">1200+</h3>
+                            <small>Sessões</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Como Funciona -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 fw-bold mb-3">Como Funciona</h2>
+            <p class="lead text-muted">Três passos simples para começar sua jornada no RPG</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="text-center">
+                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-user-plus fa-2x text-white"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">1. Crie sua Conta</h4>
+                    <p class="text-muted">Cadastre-se gratuitamente e configure seu perfil. Defina se você é jogador, mestre ou ambos.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="text-center">
+                    <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-search fa-2x text-white"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">2. Encontre sua Mesa</h4>
+                    <p class="text-muted">Navegue pelas sessões disponíveis e use nossos filtros para encontrar o jogo perfeito para você.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="text-center">
+                    <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-dice-d20 fa-2x text-white"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">3. Jogue e Divirta-se</h4>
+                    <p class="text-muted">Participe de sessões incríveis com nossas ferramentas integradas de jogo e construa sua comunidade.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recursos Destacados -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 fw-bold mb-3">Recursos da Plataforma</h2>
+            <p class="lead text-muted">Tudo que você precisa para uma experiência completa de RPG</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100 p-4 bg-light rounded">
+                    <div class="feature-icon text-primary mb-3">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Descoberta de Sessões</h5>
+                    <p class="text-muted small">Encontre facilmente sessões por sistema, nível, horário e estilo de jogo.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100 p-4 bg-light rounded">
+                    <div class="feature-icon text-success mb-3">
+                        <i class="fas fa-dice fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Ferramentas de Jogo</h5>
+                    <p class="text-muted small">Rolador de dados, chat em tempo real e quadro branco integrado.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100 p-4 bg-light rounded">
+                    <div class="feature-icon text-warning mb-3">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Diário de Campanha</h5>
+                    <p class="text-muted small">Documente suas aventuras com sistema de wiki compartilhado.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100 p-4 bg-light rounded">
+                    <div class="feature-icon text-info mb-3">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Comunidade</h5>
+                    <p class="text-muted small">Conecte-se com outros jogadores e construa relacionamentos duradouros.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Sessões em Destaque -->
+{% if featured_sessions %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h1 fw-bold mb-0">Sessões em Destaque</h2>
+            <a href="{{ url_for('sessions.list') }}" class="btn btn-outline-primary">
+                Ver Todas <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        
+        <div class="row g-4">
+            {% for session in featured_sessions[:3] %}
+            <div class="col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary">{{ session.system }}</span>
+                            {% if session.is_beginner_friendly %}
+                            <span class="badge bg-success">Iniciantes</span>
+                            {% endif %}
+                        </div>
+                        <h5 class="card-title fw-bold">{{ session.title }}</h5>
+                        <p class="card-text text-muted small">{{ session.description[:100] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>{{ session.current_players }}/{{ session.max_players }}
+                            </small>
+                            {% if session.is_paid %}
+                            <small class="text-success fw-bold">R$ {{ "%.2f"|format(session.price) }}</small>
+                            {% else %}
+                            <small class="text-success fw-bold">Gratuito</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{{ url_for('sessions.detail', id=session.id) }}" class="btn btn-primary btn-sm w-100">
+                            Ver Detalhes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Planos e Preços -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 fw-bold mb-3">Planos e Preços</h2>
+            <p class="lead text-muted">Escolha o plano ideal para você</p>
+        </div>
+        
+        <div class="row justify-content-center g-4">
+            <div class="col-lg-4">
+                <div class="card h-100 shadow">
+                    <div class="card-body text-center p-4">
+                        <h4 class="fw-bold text-primary mb-3">Jogador</h4>
+                        <div class="display-4 fw-bold mb-2">Grátis</div>
+                        <p class="text-muted mb-4">Para sempre</p>
+                        
+                        <ul class="list-unstyled text-start mb-4">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Participar de sessões</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Perfil de jogador</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Chat e ferramentas básicas</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Histórico de sessões</li>
+                        </ul>
+                        
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg w-100">
+                            Começar Agora
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card h-100 shadow border-warning">
+                    <div class="card-header bg-warning text-dark text-center py-3">
+                        <h5 class="mb-0 fw-bold">Mais Popular</h5>
+                    </div>
+                    <div class="card-body text-center p-4">
+                        <h4 class="fw-bold text-warning mb-3">Mestre</h4>
+                        <div class="display-4 fw-bold mb-2">R$ 9,90</div>
+                        <p class="text-muted mb-4">por mês</p>
+                        
+                        <ul class="list-unstyled text-start mb-4">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Tudo do plano Jogador</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Criar sessões ilimitadas</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Ferramentas avançadas de mestre</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Sessões pagas</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Vitrine de mestre</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suporte prioritário</li>
+                        </ul>
+                        
+                        {% if current_user.is_authenticated %}
+                        <button class="btn btn-warning btn-lg w-100" onclick="alert('Funcionalidade de pagamento em desenvolvimento')">
+                            Assinar Agora
+                        </button>
+                        {% else %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-warning btn-lg w-100">
+                            Começar Teste Grátis
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Final -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="h1 fw-bold mb-3">Pronto para Começar sua Aventura?</h2>
+        <p class="lead mb-4">Junte-se à maior comunidade brasileira de RPG online</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-warning btn-lg px-5">
+                <i class="fas fa-user-plus me-2"></i>Criar Conta Gratuita
+            </a>
+            <a href="{{ url_for('sessions.list') }}" class="btn btn-outline-light btn-lg px-5">
+                <i class="fas fa-search me-2"></i>Explorar Sessões
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

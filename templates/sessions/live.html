@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Sessão Ao Vivo - {{ session.title }} - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <!-- Header da sessão -->
+    <div class="row mb-3">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="fw-bold mb-1">{{ session.title }}</h4>
+                    <span class="badge bg-primary">{{ session.system }}</span>
+                    <span class="badge bg-success">Ao Vivo</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#playersModal">
+                        <i class="fas fa-users me-1"></i>Jogadores
+                    </button>
+                    <a href="{{ url_for('campaign.diary', session_id=session.id) }}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-book me-1"></i>Diário
+                    </a>
+                    <a href="{{ url_for('sessions.detail', id=session.id) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Área principal de jogo -->
+        <div class="col-lg-8">
+            <!-- Área de mapa/quadro branco -->
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="fas fa-map me-2"></i>Área de Jogo</h6>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" onclick="clearCanvas()">
+                            <i class="fas fa-eraser me-1"></i>Limpar
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="toggleDraw()">
+                            <i class="fas fa-pen me-1"></i>Desenhar
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-2">
+                    <canvas id="gameCanvas" width="800" height="500" class="border bg-light w-100" style="cursor: crosshair;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Rolador de dados -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-dice me-2"></i>Rolador de Dados</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <select id="diceType" class="form-select form-select-sm">
+                                <option value="4">d4</option>
+                                <option value="6">d6</option>
+                                <option value="8">d8</option>
+                                <option value="10">d10</option>
+                                <option value="12">d12</option>
+                                <option value="20" selected>d20</option>
+                                <option value="100">d100</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <input type="number" id="diceModifier" class="form-control form-control-sm" placeholder="+Mod" value="0">
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary btn-sm w-100" onclick="rollDice()">
+                                <i class="fas fa-dice-d20 me-1"></i>Rolar Dado
+                            </button>
+                        </div>
+                    </div>
+                    <div id="diceResult" class="mt-2 text-center"></div>
+                </div>
+            </div>
+
+            <!-- Chat -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-comments me-2"></i>Chat da Mesa</h6>
+                </div>
+                <div class="card-body p-2">
+                    <div id="chatMessages" class="border rounded p-2 mb-2 bg-light" style="height: 250px; overflow-y: auto;">
+                        <!-- Mensagens do chat aparecerão aqui -->
+                        <div class="small text-muted text-center py-3">
+                            <i class="fas fa-comments"></i><br>
+                            As mensagens do chat aparecerão aqui
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Digite sua mensagem...">
+                        <button class="btn btn-primary btn-sm" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notas da sessão -->
+    <div class="row mt-3">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Notas da Sessão</h6>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+                        <i class="fas fa-plus me-1"></i>Adicionar Nota
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if notes %}
+                    <div class="row g-3">
+                        {% for note in notes %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="fw-bold mb-0">{{ note.title }}</h6>
+                                        <span class="badge bg-{{ 'primary' if note.note_type == 'general' else 'success' if note.note_type == 'character' else 'warning' if note.note_type == 'world' else 'info' }}">
+                                            {{ note.note_type.title() }}
+                                        </span>
+                                    </div>
+                                    <p class="small text-muted mb-2">{{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>{{ note.author.username }}
+                                        </small>
+                                        <small class="text-muted">{{ note.created_at.strftime('%H:%M') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-sticky-note fa-3x mb-3"></i>
+                        <p>Nenhuma nota adicionada ainda</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de jogadores -->
+<div class="modal fade" id="playersModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Jogadores da Sessão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Lista de jogadores seria gerada dinamicamente -->
+                <div class="d-flex align-items-center mb-3">
+                    <div class="avatar-sm bg-warning rounded-circle d-flex align-items-center justify-content-center me-3">
+                        <i class="fas fa-crown text-white"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">{{ session.master.username }}</div>
+                        <small class="text-muted">Mestre</small>
+                    </div>
+                </div>
+                <!-- Adicionar jogadores aprovados aqui -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para adicionar nota -->
+<div class="modal fade" id="addNoteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar Nota</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('sessions.add_note', id=session.id) }}">
+                <div class="modal-body">
+                    {{ note_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ note_form.title.label(class="form-label fw-semibold") }}
+                        {{ note_form.title(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ note_form.content.label(class="form-label fw-semibold") }}
+                        {{ note_form.content(class="form-control") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            {{ note_form.note_type.label(class="form-label fw-semibold") }}
+                            {{ note_form.note_type(class="form-select") }}
+                        </div>
+                        <div class="col-6 d-flex align-items-end">
+                            <div class="form-check">
+                                {{ note_form.is_public(class="form-check-input") }}
+                                {{ note_form.is_public.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    {{ note_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/dice.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+<script>
+// Canvas para quadro branco simples
+let canvas = document.getElementById('gameCanvas');
+let ctx = canvas.getContext('2d');
+let isDrawing = false;
+let drawMode = false;
+
+// Ajustar tamanho do canvas
+function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+}
+
+// Inicializar canvas
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Funções de desenho
+function toggleDraw() {
+    drawMode = !drawMode;
+    canvas.style.cursor = drawMode ? 'crosshair' : 'default';
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// Event listeners para desenho
+canvas.addEventListener('mousedown', startDrawing);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', stopDrawing);
+
+function startDrawing(e) {
+    if (!drawMode) return;
+    isDrawing = true;
+    const rect = canvas.getBoundingClientRect();
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+}
+
+function draw(e) {
+    if (!isDrawing || !drawMode) return;
+    const rect = canvas.getBoundingClientRect();
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+}
+
+function stopDrawing() {
+    isDrawing = false;
+}
+
+// Configurar estilo do pincel
+ctx.strokeStyle = '#007bff';
+ctx.lineWidth = 2;
+ctx.lineCap = 'round';
+
+// Chat enter key
+document.getElementById('chatInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+}
+
+#gameCanvas {
+    max-height: 500px;
+}
+
+#chatMessages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chatMessages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#chatMessages::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+</style>
+{% endblock %}

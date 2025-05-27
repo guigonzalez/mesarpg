@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}Vitrine de Mestres - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-3">
+            <i class="fas fa-crown text-warning me-2"></i>
+            Vitrine de Mestres
+        </h1>
+        <p class="lead text-muted">Conheça os mestres mais experientes e bem avaliados da plataforma</p>
+    </div>
+
+    <!-- Filtros e estatísticas -->
+    <div class="row mb-4">
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Especialidade</label>
+                            <select name="system" class="form-select">
+                                <option value="">Todos os sistemas</option>
+                                <option value="D&D 5e">D&D 5e</option>
+                                <option value="Tormenta20">Tormenta20</option>
+                                <option value="Pathfinder">Pathfinder</option>
+                                <option value="Call of Cthulhu">Call of Cthulhu</option>
+                                <option value="Vampire">Vampire</option>
+                                <option value="3D&T">3D&T Alpha</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Avaliação</label>
+                            <select name="rating" class="form-select">
+                                <option value="">Qualquer avaliação</option>
+                                <option value="5">5 estrelas</option>
+                                <option value="4">4+ estrelas</option>
+                                <option value="3">3+ estrelas</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="beginner_friendly" value="true" id="beginnerFriendly">
+                                <label class="form-check-label" for="beginnerFriendly">
+                                    Aceita iniciantes
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="premium_only" value="true" id="premiumOnly">
+                                <label class="form-check-label" for="premiumOnly">
+                                    Apenas mestres Premium
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Filtrar
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Estatísticas -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Estatísticas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2 text-center">
+                        <div class="col-12">
+                            <div class="bg-light rounded p-2 mb-2">
+                                <div class="fw-bold text-primary">{{ masters.total }}</div>
+                                <small class="text-muted">Mestres Ativos</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded p-2">
+                                <div class="fw-bold text-success">85%</div>
+                                <small class="text-muted">Avaliação 4+</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded p-2">
+                                <div class="fw-bold text-warning">450+</div>
+                                <small class="text-muted">Sessões/mês</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Ordenação -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <span class="text-muted">{{ masters.total }} mestres encontrados</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" style="width: auto;" onchange="location = this.value;">
+                        <option value="{{ url_for('masters.showcase', sort='popular') }}" selected>Mais Populares</option>
+                        <option value="{{ url_for('masters.showcase', sort='rating') }}">Melhor Avaliados</option>
+                        <option value="{{ url_for('masters.showcase', sort='recent') }}">Mais Recentes</option>
+                        <option value="{{ url_for('masters.showcase', sort='sessions') }}">Mais Sessões</option>
+                    </select>
+                </div>
+            </div>
+            
+            {% if masters.items %}
+            <div class="row g-4">
+                {% for master in masters.items %}
+                <div class="col-md-6 col-xl-4">
+                    <div class="card h-100 master-card shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <!-- Avatar e badges -->
+                            <div class="position-relative mb-3">
+                                <div class="avatar-lg bg-primary rounded-circle d-inline-flex align-items-center justify-content-center">
+                                    {% if master.avatar_url %}
+                                    <img src="{{ master.avatar_url }}" alt="{{ master.username }}" class="rounded-circle w-100 h-100 object-fit-cover">
+                                    {% else %}
+                                    <i class="fas fa-crown fa-2x text-white"></i>
+                                    {% endif %}
+                                </div>
+                                {% if master.is_premium %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge bg-warning rounded-pill">
+                                    <i class="fas fa-star"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Nome e informações básicas -->
+                            <h5 class="fw-bold mb-1">{{ master.full_name or master.username }}</h5>
+                            <p class="text-muted small mb-2">@{{ master.username }}</p>
+                            
+                            <!-- Avaliação -->
+                            <div class="mb-3">
+                                {% set avg_rating = master.get_average_rating() %}
+                                {% if avg_rating > 0 %}
+                                <div class="d-flex justify-content-center align-items-center gap-1 mb-1">
+                                    {% for i in range(5) %}
+                                        {% if i < avg_rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                        <i class="far fa-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-1 small text-muted">({{ "%.1f"|format(avg_rating) }})</span>
+                                </div>
+                                <small class="text-muted">{{ master.ratings_received.count() }} avaliações</small>
+                                {% else %}
+                                <div class="text-muted">
+                                    <small>Novo mestre</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Biografia -->
+                            {% if master.bio %}
+                            <p class="text-muted small mb-3">{{ master.bio[:80] }}{% if master.bio|length > 80 %}...{% endif %}</p>
+                            {% endif %}
+                            
+                            <!-- Sistemas preferidos -->
+                            {% if master.preferred_systems %}
+                            <div class="mb-3">
+                                <div class="d-flex flex-wrap justify-content-center gap-1">
+                                    {% for system in master.preferred_systems.split(',')[:3] %}
+                                    <span class="badge bg-light text-dark small">{{ system.strip() }}</span>
+                                    {% endfor %}
+                                    {% if master.preferred_systems.split(',')|length > 3 %}
+                                    <span class="badge bg-light text-dark small">+{{ master.preferred_systems.split(',')|length - 3 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Estatísticas -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <div class="bg-light rounded p-2">
+                                        <div class="fw-bold small">{{ master.created_sessions.count() }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">Sessões</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="bg-light rounded p-2">
+                                        <div class="fw-bold small">{{ master.created_at.strftime('%Y') }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">Desde</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Indicadores especiais -->
+                            <div class="mb-3">
+                                {% if master.created_sessions.filter_by(is_beginner_friendly=True).count() > 0 %}
+                                <span class="badge bg-success me-1">
+                                    <i class="fas fa-heart me-1"></i>Iniciantes
+                                </span>
+                                {% endif %}
+                                {% if master.created_sessions.filter_by(is_paid=True).count() > 0 %}
+                                <span class="badge bg-warning me-1">
+                                    <i class="fas fa-coins me-1"></i>Profissional
+                                </span>
+                                {% endif %}
+                                {% if master.is_premium %}
+                                <span class="badge bg-primary me-1">
+                                    <i class="fas fa-star me-1"></i>Premium
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Footer do card -->
+                        <div class="card-footer bg-transparent border-top-0 pt-0">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('profile.view', user_id=master.id) }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Ver Perfil
+                                </a>
+                                {% if master.created_sessions.filter_by(status='open').count() > 0 %}
+                                <a href="{{ url_for('sessions.list', master=master.id, status='open') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-calendar me-1"></i>Ver Sessões ({{ master.created_sessions.filter_by(status='open').count() }})
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Paginação -->
+            {% if masters.pages > 1 %}
+            <nav aria-label="Navegação dos mestres" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if masters.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('masters.showcase', page=masters.prev_num) }}">Anterior</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in masters.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != masters.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('masters.showcase', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if masters.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('masters.showcase', page=masters.next_num) }}">Próxima</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <!-- Estado vazio -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-crown fa-4x text-muted"></i>
+                </div>
+                <h4 class="text-muted">Nenhum mestre encontrado</h4>
+                <p class="text-muted mb-4">Tente ajustar os filtros para encontrar mestres.</p>
+                <a href="{{ url_for('masters.showcase') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-refresh me-2"></i>Limpar Filtros
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Seção de destaque para se tornar mestre -->
+    {% if current_user.is_authenticated and current_user.role == 'player' %}
+    <div class="row mt-5">
+        <div class="col">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center p-5">
+                    <div class="mb-3">
+                        <i class="fas fa-crown fa-3x"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Quer se tornar um Mestre?</h3>
+                    <p class="lead mb-4">
+                        Compartilhe suas histórias, conduza aventuras épicas e construa uma comunidade de jogadores apaixonados.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('profile.edit') }}" class="btn btn-warning btn-lg">
+                            <i class="fas fa-user-edit me-2"></i>Atualizar Perfil
+                        </a>
+                        <button class="btn btn-outline-light btn-lg" onclick="alert('Saiba mais sobre como se tornar mestre em desenvolvimento')">
+                            <i class="fas fa-info-circle me-2"></i>Saiba Mais
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.master-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.master-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.avatar-lg {
+    width: 80px;
+    height: 80px;
+}
+
+.card-footer {
+    background: none !important;
+}
+</style>
+{% endblock %}

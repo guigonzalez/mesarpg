@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Sessão - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h2 class="fw-bold mb-1">Criar Nova Sessão</h2>
+                    <p class="text-muted mb-0">Configure sua sessão de RPG e encontre jogadores</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Informações Básicas -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Informações Básicas</h5>
+                            
+                            <div class="mb-3">
+                                {{ form.title.label(class="form-label fw-semibold") }}
+                                {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.title.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.description.label(class="form-label fw-semibold") }}
+                                {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else "")) }}
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.description.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Descreva o enredo, ambientação, estilo de jogo e expectativas.</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.system.label(class="form-label fw-semibold") }}
+                                    {{ form.system(class="form-select" + (" is-invalid" if form.system.errors else "")) }}
+                                    {% if form.system.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.system.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.session_type.label(class="form-label fw-semibold") }}
+                                    {{ form.session_type(class="form-select" + (" is-invalid" if form.session_type.errors else "")) }}
+                                    {% if form.session_type.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.session_type.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configurações dos Jogadores -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-users me-2 text-success"></i>Configurações dos Jogadores</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.max_players.label(class="form-label fw-semibold") }}
+                                    {{ form.max_players(class="form-control" + (" is-invalid" if form.max_players.errors else "")) }}
+                                    {% if form.max_players.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.max_players.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.level_range.label(class="form-label fw-semibold") }}
+                                    {{ form.level_range(class="form-control" + (" is-invalid" if form.level_range.errors else "")) }}
+                                    {% if form.level_range.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.level_range.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.tags.label(class="form-label fw-semibold") }}
+                                {{ form.tags(class="form-control" + (" is-invalid" if form.tags.errors else "")) }}
+                                {% if form.tags.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.tags.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Tags ajudam jogadores a encontrar sua sessão. Separe por vírgulas.</div>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                {{ form.is_beginner_friendly(class="form-check-input") }}
+                                {{ form.is_beginner_friendly.label(class="form-check-label") }}
+                                <div class="form-text">Marque se aceita jogadores novos no RPG.</div>
+                            </div>
+                        </div>
+
+                        <!-- Agendamento -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-calendar me-2 text-warning"></i>Agendamento</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.scheduled_date.label(class="form-label fw-semibold") }}
+                                    {{ form.scheduled_date(class="form-control" + (" is-invalid" if form.scheduled_date.errors else "")) }}
+                                    {% if form.scheduled_date.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.scheduled_date.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.duration_hours.label(class="form-label fw-semibold") }}
+                                    {{ form.duration_hours(class="form-control" + (" is-invalid" if form.duration_hours.errors else "")) }}
+                                    {% if form.duration_hours.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.duration_hours.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monetização -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-dollar-sign me-2 text-info"></i>Monetização</h5>
+                            
+                            <div class="form-check mb-3">
+                                {{ form.is_paid(class="form-check-input", id="isPaidCheck") }}
+                                {{ form.is_paid.label(class="form-check-label") }}
+                            </div>
+
+                            <div id="priceField" class="mb-3" style="display: none;">
+                                {{ form.price.label(class="form-label fw-semibold") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else "")) }}
+                                </div>
+                                {% if form.price.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.price.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Configurações Avançadas -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-cogs me-2 text-secondary"></i>Configurações Avançadas</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.tone.label(class="form-label fw-semibold") }}
+                                    {{ form.tone(class="form-select" + (" is-invalid" if form.tone.errors else "")) }}
+                                    {% if form.tone.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.tone.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.tools_required.label(class="form-label fw-semibold") }}
+                                    {{ form.tools_required(class="form-control" + (" is-invalid" if form.tools_required.errors else "")) }}
+                                    {% if form.tools_required.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.tools_required.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.content_warnings.label(class="form-label fw-semibold") }}
+                                {{ form.content_warnings(class="form-control" + (" is-invalid" if form.content_warnings.errors else "")) }}
+                                {% if form.content_warnings.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.content_warnings.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Informe sobre conteúdo sensível, violência, temas adultos, etc.</div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg flex-fill">
+                                <i class="fas fa-save me-2"></i>Criar Sessão
+                            </button>
+                            <a href="{{ url_for('sessions.list') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isPaidCheck = document.getElementById('isPaidCheck');
+    const priceField = document.getElementById('priceField');
+    
+    function togglePriceField() {
+        if (isPaidCheck.checked) {
+            priceField.style.display = 'block';
+        } else {
+            priceField.style.display = 'none';
+        }
+    }
+    
+    isPaidCheck.addEventListener('change', togglePriceField);
+    togglePriceField(); // Initial check
+});
+</script>
+{% endblock %}

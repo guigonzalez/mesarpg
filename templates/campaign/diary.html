@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Diário da Campanha - {{ session.title }} - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">
+                        <i class="fas fa-book text-warning me-2"></i>
+                        Diário da Campanha
+                    </h2>
+                    <p class="text-muted mb-0">{{ session.title }} - {{ session.system }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEntryModal">
+                        <i class="fas fa-plus me-1"></i>Nova Entrada
+                    </button>
+                    <a href="{{ url_for('sessions.live', id=session.id) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-play me-1"></i>Sessão Ao Vivo
+                    </a>
+                    <a href="{{ url_for('sessions.detail', id=session.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Navegação/índice -->
+        <div class="col-lg-3">
+            <div class="card sticky-top" style="top: 1rem;">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Índice
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Filtros de tipo -->
+                    <div class="p-3 border-bottom">
+                        <div class="btn-group-vertical w-100" role="group">
+                            <input type="radio" class="btn-check" name="entryFilter" id="filterAll" checked>
+                            <label class="btn btn-outline-primary btn-sm" for="filterAll">
+                                <i class="fas fa-list me-1"></i>Todas
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="entryFilter" id="filterEntry">
+                            <label class="btn btn-outline-secondary btn-sm" for="filterEntry">
+                                <i class="fas fa-scroll me-1"></i>Entradas
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="entryFilter" id="filterCharacter">
+                            <label class="btn btn-outline-success btn-sm" for="filterCharacter">
+                                <i class="fas fa-user me-1"></i>Personagens
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="entryFilter" id="filterLocation">
+                            <label class="btn btn-outline-info btn-sm" for="filterLocation">
+                                <i class="fas fa-map-marker-alt me-1"></i>Locais
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="entryFilter" id="filterNpc">
+                            <label class="btn btn-outline-warning btn-sm" for="filterNpc">
+                                <i class="fas fa-users me-1"></i>NPCs
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Lista de entradas -->
+                    <div class="list-group list-group-flush" id="entriesList">
+                        {% for entry in entries %}
+                        <a href="#entry-{{ entry.id }}" class="list-group-item list-group-item-action border-0 entry-link" data-type="{{ entry.entry_type }}">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-{{ 'scroll' if entry.entry_type == 'entry' else 'user' if entry.entry_type == 'character' else 'map-marker-alt' if entry.entry_type == 'location' else 'users' }} me-2 text-{{ 'secondary' if entry.entry_type == 'entry' else 'success' if entry.entry_type == 'character' else 'info' if entry.entry_type == 'location' else 'warning' }}"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold small">{{ entry.title }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{ entry.updated_at.strftime('%d/%m') }}</div>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conteúdo principal -->
+        <div class="col-lg-9">
+            {% if entries %}
+            <div class="diary-content">
+                {% for entry in entries %}
+                <div class="card mb-4 diary-entry" id="entry-{{ entry.id }}" data-type="{{ entry.entry_type }}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-{{ 'scroll' if entry.entry_type == 'entry' else 'user' if entry.entry_type == 'character' else 'map-marker-alt' if entry.entry_type == 'location' else 'users' }} me-2 text-{{ 'secondary' if entry.entry_type == 'entry' else 'success' if entry.entry_type == 'character' else 'info' if entry.entry_type == 'location' else 'warning' }}"></i>
+                            <h5 class="mb-0">{{ entry.title }}</h5>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-{{ 'secondary' if entry.entry_type == 'entry' else 'success' if entry.entry_type == 'character' else 'info' if entry.entry_type == 'location' else 'warning' }}">
+                                {% if entry.entry_type == 'entry' %}Entrada
+                                {% elif entry.entry_type == 'character' %}Personagem
+                                {% elif entry.entry_type == 'location' %}Local
+                                {% else %}NPC
+                                {% endif %}
+                            </span>
+                            {% if entry.is_public %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-globe me-1"></i>Público
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-lock me-1"></i>Privado
+                            </span>
+                            {% endif %}
+                            
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="alert('Edição em desenvolvimento')">
+                                        <i class="fas fa-edit me-2"></i>Editar
+                                    </a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="alert('Exclusão em desenvolvimento')">
+                                        <i class="fas fa-trash me-2"></i>Excluir
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="diary-entry-content">
+                            {{ entry.content|replace('\n', '<br>')|safe }}
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center text-muted small">
+                            <div>
+                                <i class="fas fa-user me-1"></i>
+                                Por {{ entry.author.username }}
+                            </div>
+                            <div>
+                                <i class="fas fa-calendar me-1"></i>
+                                Criado em {{ entry.created_at.strftime('%d/%m/%Y às %H:%M') }}
+                                {% if entry.updated_at != entry.created_at %}
+                                <br>
+                                <i class="fas fa-edit me-1"></i>
+                                Atualizado em {{ entry.updated_at.strftime('%d/%m/%Y às %H:%M') }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Estado vazio -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-book-open fa-4x text-muted"></i>
+                </div>
+                <h4 class="text-muted">Diário em branco</h4>
+                <p class="text-muted mb-4">
+                    Comece documentando sua aventura! Adicione entradas sobre sessões, personagens, locais e NPCs importantes.
+                </p>
+                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addEntryModal">
+                    <i class="fas fa-plus me-2"></i>Criar Primeira Entrada
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal para adicionar entrada -->
+<div class="modal fade" id="addEntryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Nova Entrada no Diário
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('campaign.add_diary_entry', session_id=session.id) }}">
+                <div class="modal-body">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            {{ form.title.label(class="form-label fw-semibold") }}
+                            {{ form.title(class="form-control") }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.entry_type.label(class="form-label fw-semibold") }}
+                            {{ form.entry_type(class="form-select") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.content.label(class="form-label fw-semibold") }}
+                        {{ form.content(class="form-control", rows="8") }}
+                        <div class="form-text">
+                            Use markdown simples: **negrito**, *itálico*, [link](url)
+                        </div>
+                    </div>
+                    
+                    <div class="form-check">
+                        {{ form.is_public(class="form-check-input") }}
+                        {{ form.is_public.label(class="form-check-label") }}
+                        <div class="form-text">
+                            Entradas públicas podem ser vistas por todos os membros da sessão.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtros de tipo de entrada
+    const filterButtons = document.querySelectorAll('input[name="entryFilter"]');
+    const entries = document.querySelectorAll('.diary-entry');
+    const entryLinks = document.querySelectorAll('.entry-link');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('change', function() {
+            const filterType = this.id.replace('filter', '').toLowerCase();
+            
+            entries.forEach(entry => {
+                const entryType = entry.dataset.type;
+                if (filterType === 'all' || entryType === filterType) {
+                    entry.style.display = 'block';
+                } else {
+                    entry.style.display = 'none';
+                }
+            });
+            
+            entryLinks.forEach(link => {
+                const linkType = link.dataset.type;
+                if (filterType === 'all' || linkType === filterType) {
+                    link.style.display = 'block';
+                } else {
+                    link.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Smooth scroll para links de entrada
+    entryLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+                
+                // Highlight temporário
+                targetElement.classList.add('highlight');
+                setTimeout(() => {
+                    targetElement.classList.remove('highlight');
+                }, 2000);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.diary-entry-content {
+    line-height: 1.7;
+    font-size: 1.1rem;
+}
+
+.diary-entry.highlight {
+    animation: highlight 2s ease-in-out;
+}
+
+@keyframes highlight {
+    0% { background-color: transparent; }
+    20% { background-color: #fff3cd; }
+    100% { background-color: transparent; }
+}
+
+.entry-link:hover {
+    background-color: rgba(0,123,255,0.1) !important;
+}
+
+.sticky-top {
+    z-index: 1020;
+}
+
+/* Melhor tipografia para conteúdo do diário */
+.diary-entry-content p {
+    margin-bottom: 1rem;
+}
+
+.diary-entry-content h1,
+.diary-entry-content h2,
+.diary-entry-content h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.diary-entry-content ul,
+.diary-entry-content ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+</style>
+{% endblock %}
