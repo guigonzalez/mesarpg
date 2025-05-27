@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from app import db
-from models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary
+from models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, Notification
 from forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm
 
 # Create blueprints
@@ -15,6 +15,7 @@ sessions_bp = Blueprint('sessions', __name__)
 profile_bp = Blueprint('profile', __name__)
 masters_bp = Blueprint('masters', __name__)
 campaign_bp = Blueprint('campaign', __name__)
+notifications_bp = Blueprint('notifications', __name__)
 
 # Main routes
 @main_bp.route('/')
@@ -190,6 +191,18 @@ def apply(id):
             message=form.message.data
         )
         db.session.add(application)
+        
+        # Create notification for the session master
+        notification = Notification(
+            user_id=session.master_id,
+            title=f'Nova candidatura para "{session.title}"',
+            message=f'{current_user.username} se candidatou à sua sessão. Mensagem: {form.message.data[:100]}{"..." if len(form.message.data) > 100 else ""}',
+            type='info',
+            action_url=f'/sessions/{id}#applications',
+            action_text='Ver candidaturas',
+            related_id=id
+        )
+        db.session.add(notification)
         db.session.commit()
         
         flash('Inscrição enviada com sucesso!', 'success')
@@ -339,3 +352,102 @@ def roll_dice():
         })
     except ValueError:
         return jsonify({'error': 'Valores inválidos'}), 400
+
+
+# Notification routes
+@notifications_bp.route('/')
+@login_required
+def list_notifications():
+    notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    return render_template('notifications/list.html', notifications=notifications)
+
+@notifications_bp.route('/<int:id>/mark-read')
+@login_required
+def mark_read(id):
+    notification = Notification.query.get_or_404(id)
+    if notification.user_id != current_user.id:
+        flash('Acesso negado.', 'danger')
+        return redirect(url_for('notifications.list_notifications'))
+    
+    notification.mark_as_read()
+    return redirect(url_for('notifications.list_notifications'))
+
+@notifications_bp.route('/mark-all-read')
+@login_required
+def mark_all_read():
+    notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).all()
+    for notification in notifications:
+        notification.is_read = True
+    db.session.commit()
+    flash('Todas as notificações foram marcadas como lidas.', 'success')
+    return redirect(url_for('notifications.list_notifications'))
+
+# Session application management routes
+@sessions_bp.route('/<int:session_id>/applications/<int:app_id>/approve')
+@login_required
+def approve_application(session_id, app_id):
+    session = Session.query.get_or_404(session_id)
+    if session.master_id != current_user.id:
+        flash('Apenas o mestre pode aprovar candidaturas.', 'danger')
+        return redirect(url_for('sessions.detail', id=session_id))
+    
+    application = SessionApplication.query.get_or_404(app_id)
+    if application.session_id != session_id:
+        flash('Candidatura não encontrada.', 'danger')
+        return redirect(url_for('sessions.detail', id=session_id))
+    
+    # Check if session is full
+    approved_count = SessionApplication.query.filter_by(session_id=session_id, status='approved').count()
+    if approved_count >= session.max_players:
+        flash('A sessão já está cheia.', 'warning')
+        return redirect(url_for('sessions.detail', id=session_id))
+    
+    application.status = 'approved'
+    session.current_players = approved_count + 1
+    
+    # Create notification for the player
+    notification = Notification(
+        user_id=application.player_id,
+        title=f'Candidatura aprovada!',
+        message=f'Sua candidatura para a sessão "{session.title}" foi aprovada pelo mestre.',
+        type='success',
+        action_url=f'/sessions/{session_id}',
+        action_text='Ver sessão',
+        related_id=session_id
+    )
+    db.session.add(notification)
+    db.session.commit()
+    
+    flash('Candidatura aprovada com sucesso!', 'success')
+    return redirect(url_for('sessions.detail', id=session_id))
+
+@sessions_bp.route('/<int:session_id>/applications/<int:app_id>/reject')
+@login_required
+def reject_application(session_id, app_id):
+    session = Session.query.get_or_404(session_id)
+    if session.master_id != current_user.id:
+        flash('Apenas o mestre pode rejeitar candidaturas.', 'danger')
+        return redirect(url_for('sessions.detail', id=session_id))
+    
+    application = SessionApplication.query.get_or_404(app_id)
+    if application.session_id != session_id:
+        flash('Candidatura não encontrada.', 'danger')
+        return redirect(url_for('sessions.detail', id=session_id))
+    
+    application.status = 'rejected'
+    
+    # Create notification for the player
+    notification = Notification(
+        user_id=application.player_id,
+        title=f'Candidatura não aprovada',
+        message=f'Sua candidatura para a sessão "{session.title}" não foi aprovada desta vez.',
+        type='warning',
+        action_url=f'/sessions/',
+        action_text='Ver outras sessões',
+        related_id=session_id
+    )
+    db.session.add(notification)
+    db.session.commit()
+    
+    flash('Candidatura rejeitada.', 'info')
+    return redirect(url_for('sessions.detail', id=session_id))
