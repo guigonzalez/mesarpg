@@ -56,50 +56,12 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-label="Notificações">
                             <i class="fas fa-bell"></i>
-                            {% if current_user.notifications %}
-                                {% set unread_count = 0 %}
-                                {% for notification in current_user.notifications %}
-                                    {% if not notification.is_read %}
-                                        {% set unread_count = unread_count + 1 %}
-                                    {% endif %}
-                                {% endfor %}
-                                {% if unread_count > 0 %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    {{ unread_count }}
-                                    <span class="sr-only">notificações não lidas</span>
-                                </span>
-                                {% endif %}
-                            {% endif %}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><h6 class="dropdown-header">Notificações</h6></li>
-                            {% if current_user.notifications %}
-                                {% set recent_notifications = current_user.notifications[:5] %}
-                                {% for notification in recent_notifications %}
-                                <li>
-                                    <a class="dropdown-item {{ 'bg-light' if not notification.is_read else '' }}" 
-                                       href="{{ notification.action_url or '#' }}">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <h6 class="dropdown-item-text fw-bold mb-1">{{ notification.title }}</h6>
-                                                <p class="dropdown-item-text small text-muted mb-0">
-                                                    {{ notification.message[:60] }}...
-                                                </p>
-                                            </div>
-                                            {% if not notification.is_read %}
-                                            <span class="badge bg-primary rounded-pill ms-2">Nova</span>
-                                            {% endif %}
-                                        </div>
-                                    </a>
-                                </li>
-                                {% endfor %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-center" href="{{ url_for('notifications.list_notifications') }}">
-                                    Ver todas as notificações
-                                </a></li>
-                            {% else %}
-                                <li><span class="dropdown-item-text text-muted">Nenhuma notificação</span></li>
-                            {% endif %}
+                            <li><a class="dropdown-item text-center" href="{{ url_for('notifications.list_notifications') }}">
+                                Ver todas as notificações
+                            </a></li>
                         </ul>
                     </li>
                     
