@@ -604,18 +604,27 @@ function adaptInitialFields(systemName, templateType = 'player') {
             baseName = 'Nome do Personagem';
     }
     
+    // Primeiro mostrar todos os campos (reset)
+    if (levelLabel && levelLabel.parentElement) {
+        levelLabel.parentElement.style.display = 'block';
+    }
+    
     // Adaptar campos baseado no sistema
     switch (systemName) {
         case 'Vampire':
             nameLabel.textContent = 'Nome do Vampiro';
-            // Vampire não usa níveis - ocultar campo
-            levelLabel.parentElement.style.display = 'none';
+            // Vampire não usa níveis - ocultar campo completamente
+            if (levelLabel && levelLabel.parentElement) {
+                levelLabel.parentElement.style.display = 'none';
+            }
             break;
             
         case 'Call of Cthulhu':
             nameLabel.textContent = 'Nome do Investigador';
-            // Call of Cthulhu não usa níveis - ocultar campo
-            levelLabel.parentElement.style.display = 'none';
+            // Call of Cthulhu não usa níveis - ocultar campo completamente
+            if (levelLabel && levelLabel.parentElement) {
+                levelLabel.parentElement.style.display = 'none';
+            }
             break;
             
         case '3D&T':
