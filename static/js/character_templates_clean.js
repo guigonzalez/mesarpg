@@ -5,6 +5,7 @@ const RPG_TEMPLATES = {
         fields: {
             // Informações básicas do personagem
             nome: { label: 'Nome do Personagem', type: 'text', required: true },
+            nivel: { label: 'Nível', type: 'number', min: 1, max: 20, default: 1 },
             raca: { label: 'Raça', type: 'text', placeholder: 'Ex: Humano, Elfo, Anão' },
             classe: { label: 'Classe', type: 'text', placeholder: 'Ex: Guerreiro, Mago, Ladino' },
             alinhamento: { label: 'Alinhamento', type: 'text', placeholder: 'Ex: Leal e Bom' },
