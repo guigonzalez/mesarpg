@@ -221,4 +221,27 @@
     border-bottom: 2px solid #dee2e6;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prevenir navegação indevida ao pressionar espaço em campos de texto
+    const textInputs = document.querySelectorAll('input[type="text"], textarea');
+    
+    textInputs.forEach(function(input) {
+        input.addEventListener('keydown', function(e) {
+            // Prevenir que o espaço cause navegação quando o campo estiver focado
+            if (e.code === 'Space' && document.activeElement === input) {
+                e.stopPropagation();
+            }
+        });
+    });
+    
+    // Prevenir navegação com espaço em qualquer lugar do formulário
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+        }
+    });
+});
+</script>
 {% endblock %}
