@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Editar {{ character.character_name }} - {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Cabeçalho -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Editando: {{ character.character_name }}
+                            </h4>
+                            <small>{{ session.title }}</small>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('sessions.view_character_sheet', id=session.id, character_id=character.id) }}" class="btn btn-light btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário de Edição -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Editar Ficha de Personagem
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Informações Básicas -->
+                        <div class="section-header mb-3">
+                            <h6 class="text-primary">
+                                <i class="fas fa-id-card me-2"></i>Informações Básicas
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                {{ form.character_name.label(class="form-label") }}
+                                {{ form.character_name(class="form-control") }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.level.label(class="form-label") }}
+                                {{ form.level(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.race.label(class="form-label") }}
+                                {{ form.race(class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.character_class.label(class="form-label") }}
+                                {{ form.character_class(class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.background.label(class="form-label") }}
+                                {{ form.background(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <!-- Atributos -->
+                        <div class="section-header mb-3">
+                            <h6 class="text-primary">
+                                <i class="fas fa-dumbbell me-2"></i>Atributos
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-2">
+                                {{ form.strength.label(class="form-label") }}
+                                {{ form.strength(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                {{ form.dexterity.label(class="form-label") }}
+                                {{ form.dexterity(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                {{ form.constitution.label(class="form-label") }}
+                                {{ form.constitution(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                {{ form.intelligence.label(class="form-label") }}
+                                {{ form.intelligence(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                {{ form.wisdom.label(class="form-label") }}
+                                {{ form.wisdom(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                {{ form.charisma.label(class="form-label") }}
+                                {{ form.charisma(class="form-control text-center") }}
+                            </div>
+                        </div>
+
+                        <!-- Combate -->
+                        <div class="section-header mb-3">
+                            <h6 class="text-primary">
+                                <i class="fas fa-shield-alt me-2"></i>Combate
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                {{ form.armor_class.label(class="form-label") }}
+                                {{ form.armor_class(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.hit_points.label(class="form-label") }}
+                                {{ form.hit_points(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.max_hit_points.label(class="form-label") }}
+                                {{ form.max_hit_points(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.speed.label(class="form-label") }}
+                                {{ form.speed(class="form-control text-center") }}
+                            </div>
+                        </div>
+
+                        <!-- Descrições -->
+                        <div class="section-header mb-3">
+                            <h6 class="text-primary">
+                                <i class="fas fa-book me-2"></i>Descrições
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                {{ form.description.label(class="form-label") }}
+                                {{ form.description(class="form-control", rows="4") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.backstory.label(class="form-label") }}
+                                {{ form.backstory(class="form-control", rows="4") }}
+                            </div>
+                        </div>
+
+                        <!-- Equipamentos e Magias -->
+                        <div class="section-header mb-3">
+                            <h6 class="text-primary">
+                                <i class="fas fa-backpack me-2"></i>Equipamentos e Habilidades
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                {{ form.equipment.label(class="form-label") }}
+                                {{ form.equipment(class="form-control", rows="4") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.spells.label(class="form-label") }}
+                                {{ form.spells(class="form-control", rows="4") }}
+                            </div>
+                        </div>
+
+                        <!-- Anotações e Imagem -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                {{ form.notes.label(class="form-label") }}
+                                {{ form.notes(class="form-control", rows="3") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.character_image_url.label(class="form-label") }}
+                                {{ form.character_image_url(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <!-- Configurações -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.is_public(class="form-check-input") }}
+                                    {{ form.is_public.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{{ url_for('sessions.view_character_sheet', id=session.id, character_id=character.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: none;
+}
+
+.card-header {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+</style>
+{% endblock %}
