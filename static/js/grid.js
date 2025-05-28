@@ -460,27 +460,7 @@ function selectToken(tokenType) {
     updateButtonStates();
 }
 
-function zoomIn() {
-    if (!grid) return;
-    grid.scale *= 1.2;
-    grid.scale = Math.min(3, grid.scale);
-    grid.draw();
-}
 
-function zoomOut() {
-    if (!grid) return;
-    grid.scale *= 0.8;
-    grid.scale = Math.max(0.5, grid.scale);
-    grid.draw();
-}
-
-function resetZoom() {
-    if (!grid) return;
-    grid.scale = 1;
-    grid.panX = 0;
-    grid.panY = 0;
-    grid.draw();
-}
 
 function setGridSize(size) {
     if (grid && grid.setGridSize) {
