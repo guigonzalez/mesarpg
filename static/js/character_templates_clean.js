@@ -564,11 +564,18 @@ function loadSystemTemplate() {
 
 // Função para adaptar campos iniciais baseados no sistema e tipo
 function adaptInitialFields(systemName, templateType = 'player') {
+    console.log(`Adaptando campos para: ${systemName} - Tipo: ${templateType}`);
+    
     const nameLabel = document.getElementById('characterNameLabel');
     const levelLabel = document.getElementById('levelLabel');
     const levelInput = document.getElementById('level');
     
-    if (!nameLabel || !levelLabel || !levelInput) return;
+    console.log('Elementos encontrados:', { nameLabel, levelLabel, levelInput });
+    
+    if (!nameLabel || !levelLabel || !levelInput) {
+        console.error('Elementos não encontrados!');
+        return;
+    }
     
     // Adaptar nome baseado no tipo
     let baseName = 'Nome do Personagem';
