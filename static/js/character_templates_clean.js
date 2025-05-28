@@ -242,30 +242,47 @@ function applySystemTemplate(systemName) {
 
 // Função para gerar formulário dinâmico baseado no template
 function generateTemplateForm(systemName, containerId) {
+    console.log('Gerando formulário para sistema:', systemName);
+    
     const template = RPG_TEMPLATES[systemName];
-    if (!template) return;
+    if (!template) {
+        console.error('Template não encontrado para sistema:', systemName);
+        return;
+    }
     
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if (!container) {
+        console.error('Container não encontrado:', containerId);
+        return;
+    }
+    
+    console.log('Template encontrado:', template.name);
+    console.log('Número de seções:', template.sections.length);
     
     container.innerHTML = '';
     
     // Gerar seções
-    template.sections.forEach(section => {
+    template.sections.forEach((section, sectionIndex) => {
+        console.log(`Processando seção ${sectionIndex + 1}: ${section.name}`);
+        
         const sectionDiv = document.createElement('div');
         sectionDiv.className = 'mb-4';
         
         const sectionHeader = document.createElement('h6');
-        sectionHeader.className = 'text-primary mb-3';
+        sectionHeader.className = 'text-primary mb-3 border-bottom pb-2';
         sectionHeader.innerHTML = `<i class="fas fa-folder me-2"></i>${section.name}`;
         sectionDiv.appendChild(sectionHeader);
         
         const fieldsRow = document.createElement('div');
         fieldsRow.className = 'row g-3';
         
+        let fieldsAdded = 0;
         section.fields.forEach(fieldName => {
             const fieldConfig = template.fields[fieldName];
-            if (!fieldConfig) return;
+            if (!fieldConfig) {
+                console.warn(`Campo não encontrado: ${fieldName}`);
+                return;
+            }
             
             const colDiv = document.createElement('div');
             colDiv.className = getColumnClass(fieldConfig.type);
@@ -274,11 +291,18 @@ function generateTemplateForm(systemName, containerId) {
             colDiv.innerHTML = fieldHTML;
             
             fieldsRow.appendChild(colDiv);
+            fieldsAdded++;
         });
         
-        sectionDiv.appendChild(fieldsRow);
-        container.appendChild(sectionDiv);
+        console.log(`Adicionados ${fieldsAdded} campos na seção ${section.name}`);
+        
+        if (fieldsAdded > 0) {
+            sectionDiv.appendChild(fieldsRow);
+            container.appendChild(sectionDiv);
+        }
     });
+    
+    console.log('Formulário gerado com sucesso!');
 }
 
 function getColumnClass(fieldType) {

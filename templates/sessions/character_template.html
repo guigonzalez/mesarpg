@@ -37,13 +37,12 @@
                         <div class="col-md-6">
                             <label class="form-label">Sistema de RPG</label>
                             <select id="systemSelect" class="form-select" onchange="loadSystemTemplate()">
-                                <option value="{{ session.system }}" selected>{{ session.system }}</option>
-                                <option value="D&D 5e">Dungeons & Dragons 5ª Edição</option>
-                                <option value="Tormenta20">Tormenta20</option>
-                                <option value="Call of Cthulhu">Call of Cthulhu</option>
-                                <option value="Vampire">Vampire: The Masquerade</option>
-                                <option value="Pathfinder">Pathfinder</option>
-                                <option value="3D&T">3D&T Alpha</option>
+                                <option value="D&D 5e" {% if session.system == "D&D 5e" %}selected{% endif %}>Dungeons & Dragons 5ª Edição</option>
+                                <option value="Tormenta20" {% if session.system == "Tormenta20" %}selected{% endif %}>Tormenta20</option>
+                                <option value="Call of Cthulhu" {% if session.system == "Call of Cthulhu" %}selected{% endif %}>Call of Cthulhu</option>
+                                <option value="Vampire" {% if session.system == "Vampire: The Masquerade" %}selected{% endif %}>Vampire: The Masquerade</option>
+                                <option value="Pathfinder" {% if session.system == "Pathfinder" %}selected{% endif %}>Pathfinder</option>
+                                <option value="3D&T" {% if session.system == "3D&T" %}selected{% endif %}>3D&T Alpha</option>
                             </select>
                         </div>
                         <div class="col-md-6">
