@@ -315,34 +315,37 @@ class CombatGrid {
     }
     
     drawToken(token) {
-        // Cores baseadas na imagem fornecida
-        const tokenStyles = {
-            player: { color: '#007bff', icon: '👤' },    // Azul com ícone de pessoa
-            enemy: { color: '#dc3545', icon: '💀' },     // Vermelho com ícone de caveira
-            npc: { color: '#28a745', icon: '👥' },       // Verde com ícone de grupo
-            object: { color: '#6c757d', icon: '📦' }     // Cinza com ícone de caixa
+        const colors = {
+            player: '#007bff',
+            enemy: '#dc3545',
+            npc: '#28a745',
+            object: '#6c757d'
         };
         
-        const style = tokenStyles[token.tokenType] || tokenStyles['object'];
-        const radius = this.gridSize * 0.35;
-        
-        // Desenhar círculo de fundo
-        this.ctx.fillStyle = style.color;
-        this.ctx.beginPath();
-        this.ctx.arc(token.x, token.y, radius, 0, 2 * Math.PI);
-        this.ctx.fill();
-        
-        // Adicionar borda branca para melhor contraste
+        this.ctx.fillStyle = colors[token.tokenType] || '#6c757d';
         this.ctx.strokeStyle = '#ffffff';
         this.ctx.lineWidth = 2;
+        
+        // Desenhar círculo do token
+        this.ctx.beginPath();
+        this.ctx.arc(token.x, token.y, this.gridSize * 0.4, 0, 2 * Math.PI);
+        this.ctx.fill();
         this.ctx.stroke();
         
-        // Desenhar ícone
+        // Desenhar ícone usando símbolos simples (não emojis)
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = `${radius * 0.8}px Arial`;
+        this.ctx.font = `bold ${this.gridSize * 0.3}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(style.icon, token.x, token.y);
+        
+        const iconMap = {
+            player: '♦',   // Losango para jogador
+            enemy: '♠',    // Espada para inimigo
+            npc: '♣',      // Trevo para NPC
+            object: '■'    // Quadrado para objeto
+        };
+        
+        this.ctx.fillText(iconMap[token.tokenType] || '?', token.x, token.y);
     }
     
     drawMarkers() {
