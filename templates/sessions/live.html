@@ -169,7 +169,7 @@
                         </div>
                     </div>
                     
-                    <div id="diceResult" class="mt-3"></div>
+
                 </div>
             </div>
 
@@ -179,19 +179,20 @@
                     <h6 class="mb-0"><i class="fas fa-comments me-2"></i>Chat da Mesa</h6>
                 </div>
                 <div class="card-body p-2">
-                    <div id="chatMessages" class="border rounded p-2 mb-2 bg-light" style="height: 250px; overflow-y: auto;">
+                    <div id="chatMessages" class="border rounded p-2 mb-2 bg-light" style="height: 300px; overflow-y: auto;">
                         <!-- Mensagens do chat aparecerão aqui -->
-                        <div class="small text-muted text-center py-3">
+                        <div class="small text-muted text-center py-3" id="chatWelcome">
                             <i class="fas fa-comments"></i><br>
-                            As mensagens do chat aparecerão aqui
+                            Bem-vindos à mesa! Digite suas mensagens abaixo.
                         </div>
                     </div>
                     <div class="input-group">
-                        <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Digite sua mensagem...">
-                        <button class="btn btn-primary btn-sm" onclick="sendMessage()">
+                        <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Digite sua mensagem..." onkeypress="if(event.key==='Enter') sendMessage()" maxlength="500">
+                        <button class="btn btn-primary btn-sm" type="button" onclick="sendMessage()">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
+                    <small class="text-muted">Use @ para mencionar jogadores • Dados aparecerão aqui automaticamente</small>
                 </div>
             </div>
         </div>

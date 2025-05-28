@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from app import db
-from models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary
+from models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage
 from forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm
 
 # Create blueprints
@@ -405,3 +405,85 @@ def roll_dice():
         })
     except ValueError:
         return jsonify({'error': 'Valores inválidos'}), 400
+
+# Chat API routes
+@sessions_bp.route('/api/chat/<int:session_id>/messages', methods=['GET'])
+@login_required
+def get_chat_messages(session_id):
+    session = Session.query.get_or_404(session_id)
+    
+    # Verificar se o usuário pode acessar esta sessão
+    if session.master_id != current_user.id:
+        # Verificar se é um jogador aprovado
+        application = SessionApplication.query.filter_by(
+            session_id=session_id,
+            player_id=current_user.id,
+            status='approved'
+        ).first()
+        if not application:
+            return jsonify({'error': 'Acesso negado'}), 403
+    
+    messages = ChatMessage.query.filter_by(session_id=session_id)\
+        .order_by(ChatMessage.created_at.asc())\
+        .limit(100).all()
+    
+    messages_data = []
+    for msg in messages:
+        messages_data.append({
+            'id': msg.id,
+            'username': msg.user.username,
+            'message': msg.message,
+            'message_type': msg.message_type,
+            'created_at': msg.created_at.strftime('%H:%M'),
+            'is_current_user': msg.user_id == current_user.id
+        })
+    
+    return jsonify({'messages': messages_data})
+
+@sessions_bp.route('/api/chat/<int:session_id>/send', methods=['POST'])
+@login_required
+def send_chat_message(session_id):
+    session = Session.query.get_or_404(session_id)
+    
+    # Verificar se o usuário pode acessar esta sessão
+    if session.master_id != current_user.id:
+        application = SessionApplication.query.filter_by(
+            session_id=session_id,
+            player_id=current_user.id,
+            status='approved'
+        ).first()
+        if not application:
+            return jsonify({'error': 'Acesso negado'}), 403
+    
+    data = request.get_json()
+    message_text = data.get('message', '').strip()
+    message_type = data.get('type', 'text')
+    
+    if not message_text:
+        return jsonify({'error': 'Mensagem não pode estar vazia'}), 400
+    
+    if len(message_text) > 500:
+        return jsonify({'error': 'Mensagem muito longa'}), 400
+    
+    # Criar nova mensagem
+    chat_message = ChatMessage(
+        session_id=session_id,
+        user_id=current_user.id,
+        message=message_text,
+        message_type=message_type
+    )
+    
+    db.session.add(chat_message)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': {
+            'id': chat_message.id,
+            'username': current_user.username,
+            'message': chat_message.message,
+            'message_type': chat_message.message_type,
+            'created_at': chat_message.created_at.strftime('%H:%M'),
+            'is_current_user': True
+        }
+    })

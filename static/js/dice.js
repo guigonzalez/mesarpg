@@ -41,11 +41,9 @@ function rollDiceNotation(count, sides, modifier) {
 }
 
 function displayDiceResult(notation, results) {
-    const resultDiv = document.getElementById('diceResult');
-    
     if (typeof results === 'string') {
-        // Exibir erro
-        resultDiv.innerHTML = `<div class="alert alert-danger alert-sm p-2">${results}</div>`;
+        // Exibir erro no chat
+        addChatMessage('Sistema', results, 'system');
         return;
     }
     
@@ -61,14 +59,14 @@ function displayDiceResult(notation, results) {
         return `<span class="${diceClass}" title="d${results.sides}: ${roll}">${roll}</span>`;
     }).join(' ');
     
-    // Construir resultado final
-    let resultHTML = `
-        <div class="dice-roll-result border rounded p-2 bg-light">
+    // Construir mensagem de dados para o chat
+    let diceMessage = `
+        <div class="dice-roll-chat">
             <div class="d-flex justify-content-between align-items-center mb-1">
                 <strong>${notation}</strong>
-                <span class="badge bg-primary fs-6">${results.total}</span>
+                <span class="badge bg-primary">${results.total}</span>
             </div>
-            <div class="dice-rolls mb-1">
+            <div class="dice-rolls">
                 ${diceIcons}
             </div>
     `;
@@ -81,30 +79,13 @@ function displayDiceResult(notation, results) {
         }
         breakdown += ` = ${results.total}`;
         
-        resultHTML += `<small class="text-muted">${breakdown}</small>`;
+        diceMessage += `<small class="text-muted">${breakdown}</small>`;
     }
     
-    resultHTML += '</div>';
+    diceMessage += '</div>';
     
-    // Adicionar ao histórico (mantém apenas as últimas 3 rolagens)
-    const existingResults = resultDiv.querySelectorAll('.dice-roll-result');
-    if (existingResults.length >= 3) {
-        existingResults[0].remove();
-    }
-    
-    // Inserir novo resultado no topo
-    resultDiv.insertAdjacentHTML('afterbegin', resultHTML);
-    
-    // Animar o novo resultado
-    const newResult = resultDiv.firstElementChild;
-    newResult.style.opacity = '0';
-    newResult.style.transform = 'translateY(-10px)';
-    
-    setTimeout(() => {
-        newResult.style.transition = 'all 0.3s ease';
-        newResult.style.opacity = '1';
-        newResult.style.transform = 'translateY(0)';
-    }, 10);
+    // Enviar resultado para o chat
+    sendChatMessage(diceMessage, 'dice');
 }
 
 function quickRoll(sides) {

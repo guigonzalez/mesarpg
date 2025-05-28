@@ -139,3 +139,19 @@ class CampaignDiary(db.Model):
 
     def __repr__(self):
         return f'<CampaignDiary {self.title}>'
+
+
+class ChatMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('session.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    message_type = db.Column(db.String(20), default='text')  # 'text', 'dice', 'system'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    session = db.relationship('Session', backref='chat_messages')
+    user = db.relationship('User', backref='chat_messages')
+    
+    def __repr__(self):
+        return f'<ChatMessage {self.user.username}: {self.message[:50]}>'
