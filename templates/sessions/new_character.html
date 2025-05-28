@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Ficha - {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">
+                                <i class="fas fa-scroll me-2"></i>Nova Ficha de Personagem
+                            </h4>
+                            <p class="text-muted mb-0">{{ session.title }}</p>
+                        </div>
+                        <a href="{{ url_for('sessions.character_sheets', id=session.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Informações Básicas -->
+                        <div class="section-header mb-3">
+                            <h5 class="text-primary">
+                                <i class="fas fa-user me-2"></i>Informações Básicas
+                            </h5>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.character_name.label.text }}</label>
+                                {{ form.character_name(class="form-control") }}
+                                {% if form.character_name.errors %}
+                                    <div class="text-danger small">{{ form.character_name.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.character_class.label.text }}</label>
+                                {{ form.character_class(class="form-control") }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.level.label.text }}</label>
+                                {{ form.level(class="form-control") }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.race.label.text }}</label>
+                                {{ form.race(class="form-control") }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.background.label.text }}</label>
+                                {{ form.background(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <!-- Atributos -->
+                        <div class="section-header mb-3">
+                            <h5 class="text-primary">
+                                <i class="fas fa-dumbbell me-2"></i>Atributos
+                            </h5>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-2">
+                                <label class="form-label">{{ form.strength.label.text }}</label>
+                                {{ form.strength(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ form.dexterity.label.text }}</label>
+                                {{ form.dexterity(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ form.constitution.label.text }}</label>
+                                {{ form.constitution(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ form.intelligence.label.text }}</label>
+                                {{ form.intelligence(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ form.wisdom.label.text }}</label>
+                                {{ form.wisdom(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ form.charisma.label.text }}</label>
+                                {{ form.charisma(class="form-control text-center") }}
+                            </div>
+                        </div>
+
+                        <!-- Stats de Combate -->
+                        <div class="section-header mb-3">
+                            <h5 class="text-primary">
+                                <i class="fas fa-shield-alt me-2"></i>Stats de Combate
+                            </h5>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.armor_class.label.text }}</label>
+                                {{ form.armor_class(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.hit_points.label.text }}</label>
+                                {{ form.hit_points(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.max_hit_points.label.text }}</label>
+                                {{ form.max_hit_points(class="form-control text-center") }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.speed.label.text }}</label>
+                                {{ form.speed(class="form-control text-center") }}
+                            </div>
+                        </div>
+
+                        <!-- Imagem -->
+                        <div class="section-header mb-3">
+                            <h5 class="text-primary">
+                                <i class="fas fa-image me-2"></i>Aparência
+                            </h5>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label">{{ form.character_image_url.label.text }}</label>
+                                {{ form.character_image_url(class="form-control") }}
+                                <div class="form-text">URL de uma imagem online para representar seu personagem</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">{{ form.description.label.text }}</label>
+                                {{ form.description(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <!-- História e Background -->
+                        <div class="section-header mb-3">
+                            <h5 class="text-primary">
+                                <i class="fas fa-book me-2"></i>História e Background
+                            </h5>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label">{{ form.backstory.label.text }}</label>
+                                {{ form.backstory(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <!-- Equipamentos e Magias -->
+                        <div class="section-header mb-3">
+                            <h5 class="text-primary">
+                                <i class="fas fa-sword me-2"></i>Equipamentos e Magias
+                            </h5>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.equipment.label.text }}</label>
+                                {{ form.equipment(class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.spells.label.text }}</label>
+                                {{ form.spells(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <!-- Anotações -->
+                        <div class="section-header mb-3">
+                            <h5 class="text-primary">
+                                <i class="fas fa-sticky-note me-2"></i>Anotações
+                            </h5>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label">{{ form.notes.label.text }}</label>
+                                {{ form.notes(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <!-- Configurações -->
+                        <div class="section-header mb-3">
+                            <h5 class="text-primary">
+                                <i class="fas fa-cog me-2"></i>Configurações
+                            </h5>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <div class="form-check">
+                                    {{ form.is_public(class="form-check-input") }}
+                                    <label class="form-check-label" for="{{ form.is_public.id }}">
+                                        {{ form.is_public.label.text }}
+                                    </label>
+                                    <div class="form-text">Outros jogadores da sessão poderão ver esta ficha</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{{ url_for('sessions.character_sheets', id=session.id) }}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.text-center input {
+    font-weight: bold;
+}
+
+.form-text {
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}
