@@ -9,9 +9,6 @@ class CombatGrid {
         this.ctx = this.canvas.getContext('2d');
         this.gridSize = 40; // Tamanho de cada quadrado do grid em pixels
         this.gridScale = 1.5; // Escala métrica: 1 quadrado = 1.5 metros
-        this.scale = 1;
-        this.panX = 0;
-        this.panY = 0;
         this.showGrid = true;
         this.currentMode = 'token';
         this.selectedToken = 'player';
@@ -36,7 +33,6 @@ class CombatGrid {
         this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
         this.canvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
         this.canvas.addEventListener('contextmenu', (e) => this.onRightClick(e));
-        this.canvas.addEventListener('wheel', (e) => this.onWheel(e));
         
         // Redimensionar canvas
         window.addEventListener('resize', () => this.resizeCanvas());
@@ -54,8 +50,8 @@ class CombatGrid {
     getMousePos(e) {
         const rect = this.canvas.getBoundingClientRect();
         return {
-            x: (e.clientX - rect.left - this.panX) / this.scale,
-            y: (e.clientY - rect.top - this.panY) / this.scale
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
         };
     }
     
@@ -70,13 +66,6 @@ class CombatGrid {
     
     onMouseDown(e) {
         const pos = this.getMousePos(e);
-        this.dragStart = { x: e.clientX, y: e.clientY };
-        
-        if (this.currentMode === 'pan' || e.button === 1) {
-            this.isDragging = true;
-            this.canvas.style.cursor = 'grabbing';
-            return;
-        }
         
         if (this.currentMode === 'measure') {
             if (!this.measuring) {
@@ -114,24 +103,13 @@ class CombatGrid {
             return;
         }
         
-        if (!this.isDragging) return;
+        if (!this.isDragging || !this.selectedElement) return;
         
-        const deltaX = e.clientX - this.dragStart.x;
-        const deltaY = e.clientY - this.dragStart.y;
-        
-        if (this.currentMode === 'pan' || e.button === 1) {
-            this.panX += deltaX;
-            this.panY += deltaY;
-            this.draw();
-        } else if (this.selectedElement) {
-            const pos = this.getMousePos(e);
-            const gridPos = this.getGridPosition(pos.x, pos.y);
-            this.selectedElement.x = gridPos.centerX;
-            this.selectedElement.y = gridPos.centerY;
-            this.draw();
-        }
-        
-        this.dragStart = { x: e.clientX, y: e.clientY };
+        const pos = this.getMousePos(e);
+        const gridPos = this.getGridPosition(pos.x, pos.y);
+        this.selectedElement.x = gridPos.centerX;
+        this.selectedElement.y = gridPos.centerY;
+        this.draw();
     }
     
     onMouseUp(e) {
@@ -154,21 +132,6 @@ class CombatGrid {
             }
             this.draw();
         }
-    }
-    
-    onWheel(e) {
-        e.preventDefault();
-        const pos = this.getMousePos(e);
-        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-        
-        this.scale *= zoomFactor;
-        this.scale = Math.max(0.5, Math.min(3, this.scale));
-        
-        // Ajustar pan para zoom centrado no mouse
-        this.panX -= (pos.x * (zoomFactor - 1));
-        this.panY -= (pos.y * (zoomFactor - 1));
-        
-        this.draw();
     }
     
     getElementAt(x, y) {
@@ -277,12 +240,7 @@ class CombatGrid {
     }
     
     draw() {
-        this.ctx.save();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Aplicar transformações
-        this.ctx.translate(this.panX, this.panY);
-        this.ctx.scale(this.scale, this.scale);
         
         // Desenhar imagem de fundo
         if (this.backgroundImage && this.imageLoaded) {
@@ -302,25 +260,19 @@ class CombatGrid {
         
         // Desenhar linha de medição
         this.drawMeasurementLine();
-        
-        this.ctx.restore();
     }
     
     drawBackgroundImage() {
         if (!this.backgroundImage) return;
         
-        // Calcular tamanho para cobrir toda a área visível
-        const canvasWidth = this.canvas.width / this.scale;
-        const canvasHeight = this.canvas.height / this.scale;
-        
-        // Desenhar a imagem para cobrir toda a área
+        // Desenhar a imagem para cobrir toda a área do canvas
         this.ctx.globalAlpha = 0.8; // Tornar ligeiramente transparente
         this.ctx.drawImage(
             this.backgroundImage,
-            -this.panX / this.scale,
-            -this.panY / this.scale,
-            canvasWidth,
-            canvasHeight
+            0,
+            0,
+            this.canvas.width,
+            this.canvas.height
         );
         this.ctx.globalAlpha = 1.0; // Restaurar opacidade
     }
@@ -329,24 +281,19 @@ class CombatGrid {
         this.ctx.strokeStyle = this.backgroundImage ? 'rgba(222, 226, 230, 0.7)' : '#dee2e6';
         this.ctx.lineWidth = 1;
         
-        const startX = Math.floor(-this.panX / this.scale / this.gridSize) * this.gridSize;
-        const startY = Math.floor(-this.panY / this.scale / this.gridSize) * this.gridSize;
-        const endX = startX + (this.canvas.width / this.scale) + this.gridSize;
-        const endY = startY + (this.canvas.height / this.scale) + this.gridSize;
-        
         // Linhas verticais
-        for (let x = startX; x <= endX; x += this.gridSize) {
+        for (let x = 0; x <= this.canvas.width; x += this.gridSize) {
             this.ctx.beginPath();
-            this.ctx.moveTo(x, startY);
-            this.ctx.lineTo(x, endY);
+            this.ctx.moveTo(x, 0);
+            this.ctx.lineTo(x, this.canvas.height);
             this.ctx.stroke();
         }
         
         // Linhas horizontais
-        for (let y = startY; y <= endY; y += this.gridSize) {
+        for (let y = 0; y <= this.canvas.height; y += this.gridSize) {
             this.ctx.beginPath();
-            this.ctx.moveTo(startX, y);
-            this.ctx.lineTo(endX, y);
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(this.canvas.width, y);
             this.ctx.stroke();
         }
     }
