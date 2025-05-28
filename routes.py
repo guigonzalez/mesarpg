@@ -521,15 +521,15 @@ def character_sheets(id):
     
     # Buscar fichas da sessão
     if session.master_id == current_user.id:
-        # Mestre vê todas as fichas públicas
-        character_sheets = CharacterSheet.query.filter_by(session_id=id, is_public=True).all()
+        # Mestre vê todas as fichas (públicas e privadas)
+        character_sheets = CharacterSheet.query.filter_by(session_id=id).all()
     else:
-        # Jogador vê apenas suas fichas e fichas públicas de outros
+        # Jogador vê apenas suas fichas (públicas e privadas) e fichas públicas de outros
         character_sheets = CharacterSheet.query.filter(
             CharacterSheet.session_id == id,
             db.or_(
                 CharacterSheet.player_id == current_user.id,
-                CharacterSheet.is_public == True
+                db.and_(CharacterSheet.player_id != current_user.id, CharacterSheet.is_public == True)
             )
         ).all()
     
