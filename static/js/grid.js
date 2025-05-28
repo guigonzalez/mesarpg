@@ -22,6 +22,8 @@ class CombatGrid {
         this.measureEnd = null;
         this.backgroundImage = null;
         this.imageLoaded = false;
+        this.measurementDisplay = null;
+        this.measurementTimeout = null;
         
         this.initEventListeners();
         this.draw();
@@ -74,10 +76,8 @@ class CombatGrid {
                 this.measureEnd = null;
             } else {
                 this.measureEnd = { x: pos.x, y: pos.y };
-                this.showMeasurement();
+                this.finalizeMeasurement();
                 this.measuring = false;
-                this.measureStart = null;
-                this.measureEnd = null;
             }
             this.draw();
             return;
@@ -185,37 +185,47 @@ class CombatGrid {
         this.draw();
     }
     
-    showMeasurement() {
-        if (!this.measureStart || !this.measureEnd) return;
-        
-        const dx = this.measureEnd.x - this.measureStart.x;
-        const dy = this.measureEnd.y - this.measureStart.y;
+    calculateDistance(start, end) {
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
         const pixelDistance = Math.sqrt(dx * dx + dy * dy);
         const gridDistance = pixelDistance / this.gridSize;
         const realDistance = gridDistance * this.gridScale;
         
-        // Mostrar resultado em um alert temporário
-        const distanceText = `Distância: ${realDistance.toFixed(1)}m (${gridDistance.toFixed(1)} quadrados)`;
+        return {
+            pixels: pixelDistance,
+            grids: gridDistance,
+            meters: realDistance,
+            text: `${realDistance.toFixed(1)}m`
+        };
+    }
+    
+    finalizeMeasurement() {
+        if (!this.measureStart || !this.measureEnd) return;
         
-        // Criar elemento de notificação temporário
-        const notification = document.createElement('div');
-        notification.textContent = distanceText;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        `;
-        document.body.appendChild(notification);
+        // Salvar medição para exibir por alguns segundos
+        this.measurementDisplay = {
+            start: { ...this.measureStart },
+            end: { ...this.measureEnd },
+            distance: this.calculateDistance(this.measureStart, this.measureEnd)
+        };
         
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 3000);
+        // Limpar timeout anterior se existir
+        if (this.measurementTimeout) {
+            clearTimeout(this.measurementTimeout);
+        }
+        
+        // Programar remoção da medição após 4 segundos
+        this.measurementTimeout = setTimeout(() => {
+            this.measurementDisplay = null;
+            this.measureStart = null;
+            this.measureEnd = null;
+            this.draw();
+        }, 4000);
+        
+        // Resetar medição ativa
+        this.measureStart = null;
+        this.measureEnd = null;
     }
     
     setGridSize(size) {
@@ -352,28 +362,65 @@ class CombatGrid {
     }
     
     drawMeasurementLine() {
+        // Desenhar linha de medição em tempo real
         if (this.currentMode === 'measure' && this.measureStart && this.measureEnd) {
-            this.ctx.strokeStyle = '#ff6b6b';
-            this.ctx.lineWidth = 3;
-            this.ctx.setLineDash([5, 5]);
-            
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.measureStart.x, this.measureStart.y);
-            this.ctx.lineTo(this.measureEnd.x, this.measureEnd.y);
-            this.ctx.stroke();
-            
-            // Pontos de início e fim
-            this.ctx.fillStyle = '#ff6b6b';
-            this.ctx.setLineDash([]);
-            
-            this.ctx.beginPath();
-            this.ctx.arc(this.measureStart.x, this.measureStart.y, 4, 0, 2 * Math.PI);
-            this.ctx.fill();
-            
-            this.ctx.beginPath();
-            this.ctx.arc(this.measureEnd.x, this.measureEnd.y, 4, 0, 2 * Math.PI);
-            this.ctx.fill();
+            this.drawMeasurementWithText(this.measureStart, this.measureEnd, true);
         }
+        
+        // Desenhar medição finalizada (que fica visível por alguns segundos)
+        if (this.measurementDisplay) {
+            this.drawMeasurementWithText(
+                this.measurementDisplay.start, 
+                this.measurementDisplay.end, 
+                false,
+                this.measurementDisplay.distance
+            );
+        }
+    }
+    
+    drawMeasurementWithText(start, end, isActive, distance = null) {
+        // Cor da linha (vermelha para ativa, azul para finalizada)
+        const color = isActive ? '#ff6b6b' : '#007bff';
+        
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 3;
+        this.ctx.setLineDash(isActive ? [5, 5] : []);
+        
+        // Desenhar linha
+        this.ctx.beginPath();
+        this.ctx.moveTo(start.x, start.y);
+        this.ctx.lineTo(end.x, end.y);
+        this.ctx.stroke();
+        
+        // Pontos de início e fim
+        this.ctx.fillStyle = color;
+        this.ctx.setLineDash([]);
+        
+        this.ctx.beginPath();
+        this.ctx.arc(start.x, start.y, 4, 0, 2 * Math.PI);
+        this.ctx.fill();
+        
+        this.ctx.beginPath();
+        this.ctx.arc(end.x, end.y, 4, 0, 2 * Math.PI);
+        this.ctx.fill();
+        
+        // Calcular e exibir distância
+        const distanceData = distance || this.calculateDistance(start, end);
+        
+        // Posição do texto (no meio da linha)
+        const midX = (start.x + end.x) / 2;
+        const midY = (start.y + end.y) / 2;
+        
+        // Fundo do texto
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        this.ctx.fillRect(midX - 30, midY - 12, 60, 20);
+        
+        // Texto da distância
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = 'bold 12px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(distanceData.text, midX, midY);
     }
 }
 
