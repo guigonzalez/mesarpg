@@ -1,0 +1,517 @@
+Sistema,Categoria,Campo,Subcampo
+D&D 5e,Personagem,Nome,—
+D&D 5e,Personagem,Raça,—
+D&D 5e,Personagem,Classe,—
+D&D 5e,Personagem,Atributos,Força
+D&D 5e,Personagem,Atributos,Destreza
+D&D 5e,Personagem,Atributos,Constituição
+D&D 5e,Personagem,Atributos,Inteligência
+D&D 5e,Personagem,Atributos,Sabedoria
+D&D 5e,Personagem,Atributos,Carisma
+D&D 5e,Personagem,Perícias,Acrobacia
+D&D 5e,Personagem,Perícias,Arcanismo
+D&D 5e,Personagem,Perícias,Atletismo
+D&D 5e,Personagem,Perícias,Enganação
+D&D 5e,Personagem,Perícias,Furtividade
+D&D 5e,Personagem,Perícias,História
+D&D 5e,Personagem,Perícias,Intuição
+D&D 5e,Personagem,Perícias,Intimidação
+D&D 5e,Personagem,Perícias,Investigação
+D&D 5e,Personagem,Perícias,Lidar com Animais
+D&D 5e,Personagem,Perícias,Medicina
+D&D 5e,Personagem,Perícias,Natureza
+D&D 5e,Personagem,Perícias,Percepção
+D&D 5e,Personagem,Perícias,Persuasão
+D&D 5e,Personagem,Perícias,Prestidigitação
+D&D 5e,Personagem,Perícias,Religião
+D&D 5e,Personagem,Perícias,Sobrevivência
+D&D 5e,Personagem,Equipamentos,—
+D&D 5e,Personagem,História,—
+D&D 5e,Personagem,Alinhamento,—
+D&D 5e,Personagem,Background,—
+D&D 5e,Personagem,Habilidades,Magias
+D&D 5e,Personagem,Habilidades,Ataques Especiais
+D&D 5e,Personagem,Habilidades,Recursos de Classe
+D&D 5e,Personagem,Idiomas,—
+D&D 5e,Personagem,PV/Pontos de Vida,—
+D&D 5e,Personagem,CA/Defesa,—
+D&D 5e,Personagem,Iniciativa,—
+D&D 5e,Personagem,Percepção Passiva,—
+D&D 5e,NPC/Antagonista,Nome,—
+D&D 5e,NPC/Antagonista,Descrição,—
+D&D 5e,NPC/Antagonista,Motivações,—
+D&D 5e,NPC/Antagonista,Habilidades,Magias
+D&D 5e,NPC/Antagonista,Habilidades,Ataques Especiais
+D&D 5e,NPC/Antagonista,Habilidades,Recursos de Classe
+D&D 5e,NPC/Antagonista,PV,—
+D&D 5e,NPC/Antagonista,CA,—
+D&D 5e,NPC/Antagonista,Atributos,Força
+D&D 5e,NPC/Antagonista,Atributos,Destreza
+D&D 5e,NPC/Antagonista,Atributos,Constituição
+D&D 5e,NPC/Antagonista,Atributos,Inteligência
+D&D 5e,NPC/Antagonista,Atributos,Sabedoria
+D&D 5e,NPC/Antagonista,Atributos,Carisma
+D&D 5e,NPC/Antagonista,Alinhamento,—
+D&D 5e,NPC/Antagonista,Recompensas,—
+D&D 5e,Criatura/Monstro,Nome,—
+D&D 5e,Criatura/Monstro,Tipo,—
+D&D 5e,Criatura/Monstro,Tamanho,—
+D&D 5e,Criatura/Monstro,Deslocamento,—
+D&D 5e,Criatura/Monstro,CA,—
+D&D 5e,Criatura/Monstro,PV,—
+D&D 5e,Criatura/Monstro,Atributos,Força
+D&D 5e,Criatura/Monstro,Atributos,Destreza
+D&D 5e,Criatura/Monstro,Atributos,Constituição
+D&D 5e,Criatura/Monstro,Atributos,Inteligência
+D&D 5e,Criatura/Monstro,Atributos,Sabedoria
+D&D 5e,Criatura/Monstro,Atributos,Carisma
+D&D 5e,Criatura/Monstro,Sentidos,Visão no Escuro
+D&D 5e,Criatura/Monstro,Sentidos,Sentido Cego
+D&D 5e,Criatura/Monstro,Sentidos,Sentido Sísmico
+D&D 5e,Criatura/Monstro,Sentidos,Percepção às Cegas
+D&D 5e,Criatura/Monstro,Resistências,Dano Físico
+D&D 5e,Criatura/Monstro,Resistências,Fogo
+D&D 5e,Criatura/Monstro,Resistências,Gelo
+D&D 5e,Criatura/Monstro,Resistências,Elétrico
+D&D 5e,Criatura/Monstro,Resistências,Veneno
+D&D 5e,Criatura/Monstro,Resistências,Psíquico
+D&D 5e,Criatura/Monstro,Imunidades,Encantamento
+D&D 5e,Criatura/Monstro,Imunidades,Doença
+D&D 5e,Criatura/Monstro,Imunidades,Sono
+D&D 5e,Criatura/Monstro,Imunidades,Veneno
+D&D 5e,Criatura/Monstro,Imunidades,Medo
+D&D 5e,Criatura/Monstro,Ações,—
+D&D 5e,Criatura/Monstro,Ações Lendárias,—
+D&D 5e,Criatura/Monstro,Ambiente,—
+D&D 5e,Criatura/Monstro,Idiomas,—
+D&D 5e,Criatura/Monstro,ND/Nível de Desafio,—
+Tormenta20,Personagem,Nome,—
+Tormenta20,Personagem,Raça,—
+Tormenta20,Personagem,Classe,—
+Tormenta20,Personagem,Atributos,Força
+Tormenta20,Personagem,Atributos,Destreza
+Tormenta20,Personagem,Atributos,Constituição
+Tormenta20,Personagem,Atributos,Inteligência
+Tormenta20,Personagem,Atributos,Sabedoria
+Tormenta20,Personagem,Atributos,Carisma
+Tormenta20,Personagem,Perícias,Acrobacia
+Tormenta20,Personagem,Perícias,Arcanismo
+Tormenta20,Personagem,Perícias,Atletismo
+Tormenta20,Personagem,Perícias,Enganação
+Tormenta20,Personagem,Perícias,Furtividade
+Tormenta20,Personagem,Perícias,História
+Tormenta20,Personagem,Perícias,Intuição
+Tormenta20,Personagem,Perícias,Intimidação
+Tormenta20,Personagem,Perícias,Investigação
+Tormenta20,Personagem,Perícias,Lidar com Animais
+Tormenta20,Personagem,Perícias,Medicina
+Tormenta20,Personagem,Perícias,Natureza
+Tormenta20,Personagem,Perícias,Percepção
+Tormenta20,Personagem,Perícias,Persuasão
+Tormenta20,Personagem,Perícias,Prestidigitação
+Tormenta20,Personagem,Perícias,Religião
+Tormenta20,Personagem,Perícias,Sobrevivência
+Tormenta20,Personagem,Equipamentos,—
+Tormenta20,Personagem,História,—
+Tormenta20,Personagem,Alinhamento,—
+Tormenta20,Personagem,Background,—
+Tormenta20,Personagem,Habilidades,Magias
+Tormenta20,Personagem,Habilidades,Ataques Especiais
+Tormenta20,Personagem,Habilidades,Recursos de Classe
+Tormenta20,Personagem,Idiomas,—
+Tormenta20,Personagem,PV/Pontos de Vida,—
+Tormenta20,Personagem,CA/Defesa,—
+Tormenta20,Personagem,Iniciativa,—
+Tormenta20,Personagem,Percepção Passiva,—
+Tormenta20,NPC/Antagonista,Nome,—
+Tormenta20,NPC/Antagonista,Descrição,—
+Tormenta20,NPC/Antagonista,Motivações,—
+Tormenta20,NPC/Antagonista,Habilidades,Magias
+Tormenta20,NPC/Antagonista,Habilidades,Ataques Especiais
+Tormenta20,NPC/Antagonista,Habilidades,Recursos de Classe
+Tormenta20,NPC/Antagonista,PV,—
+Tormenta20,NPC/Antagonista,CA,—
+Tormenta20,NPC/Antagonista,Atributos,Força
+Tormenta20,NPC/Antagonista,Atributos,Destreza
+Tormenta20,NPC/Antagonista,Atributos,Constituição
+Tormenta20,NPC/Antagonista,Atributos,Inteligência
+Tormenta20,NPC/Antagonista,Atributos,Sabedoria
+Tormenta20,NPC/Antagonista,Atributos,Carisma
+Tormenta20,NPC/Antagonista,Alinhamento,—
+Tormenta20,NPC/Antagonista,Recompensas,—
+Tormenta20,Criatura/Monstro,Nome,—
+Tormenta20,Criatura/Monstro,Tipo,—
+Tormenta20,Criatura/Monstro,Tamanho,—
+Tormenta20,Criatura/Monstro,Deslocamento,—
+Tormenta20,Criatura/Monstro,CA,—
+Tormenta20,Criatura/Monstro,PV,—
+Tormenta20,Criatura/Monstro,Atributos,Força
+Tormenta20,Criatura/Monstro,Atributos,Destreza
+Tormenta20,Criatura/Monstro,Atributos,Constituição
+Tormenta20,Criatura/Monstro,Atributos,Inteligência
+Tormenta20,Criatura/Monstro,Atributos,Sabedoria
+Tormenta20,Criatura/Monstro,Atributos,Carisma
+Tormenta20,Criatura/Monstro,Sentidos,Visão no Escuro
+Tormenta20,Criatura/Monstro,Sentidos,Sentido Cego
+Tormenta20,Criatura/Monstro,Sentidos,Sentido Sísmico
+Tormenta20,Criatura/Monstro,Sentidos,Percepção às Cegas
+Tormenta20,Criatura/Monstro,Resistências,Dano Físico
+Tormenta20,Criatura/Monstro,Resistências,Fogo
+Tormenta20,Criatura/Monstro,Resistências,Gelo
+Tormenta20,Criatura/Monstro,Resistências,Elétrico
+Tormenta20,Criatura/Monstro,Resistências,Veneno
+Tormenta20,Criatura/Monstro,Resistências,Psíquico
+Tormenta20,Criatura/Monstro,Imunidades,Encantamento
+Tormenta20,Criatura/Monstro,Imunidades,Doença
+Tormenta20,Criatura/Monstro,Imunidades,Sono
+Tormenta20,Criatura/Monstro,Imunidades,Veneno
+Tormenta20,Criatura/Monstro,Imunidades,Medo
+Tormenta20,Criatura/Monstro,Ações,—
+Tormenta20,Criatura/Monstro,Ações Lendárias,—
+Tormenta20,Criatura/Monstro,Ambiente,—
+Tormenta20,Criatura/Monstro,Idiomas,—
+Tormenta20,Criatura/Monstro,ND/Nível de Desafio,—
+Call of Cthulhu,Personagem,Nome,—
+Call of Cthulhu,Personagem,Raça,—
+Call of Cthulhu,Personagem,Classe,—
+Call of Cthulhu,Personagem,Atributos,Força
+Call of Cthulhu,Personagem,Atributos,Destreza
+Call of Cthulhu,Personagem,Atributos,Constituição
+Call of Cthulhu,Personagem,Atributos,Inteligência
+Call of Cthulhu,Personagem,Atributos,Sabedoria
+Call of Cthulhu,Personagem,Atributos,Carisma
+Call of Cthulhu,Personagem,Perícias,Acrobacia
+Call of Cthulhu,Personagem,Perícias,Arcanismo
+Call of Cthulhu,Personagem,Perícias,Atletismo
+Call of Cthulhu,Personagem,Perícias,Enganação
+Call of Cthulhu,Personagem,Perícias,Furtividade
+Call of Cthulhu,Personagem,Perícias,História
+Call of Cthulhu,Personagem,Perícias,Intuição
+Call of Cthulhu,Personagem,Perícias,Intimidação
+Call of Cthulhu,Personagem,Perícias,Investigação
+Call of Cthulhu,Personagem,Perícias,Lidar com Animais
+Call of Cthulhu,Personagem,Perícias,Medicina
+Call of Cthulhu,Personagem,Perícias,Natureza
+Call of Cthulhu,Personagem,Perícias,Percepção
+Call of Cthulhu,Personagem,Perícias,Persuasão
+Call of Cthulhu,Personagem,Perícias,Prestidigitação
+Call of Cthulhu,Personagem,Perícias,Religião
+Call of Cthulhu,Personagem,Perícias,Sobrevivência
+Call of Cthulhu,Personagem,Equipamentos,—
+Call of Cthulhu,Personagem,História,—
+Call of Cthulhu,Personagem,Alinhamento,—
+Call of Cthulhu,Personagem,Background,—
+Call of Cthulhu,Personagem,Habilidades,Magias
+Call of Cthulhu,Personagem,Habilidades,Ataques Especiais
+Call of Cthulhu,Personagem,Habilidades,Recursos de Classe
+Call of Cthulhu,Personagem,Idiomas,—
+Call of Cthulhu,Personagem,PV/Pontos de Vida,—
+Call of Cthulhu,Personagem,CA/Defesa,—
+Call of Cthulhu,Personagem,Iniciativa,—
+Call of Cthulhu,Personagem,Percepção Passiva,—
+Call of Cthulhu,NPC/Antagonista,Nome,—
+Call of Cthulhu,NPC/Antagonista,Descrição,—
+Call of Cthulhu,NPC/Antagonista,Motivações,—
+Call of Cthulhu,NPC/Antagonista,Habilidades,Magias
+Call of Cthulhu,NPC/Antagonista,Habilidades,Ataques Especiais
+Call of Cthulhu,NPC/Antagonista,Habilidades,Recursos de Classe
+Call of Cthulhu,NPC/Antagonista,PV,—
+Call of Cthulhu,NPC/Antagonista,CA,—
+Call of Cthulhu,NPC/Antagonista,Atributos,Força
+Call of Cthulhu,NPC/Antagonista,Atributos,Destreza
+Call of Cthulhu,NPC/Antagonista,Atributos,Constituição
+Call of Cthulhu,NPC/Antagonista,Atributos,Inteligência
+Call of Cthulhu,NPC/Antagonista,Atributos,Sabedoria
+Call of Cthulhu,NPC/Antagonista,Atributos,Carisma
+Call of Cthulhu,NPC/Antagonista,Alinhamento,—
+Call of Cthulhu,NPC/Antagonista,Recompensas,—
+Call of Cthulhu,Criatura/Monstro,Nome,—
+Call of Cthulhu,Criatura/Monstro,Tipo,—
+Call of Cthulhu,Criatura/Monstro,Tamanho,—
+Call of Cthulhu,Criatura/Monstro,Deslocamento,—
+Call of Cthulhu,Criatura/Monstro,CA,—
+Call of Cthulhu,Criatura/Monstro,PV,—
+Call of Cthulhu,Criatura/Monstro,Atributos,Força
+Call of Cthulhu,Criatura/Monstro,Atributos,Destreza
+Call of Cthulhu,Criatura/Monstro,Atributos,Constituição
+Call of Cthulhu,Criatura/Monstro,Atributos,Inteligência
+Call of Cthulhu,Criatura/Monstro,Atributos,Sabedoria
+Call of Cthulhu,Criatura/Monstro,Atributos,Carisma
+Call of Cthulhu,Criatura/Monstro,Sentidos,Visão no Escuro
+Call of Cthulhu,Criatura/Monstro,Sentidos,Sentido Cego
+Call of Cthulhu,Criatura/Monstro,Sentidos,Sentido Sísmico
+Call of Cthulhu,Criatura/Monstro,Sentidos,Percepção às Cegas
+Call of Cthulhu,Criatura/Monstro,Resistências,Dano Físico
+Call of Cthulhu,Criatura/Monstro,Resistências,Fogo
+Call of Cthulhu,Criatura/Monstro,Resistências,Gelo
+Call of Cthulhu,Criatura/Monstro,Resistências,Elétrico
+Call of Cthulhu,Criatura/Monstro,Resistências,Veneno
+Call of Cthulhu,Criatura/Monstro,Resistências,Psíquico
+Call of Cthulhu,Criatura/Monstro,Imunidades,Encantamento
+Call of Cthulhu,Criatura/Monstro,Imunidades,Doença
+Call of Cthulhu,Criatura/Monstro,Imunidades,Sono
+Call of Cthulhu,Criatura/Monstro,Imunidades,Veneno
+Call of Cthulhu,Criatura/Monstro,Imunidades,Medo
+Call of Cthulhu,Criatura/Monstro,Ações,—
+Call of Cthulhu,Criatura/Monstro,Ações Lendárias,—
+Call of Cthulhu,Criatura/Monstro,Ambiente,—
+Call of Cthulhu,Criatura/Monstro,Idiomas,—
+Call of Cthulhu,Criatura/Monstro,ND/Nível de Desafio,—
+Vampire: The Masquerade,Personagem,Nome,—
+Vampire: The Masquerade,Personagem,Raça,—
+Vampire: The Masquerade,Personagem,Classe,—
+Vampire: The Masquerade,Personagem,Atributos,Força
+Vampire: The Masquerade,Personagem,Atributos,Destreza
+Vampire: The Masquerade,Personagem,Atributos,Constituição
+Vampire: The Masquerade,Personagem,Atributos,Inteligência
+Vampire: The Masquerade,Personagem,Atributos,Sabedoria
+Vampire: The Masquerade,Personagem,Atributos,Carisma
+Vampire: The Masquerade,Personagem,Perícias,Acrobacia
+Vampire: The Masquerade,Personagem,Perícias,Arcanismo
+Vampire: The Masquerade,Personagem,Perícias,Atletismo
+Vampire: The Masquerade,Personagem,Perícias,Enganação
+Vampire: The Masquerade,Personagem,Perícias,Furtividade
+Vampire: The Masquerade,Personagem,Perícias,História
+Vampire: The Masquerade,Personagem,Perícias,Intuição
+Vampire: The Masquerade,Personagem,Perícias,Intimidação
+Vampire: The Masquerade,Personagem,Perícias,Investigação
+Vampire: The Masquerade,Personagem,Perícias,Lidar com Animais
+Vampire: The Masquerade,Personagem,Perícias,Medicina
+Vampire: The Masquerade,Personagem,Perícias,Natureza
+Vampire: The Masquerade,Personagem,Perícias,Percepção
+Vampire: The Masquerade,Personagem,Perícias,Persuasão
+Vampire: The Masquerade,Personagem,Perícias,Prestidigitação
+Vampire: The Masquerade,Personagem,Perícias,Religião
+Vampire: The Masquerade,Personagem,Perícias,Sobrevivência
+Vampire: The Masquerade,Personagem,Equipamentos,—
+Vampire: The Masquerade,Personagem,História,—
+Vampire: The Masquerade,Personagem,Alinhamento,—
+Vampire: The Masquerade,Personagem,Background,—
+Vampire: The Masquerade,Personagem,Habilidades,Magias
+Vampire: The Masquerade,Personagem,Habilidades,Ataques Especiais
+Vampire: The Masquerade,Personagem,Habilidades,Recursos de Classe
+Vampire: The Masquerade,Personagem,Idiomas,—
+Vampire: The Masquerade,Personagem,PV/Pontos de Vida,—
+Vampire: The Masquerade,Personagem,CA/Defesa,—
+Vampire: The Masquerade,Personagem,Iniciativa,—
+Vampire: The Masquerade,Personagem,Percepção Passiva,—
+Vampire: The Masquerade,NPC/Antagonista,Nome,—
+Vampire: The Masquerade,NPC/Antagonista,Descrição,—
+Vampire: The Masquerade,NPC/Antagonista,Motivações,—
+Vampire: The Masquerade,NPC/Antagonista,Habilidades,Magias
+Vampire: The Masquerade,NPC/Antagonista,Habilidades,Ataques Especiais
+Vampire: The Masquerade,NPC/Antagonista,Habilidades,Recursos de Classe
+Vampire: The Masquerade,NPC/Antagonista,PV,—
+Vampire: The Masquerade,NPC/Antagonista,CA,—
+Vampire: The Masquerade,NPC/Antagonista,Atributos,Força
+Vampire: The Masquerade,NPC/Antagonista,Atributos,Destreza
+Vampire: The Masquerade,NPC/Antagonista,Atributos,Constituição
+Vampire: The Masquerade,NPC/Antagonista,Atributos,Inteligência
+Vampire: The Masquerade,NPC/Antagonista,Atributos,Sabedoria
+Vampire: The Masquerade,NPC/Antagonista,Atributos,Carisma
+Vampire: The Masquerade,NPC/Antagonista,Alinhamento,—
+Vampire: The Masquerade,NPC/Antagonista,Recompensas,—
+Vampire: The Masquerade,Criatura/Monstro,Nome,—
+Vampire: The Masquerade,Criatura/Monstro,Tipo,—
+Vampire: The Masquerade,Criatura/Monstro,Tamanho,—
+Vampire: The Masquerade,Criatura/Monstro,Deslocamento,—
+Vampire: The Masquerade,Criatura/Monstro,CA,—
+Vampire: The Masquerade,Criatura/Monstro,PV,—
+Vampire: The Masquerade,Criatura/Monstro,Atributos,Força
+Vampire: The Masquerade,Criatura/Monstro,Atributos,Destreza
+Vampire: The Masquerade,Criatura/Monstro,Atributos,Constituição
+Vampire: The Masquerade,Criatura/Monstro,Atributos,Inteligência
+Vampire: The Masquerade,Criatura/Monstro,Atributos,Sabedoria
+Vampire: The Masquerade,Criatura/Monstro,Atributos,Carisma
+Vampire: The Masquerade,Criatura/Monstro,Sentidos,Visão no Escuro
+Vampire: The Masquerade,Criatura/Monstro,Sentidos,Sentido Cego
+Vampire: The Masquerade,Criatura/Monstro,Sentidos,Sentido Sísmico
+Vampire: The Masquerade,Criatura/Monstro,Sentidos,Percepção às Cegas
+Vampire: The Masquerade,Criatura/Monstro,Resistências,Dano Físico
+Vampire: The Masquerade,Criatura/Monstro,Resistências,Fogo
+Vampire: The Masquerade,Criatura/Monstro,Resistências,Gelo
+Vampire: The Masquerade,Criatura/Monstro,Resistências,Elétrico
+Vampire: The Masquerade,Criatura/Monstro,Resistências,Veneno
+Vampire: The Masquerade,Criatura/Monstro,Resistências,Psíquico
+Vampire: The Masquerade,Criatura/Monstro,Imunidades,Encantamento
+Vampire: The Masquerade,Criatura/Monstro,Imunidades,Doença
+Vampire: The Masquerade,Criatura/Monstro,Imunidades,Sono
+Vampire: The Masquerade,Criatura/Monstro,Imunidades,Veneno
+Vampire: The Masquerade,Criatura/Monstro,Imunidades,Medo
+Vampire: The Masquerade,Criatura/Monstro,Ações,—
+Vampire: The Masquerade,Criatura/Monstro,Ações Lendárias,—
+Vampire: The Masquerade,Criatura/Monstro,Ambiente,—
+Vampire: The Masquerade,Criatura/Monstro,Idiomas,—
+Vampire: The Masquerade,Criatura/Monstro,ND/Nível de Desafio,—
+Pathfinder,Personagem,Nome,—
+Pathfinder,Personagem,Raça,—
+Pathfinder,Personagem,Classe,—
+Pathfinder,Personagem,Atributos,Força
+Pathfinder,Personagem,Atributos,Destreza
+Pathfinder,Personagem,Atributos,Constituição
+Pathfinder,Personagem,Atributos,Inteligência
+Pathfinder,Personagem,Atributos,Sabedoria
+Pathfinder,Personagem,Atributos,Carisma
+Pathfinder,Personagem,Perícias,Acrobacia
+Pathfinder,Personagem,Perícias,Arcanismo
+Pathfinder,Personagem,Perícias,Atletismo
+Pathfinder,Personagem,Perícias,Enganação
+Pathfinder,Personagem,Perícias,Furtividade
+Pathfinder,Personagem,Perícias,História
+Pathfinder,Personagem,Perícias,Intuição
+Pathfinder,Personagem,Perícias,Intimidação
+Pathfinder,Personagem,Perícias,Investigação
+Pathfinder,Personagem,Perícias,Lidar com Animais
+Pathfinder,Personagem,Perícias,Medicina
+Pathfinder,Personagem,Perícias,Natureza
+Pathfinder,Personagem,Perícias,Percepção
+Pathfinder,Personagem,Perícias,Persuasão
+Pathfinder,Personagem,Perícias,Prestidigitação
+Pathfinder,Personagem,Perícias,Religião
+Pathfinder,Personagem,Perícias,Sobrevivência
+Pathfinder,Personagem,Equipamentos,—
+Pathfinder,Personagem,História,—
+Pathfinder,Personagem,Alinhamento,—
+Pathfinder,Personagem,Background,—
+Pathfinder,Personagem,Habilidades,Magias
+Pathfinder,Personagem,Habilidades,Ataques Especiais
+Pathfinder,Personagem,Habilidades,Recursos de Classe
+Pathfinder,Personagem,Idiomas,—
+Pathfinder,Personagem,PV/Pontos de Vida,—
+Pathfinder,Personagem,CA/Defesa,—
+Pathfinder,Personagem,Iniciativa,—
+Pathfinder,Personagem,Percepção Passiva,—
+Pathfinder,NPC/Antagonista,Nome,—
+Pathfinder,NPC/Antagonista,Descrição,—
+Pathfinder,NPC/Antagonista,Motivações,—
+Pathfinder,NPC/Antagonista,Habilidades,Magias
+Pathfinder,NPC/Antagonista,Habilidades,Ataques Especiais
+Pathfinder,NPC/Antagonista,Habilidades,Recursos de Classe
+Pathfinder,NPC/Antagonista,PV,—
+Pathfinder,NPC/Antagonista,CA,—
+Pathfinder,NPC/Antagonista,Atributos,Força
+Pathfinder,NPC/Antagonista,Atributos,Destreza
+Pathfinder,NPC/Antagonista,Atributos,Constituição
+Pathfinder,NPC/Antagonista,Atributos,Inteligência
+Pathfinder,NPC/Antagonista,Atributos,Sabedoria
+Pathfinder,NPC/Antagonista,Atributos,Carisma
+Pathfinder,NPC/Antagonista,Alinhamento,—
+Pathfinder,NPC/Antagonista,Recompensas,—
+Pathfinder,Criatura/Monstro,Nome,—
+Pathfinder,Criatura/Monstro,Tipo,—
+Pathfinder,Criatura/Monstro,Tamanho,—
+Pathfinder,Criatura/Monstro,Deslocamento,—
+Pathfinder,Criatura/Monstro,CA,—
+Pathfinder,Criatura/Monstro,PV,—
+Pathfinder,Criatura/Monstro,Atributos,Força
+Pathfinder,Criatura/Monstro,Atributos,Destreza
+Pathfinder,Criatura/Monstro,Atributos,Constituição
+Pathfinder,Criatura/Monstro,Atributos,Inteligência
+Pathfinder,Criatura/Monstro,Atributos,Sabedoria
+Pathfinder,Criatura/Monstro,Atributos,Carisma
+Pathfinder,Criatura/Monstro,Sentidos,Visão no Escuro
+Pathfinder,Criatura/Monstro,Sentidos,Sentido Cego
+Pathfinder,Criatura/Monstro,Sentidos,Sentido Sísmico
+Pathfinder,Criatura/Monstro,Sentidos,Percepção às Cegas
+Pathfinder,Criatura/Monstro,Resistências,Dano Físico
+Pathfinder,Criatura/Monstro,Resistências,Fogo
+Pathfinder,Criatura/Monstro,Resistências,Gelo
+Pathfinder,Criatura/Monstro,Resistências,Elétrico
+Pathfinder,Criatura/Monstro,Resistências,Veneno
+Pathfinder,Criatura/Monstro,Resistências,Psíquico
+Pathfinder,Criatura/Monstro,Imunidades,Encantamento
+Pathfinder,Criatura/Monstro,Imunidades,Doença
+Pathfinder,Criatura/Monstro,Imunidades,Sono
+Pathfinder,Criatura/Monstro,Imunidades,Veneno
+Pathfinder,Criatura/Monstro,Imunidades,Medo
+Pathfinder,Criatura/Monstro,Ações,—
+Pathfinder,Criatura/Monstro,Ações Lendárias,—
+Pathfinder,Criatura/Monstro,Ambiente,—
+Pathfinder,Criatura/Monstro,Idiomas,—
+Pathfinder,Criatura/Monstro,ND/Nível de Desafio,—
+3D&T Alpha,Personagem,Nome,—
+3D&T Alpha,Personagem,Raça,—
+3D&T Alpha,Personagem,Classe,—
+3D&T Alpha,Personagem,Atributos,Força
+3D&T Alpha,Personagem,Atributos,Destreza
+3D&T Alpha,Personagem,Atributos,Constituição
+3D&T Alpha,Personagem,Atributos,Inteligência
+3D&T Alpha,Personagem,Atributos,Sabedoria
+3D&T Alpha,Personagem,Atributos,Carisma
+3D&T Alpha,Personagem,Perícias,Acrobacia
+3D&T Alpha,Personagem,Perícias,Arcanismo
+3D&T Alpha,Personagem,Perícias,Atletismo
+3D&T Alpha,Personagem,Perícias,Enganação
+3D&T Alpha,Personagem,Perícias,Furtividade
+3D&T Alpha,Personagem,Perícias,História
+3D&T Alpha,Personagem,Perícias,Intuição
+3D&T Alpha,Personagem,Perícias,Intimidação
+3D&T Alpha,Personagem,Perícias,Investigação
+3D&T Alpha,Personagem,Perícias,Lidar com Animais
+3D&T Alpha,Personagem,Perícias,Medicina
+3D&T Alpha,Personagem,Perícias,Natureza
+3D&T Alpha,Personagem,Perícias,Percepção
+3D&T Alpha,Personagem,Perícias,Persuasão
+3D&T Alpha,Personagem,Perícias,Prestidigitação
+3D&T Alpha,Personagem,Perícias,Religião
+3D&T Alpha,Personagem,Perícias,Sobrevivência
+3D&T Alpha,Personagem,Equipamentos,—
+3D&T Alpha,Personagem,História,—
+3D&T Alpha,Personagem,Alinhamento,—
+3D&T Alpha,Personagem,Background,—
+3D&T Alpha,Personagem,Habilidades,Magias
+3D&T Alpha,Personagem,Habilidades,Ataques Especiais
+3D&T Alpha,Personagem,Habilidades,Recursos de Classe
+3D&T Alpha,Personagem,Idiomas,—
+3D&T Alpha,Personagem,PV/Pontos de Vida,—
+3D&T Alpha,Personagem,CA/Defesa,—
+3D&T Alpha,Personagem,Iniciativa,—
+3D&T Alpha,Personagem,Percepção Passiva,—
+3D&T Alpha,NPC/Antagonista,Nome,—
+3D&T Alpha,NPC/Antagonista,Descrição,—
+3D&T Alpha,NPC/Antagonista,Motivações,—
+3D&T Alpha,NPC/Antagonista,Habilidades,Magias
+3D&T Alpha,NPC/Antagonista,Habilidades,Ataques Especiais
+3D&T Alpha,NPC/Antagonista,Habilidades,Recursos de Classe
+3D&T Alpha,NPC/Antagonista,PV,—
+3D&T Alpha,NPC/Antagonista,CA,—
+3D&T Alpha,NPC/Antagonista,Atributos,Força
+3D&T Alpha,NPC/Antagonista,Atributos,Destreza
+3D&T Alpha,NPC/Antagonista,Atributos,Constituição
+3D&T Alpha,NPC/Antagonista,Atributos,Inteligência
+3D&T Alpha,NPC/Antagonista,Atributos,Sabedoria
+3D&T Alpha,NPC/Antagonista,Atributos,Carisma
+3D&T Alpha,NPC/Antagonista,Alinhamento,—
+3D&T Alpha,NPC/Antagonista,Recompensas,—
+3D&T Alpha,Criatura/Monstro,Nome,—
+3D&T Alpha,Criatura/Monstro,Tipo,—
+3D&T Alpha,Criatura/Monstro,Tamanho,—
+3D&T Alpha,Criatura/Monstro,Deslocamento,—
+3D&T Alpha,Criatura/Monstro,CA,—
+3D&T Alpha,Criatura/Monstro,PV,—
+3D&T Alpha,Criatura/Monstro,Atributos,Força
+3D&T Alpha,Criatura/Monstro,Atributos,Destreza
+3D&T Alpha,Criatura/Monstro,Atributos,Constituição
+3D&T Alpha,Criatura/Monstro,Atributos,Inteligência
+3D&T Alpha,Criatura/Monstro,Atributos,Sabedoria
+3D&T Alpha,Criatura/Monstro,Atributos,Carisma
+3D&T Alpha,Criatura/Monstro,Sentidos,Visão no Escuro
+3D&T Alpha,Criatura/Monstro,Sentidos,Sentido Cego
+3D&T Alpha,Criatura/Monstro,Sentidos,Sentido Sísmico
+3D&T Alpha,Criatura/Monstro,Sentidos,Percepção às Cegas
+3D&T Alpha,Criatura/Monstro,Resistências,Dano Físico
+3D&T Alpha,Criatura/Monstro,Resistências,Fogo
+3D&T Alpha,Criatura/Monstro,Resistências,Gelo
+3D&T Alpha,Criatura/Monstro,Resistências,Elétrico
+3D&T Alpha,Criatura/Monstro,Resistências,Veneno
+3D&T Alpha,Criatura/Monstro,Resistências,Psíquico
+3D&T Alpha,Criatura/Monstro,Imunidades,Encantamento
+3D&T Alpha,Criatura/Monstro,Imunidades,Doença
+3D&T Alpha,Criatura/Monstro,Imunidades,Sono
+3D&T Alpha,Criatura/Monstro,Imunidades,Veneno
+3D&T Alpha,Criatura/Monstro,Imunidades,Medo
+3D&T Alpha,Criatura/Monstro,Ações,—
+3D&T Alpha,Criatura/Monstro,Ações Lendárias,—
+3D&T Alpha,Criatura/Monstro,Ambiente,—
+3D&T Alpha,Criatura/Monstro,Idiomas,—
+3D&T Alpha,Criatura/Monstro,ND/Nível de Desafio,—
