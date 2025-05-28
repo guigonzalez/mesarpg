@@ -611,7 +611,7 @@ function adaptInitialFields(systemName, templateType = 'player') {
                 nameLabel.textContent = 'Nome da Criatura';
                 levelLabel.textContent = 'Poder';
             } else {
-                nameLabel.textContent = templateType === 'npc' ? 'Nome do Vampiro NPC' : 'Nome do Vampiro';
+                nameLabel.textContent = 'Nome do Vampiro';
                 levelLabel.textContent = 'Geração';
             }
             levelInput.min = 1;
