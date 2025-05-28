@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 import pytz
 from app import db
-from models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterSheet
+from models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterSheet, CharacterTemplate
 from forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm, CharacterSheetForm
 
 # Create blueprints
@@ -644,3 +644,65 @@ def edit_character_sheet(session_id, character_id):
         return redirect(url_for('sessions.view_character_sheet', session_id=session_id, character_id=character_id))
     
     return render_template('sessions/edit_character.html', session=session, character=character, form=form)
+
+@sessions_bp.route('/<int:id>/characters/template')
+@login_required
+def character_template(id):
+    session = Session.query.get_or_404(id)
+    
+    # Verificar se é o mestre da sessão
+    if session.master_id != current_user.id:
+        flash('Apenas o mestre pode usar o criador de fichas.', 'error')
+        return redirect(url_for('sessions.character_sheets', id=id))
+    
+    return render_template('sessions/character_template.html', session=session)
+
+@sessions_bp.route('/<int:id>/characters/from-template', methods=['POST'])
+@login_required  
+def create_from_template(id):
+    session = Session.query.get_or_404(id)
+    
+    # Verificar se é o mestre da sessão
+    if session.master_id != current_user.id:
+        flash('Apenas o mestre pode usar o criador de fichas.', 'error')
+        return redirect(url_for('sessions.character_sheets', id=id))
+    
+    # Dados do template vêm do JavaScript/formulário
+    template_data = request.get_json()
+    
+    # Criar ficha baseada no template
+    character_sheet = CharacterSheet(
+        session_id=id,
+        player_id=current_user.id,  # Mestre cria a ficha inicialmente
+        character_name=template_data.get('character_name', 'Personagem'),
+        character_class=template_data.get('character_class', ''),
+        level=template_data.get('level', 1),
+        race=template_data.get('race', ''),
+        background=template_data.get('background', ''),
+        strength=template_data.get('strength', 10),
+        dexterity=template_data.get('dexterity', 10),
+        constitution=template_data.get('constitution', 10),
+        intelligence=template_data.get('intelligence', 10),
+        wisdom=template_data.get('wisdom', 10),
+        charisma=template_data.get('charisma', 10),
+        armor_class=template_data.get('armor_class', 10),
+        hit_points=template_data.get('hit_points', 8),
+        max_hit_points=template_data.get('max_hit_points', 8),
+        speed=template_data.get('speed', 30),
+        description=template_data.get('description', ''),
+        backstory=template_data.get('backstory', ''),
+        equipment=template_data.get('equipment', ''),
+        spells=template_data.get('spells', ''),
+        notes=template_data.get('notes', ''),
+        character_image_url=template_data.get('character_image_url', ''),
+        is_public=template_data.get('is_public', True)
+    )
+    
+    db.session.add(character_sheet)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'character_id': character_sheet.id,
+        'message': 'Ficha criada com sucesso!'
+    })

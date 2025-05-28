@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}Criador de Fichas - {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">
+                                <i class="fas fa-magic me-2"></i>Criador de Fichas - {{ session.system }}
+                            </h4>
+                            <p class="text-muted mb-0">{{ session.title }}</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('sessions.character_sheets', id=session.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seletor de Sistema -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>Configuração do Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Sistema de RPG</label>
+                            <select id="systemSelect" class="form-select" onchange="loadSystemTemplate()">
+                                <option value="{{ session.system }}" selected>{{ session.system }}</option>
+                                <option value="D&D 5e">Dungeons & Dragons 5ª Edição</option>
+                                <option value="Tormenta20">Tormenta20</option>
+                                <option value="Call of Cthulhu">Call of Cthulhu</option>
+                                <option value="Vampire">Vampire: The Masquerade</option>
+                                <option value="Pathfinder">Pathfinder</option>
+                                <option value="3D&T">3D&T Alpha</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Ficha</label>
+                            <select id="templateType" class="form-select">
+                                <option value="player">Personagem Jogador</option>
+                                <option value="npc">NPC/Antagonista</option>
+                                <option value="monster">Criatura/Monstro</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-primary" onclick="loadSystemTemplate()">
+                            <i class="fas fa-sync me-1"></i>Carregar Template
+                        </button>
+                        <button class="btn btn-outline-info" onclick="toggleSystemInfo()">
+                            <i class="fas fa-info-circle me-1"></i>Info do Sistema
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário Dinâmico -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-scroll me-2"></i>Criador de Ficha
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="characterTemplateForm">
+                        <!-- Informações Básicas sempre presentes -->
+                        <div class="section-header mb-3">
+                            <h6 class="text-primary">
+                                <i class="fas fa-user me-2"></i>Informações Básicas
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Nome do Personagem</label>
+                                <input type="text" class="form-control" id="character_name" name="character_name" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Nível</label>
+                                <input type="number" class="form-control text-center" id="level" name="level" min="1" max="20" value="1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Tipo</label>
+                                <select class="form-select" id="character_type" name="character_type">
+                                    <option value="pc">Personagem</option>
+                                    <option value="npc">NPC</option>
+                                    <option value="monster">Criatura</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Container para campos dinâmicos do sistema -->
+                        <div id="systemFieldsContainer">
+                            <!-- Os campos específicos do sistema serão inseridos aqui -->
+                        </div>
+
+                        <!-- Configurações Gerais -->
+                        <div class="section-header mb-3">
+                            <h6 class="text-primary">
+                                <i class="fas fa-cog me-2"></i>Configurações
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="is_public" name="is_public" checked>
+                                    <label class="form-check-label" for="is_public">
+                                        Ficha pública (visível para jogadores)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="auto_calculate" name="auto_calculate" checked>
+                                    <label class="form-check-label" for="auto_calculate">
+                                        Calcular valores automaticamente
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
+                                <i class="fas fa-eraser me-1"></i>Limpar
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="previewCharacter()">
+                                <i class="fas fa-eye me-1"></i>Visualizar
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="createCharacter()">
+                                <i class="fas fa-save me-1"></i>Criar Ficha
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal de Preview -->
+            <div class="modal fade" id="previewModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Preview da Ficha</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" id="previewContent">
+                            <!-- Preview será inserido aqui -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            <button type="button" class="btn btn-primary" onclick="createCharacter()">Criar Ficha</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.system-info {
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.system-info .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.system-info .close-btn:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.field-group {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-display {
+    text-align: center;
+    padding: 0.5rem;
+    background: #e9ecef;
+    border-radius: 4px;
+    font-weight: bold;
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/character_templates.js') }}"></script>
+<script>
+let currentSystem = '{{ session.system }}';
+let sessionId = {{ session.id }};
+
+// Carregar template do sistema automaticamente
+document.addEventListener('DOMContentLoaded', function() {
+    loadSystemTemplate();
+});
+
+function loadSystemTemplate() {
+    const systemSelect = document.getElementById('systemSelect');
+    const selectedSystem = systemSelect.value;
+    currentSystem = selectedSystem;
+    
+    console.log('Carregando template para:', selectedSystem);
+    
+    // Gerar formulário baseado no sistema
+    generateTemplateForm(selectedSystem, 'systemFieldsContainer');
+    
+    // Mostrar feedback
+    showNotification('Template carregado para ' + selectedSystem, 'success');
+}
+
+function toggleSystemInfo() {
+    // Verificar se já existe uma info box visível
+    const existingInfo = document.querySelector('.system-info');
+    if (existingInfo) {
+        // Se existe, remover com animação
+        existingInfo.style.opacity = '0';
+        existingInfo.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            existingInfo.remove();
+        }, 300);
+        return;
+    }
+    
+    // Se não existe, criar nova
+    showSystemInfo();
+}
+
+function showSystemInfo() {
+    const template = RPG_TEMPLATES[currentSystem];
+    if (!template) return;
+    
+    let infoHTML = `
+        <div class="system-info" style="opacity: 0; transform: translateY(-10px);">
+            <button class="close-btn" onclick="closeSystemInfo(this)" title="Fechar">
+                <i class="fas fa-times"></i>
+            </button>
+            <h6><i class="fas fa-info-circle me-2"></i>${template.name}</h6>
+            <p class="mb-2">Este template inclui <strong>${Object.keys(template.fields).length} campos</strong> específicos do sistema.</p>
+            <p class="mb-2"><strong>Seções:</strong> ${template.sections.map(s => s.name).join(', ')}</p>
+            <p class="mb-0 text-muted small">
+                <i class="fas fa-lightbulb me-1"></i>
+                Os campos serão gerados automaticamente com valores padrão apropriados para ${template.name}.
+            </p>
+        </div>
+    `;
+    
+    const container = document.getElementById('systemFieldsContainer');
+    container.insertAdjacentHTML('beforebegin', infoHTML);
+    
+    // Animar entrada
+    setTimeout(() => {
+        const infoBox = document.querySelector('.system-info');
+        if (infoBox) {
+            infoBox.style.transition = 'all 0.3s ease';
+            infoBox.style.opacity = '1';
+            infoBox.style.transform = 'translateY(0)';
+        }
+    }, 10);
+}
+
+function closeSystemInfo(button) {
+    const infoBox = button.closest('.system-info');
+    if (infoBox) {
+        infoBox.style.opacity = '0';
+        infoBox.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            infoBox.remove();
+        }, 300);
+    }
+}
+
+function clearForm() {
+    document.getElementById('characterTemplateForm').reset();
+    loadSystemTemplate();
+}
+
+function previewCharacter() {
+    const formData = collectFormData();
+    
+    let previewHTML = `
+        <div class="character-preview">
+            <h5>${formData.character_name || 'Personagem'}</h5>
+            <div class="row g-3">
+    `;
+    
+    // Mostrar campos principais
+    for (const [key, value] of Object.entries(formData)) {
+        if (key !== 'character_name' && value) {
+            previewHTML += `
+                <div class="col-md-6">
+                    <strong>${key.replace('_', ' ').toUpperCase()}:</strong> ${value}
+                </div>
+            `;
+        }
+    }
+    
+    previewHTML += '</div></div>';
+    
+    document.getElementById('previewContent').innerHTML = previewHTML;
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    modal.show();
+}
+
+function createCharacter() {
+    const formData = collectFormData();
+    
+    if (!formData.character_name) {
+        showNotification('Nome do personagem é obrigatório', 'error');
+        return;
+    }
+    
+    // Enviar para o servidor
+    fetch(`/sessions/${sessionId}/characters/from-template`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => {
+                window.location.href = `/sessions/${sessionId}/characters`;
+            }, 1500);
+        } else {
+            showNotification('Erro ao criar ficha: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        showNotification('Erro de conexão', 'error');
+    });
+}
+
+function collectFormData() {
+    const form = document.getElementById('characterTemplateForm');
+    const formData = new FormData(form);
+    const data = {};
+    
+    for (const [key, value] of formData.entries()) {
+        if (value) {
+            data[key] = value;
+        }
+    }
+    
+    return data;
+}
+
+function showNotification(message, type) {
+    // Criar notificação simples
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alertHTML = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('afterbegin', alertHTML);
+    
+    // Remover após 5 segundos
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

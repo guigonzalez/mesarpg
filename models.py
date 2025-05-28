@@ -208,3 +208,50 @@ class CharacterSheet(db.Model):
     
     def __repr__(self):
         return f'<CharacterSheet {self.character_name} - {self.player.username}>'
+
+
+class CharacterTemplate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    system_name = db.Column(db.String(50), nullable=False)  # 'D&D 5e', 'Tormenta20', etc.
+    template_name = db.Column(db.String(100), nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Campos específicos do sistema
+    custom_fields = db.Column(db.Text)  # JSON com campos personalizados
+    default_values = db.Column(db.Text)  # JSON com valores padrão
+    
+    # Configurações do template
+    is_public = db.Column(db.Boolean, default=False)  # Templates públicos para todos usarem
+    description = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    creator = db.relationship('User', backref='character_templates')
+    
+    def get_custom_fields(self):
+        """Retorna os campos personalizados como dict"""
+        if self.custom_fields:
+            import json
+            return json.loads(self.custom_fields)
+        return {}
+    
+    def set_custom_fields(self, fields_dict):
+        """Define os campos personalizados a partir de um dict"""
+        import json
+        self.custom_fields = json.dumps(fields_dict)
+    
+    def get_default_values(self):
+        """Retorna os valores padrão como dict"""
+        if self.default_values:
+            import json
+            return json.loads(self.default_values)
+        return {}
+    
+    def set_default_values(self, values_dict):
+        """Define os valores padrão a partir de um dict"""
+        import json
+        self.default_values = json.dumps(values_dict)
+    
+    def __repr__(self):
+        return f'<CharacterTemplate {self.template_name} - {self.system_name}>'

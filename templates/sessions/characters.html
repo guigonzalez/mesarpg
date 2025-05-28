@@ -20,6 +20,11 @@
                             <a href="{{ url_for('sessions.new_character_sheet', id=session.id) }}" class="btn btn-primary">
                                 <i class="fas fa-plus me-1"></i>Nova Ficha
                             </a>
+                            {% if session.master_id == current_user.id %}
+                            <a href="{{ url_for('sessions.character_template', id=session.id) }}" class="btn btn-success">
+                                <i class="fas fa-magic me-1"></i>Criador {{ session.system }}
+                            </a>
+                            {% endif %}
                             <a href="{{ url_for('sessions.live', id=session.id) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>Voltar para Mesa
                             </a>
