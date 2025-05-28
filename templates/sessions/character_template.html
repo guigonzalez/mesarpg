@@ -249,11 +249,17 @@ function loadSystemTemplate() {
     
     console.log('Carregando template para:', selectedSystem);
     
+    // Remover info box existente quando trocar de sistema
+    const existingInfo = document.querySelector('.system-info');
+    if (existingInfo) {
+        existingInfo.remove();
+    }
+    
     // Gerar formulário baseado no sistema
     generateTemplateForm(selectedSystem, 'systemFieldsContainer');
     
-    // Mostrar feedback
-    showNotification('Template carregado para ' + selectedSystem, 'success');
+    // Mostrar feedback mais discreto
+    showNotification(`Template ${selectedSystem} carregado com sucesso!`, 'success');
 }
 
 function toggleSystemInfo() {
