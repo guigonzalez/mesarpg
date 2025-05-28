@@ -289,6 +289,128 @@ const RPG_TEMPLATES = {
             { name: 'Habilidades', fields: ['magias', 'ataques_especiais', 'recursos_classe'] },
             { name: 'Equipamentos e Outros', fields: ['equipamentos', 'idiomas', 'historia_personagem'] }
         ]
+    },
+    
+    'Pathfinder': {
+        name: 'Pathfinder',
+        fields: {
+            // Informações básicas do Pathfinder
+            nome: { label: 'Nome do Personagem', type: 'text', required: true, placeholder: 'Ex: Seelah Brightblade' },
+            raca: { label: 'Ancestralidade', type: 'text', placeholder: 'Ex: Humano, Élfico, Anão, Halfling' },
+            classe: { label: 'Classe', type: 'text', placeholder: 'Ex: Campeão, Ranger, Feiticeiro' },
+            alinhamento: { label: 'Alinhamento', type: 'text', placeholder: 'Ex: Leal e Bom, Neutro' },
+            background: { label: 'Antecedente', type: 'text', placeholder: 'Ex: Acólito, Criminoso, Scholar' },
+            
+            // Atributos do Pathfinder 2e
+            forca: { label: 'Força', type: 'number', min: 8, max: 25, default: 10 },
+            destreza: { label: 'Destreza', type: 'number', min: 8, max: 25, default: 10 },
+            constituicao: { label: 'Constituição', type: 'number', min: 8, max: 25, default: 10 },
+            inteligencia: { label: 'Inteligência', type: 'number', min: 8, max: 25, default: 10 },
+            sabedoria: { label: 'Sabedoria', type: 'number', min: 8, max: 25, default: 10 },
+            carisma: { label: 'Carisma', type: 'number', min: 8, max: 25, default: 10 },
+            
+            // Perícias do Pathfinder 2e
+            acrobacia: { label: 'Acrobacia', type: 'number', default: 0 },
+            arcanismo: { label: 'Arcanismo', type: 'number', default: 0 },
+            atletismo: { label: 'Atletismo', type: 'number', default: 0 },
+            enganacao: { label: 'Enganação', type: 'number', default: 0 },
+            furtividade: { label: 'Furtividade', type: 'number', default: 0 },
+            historia: { label: 'História', type: 'number', default: 0 },
+            intuicao: { label: 'Intuição', type: 'number', default: 0 },
+            intimidacao: { label: 'Intimidação', type: 'number', default: 0 },
+            investigacao: { label: 'Investigação', type: 'number', default: 0 },
+            lidar_animais: { label: 'Lidar com Animais', type: 'number', default: 0 },
+            medicina: { label: 'Medicina', type: 'number', default: 0 },
+            natureza: { label: 'Natureza', type: 'number', default: 0 },
+            percepcao: { label: 'Percepção', type: 'number', default: 0 },
+            persuasao: { label: 'Diplomacia', type: 'number', default: 0 },
+            prestidigitacao: { label: 'Roubo', type: 'number', default: 0 },
+            religiao: { label: 'Religião', type: 'number', default: 0 },
+            sobrevivencia: { label: 'Sobrevivência', type: 'number', default: 0 },
+            
+            // Equipamentos e habilidades do Pathfinder
+            equipamentos: { label: 'Equipamentos', type: 'textarea', placeholder: 'Armas, armaduras, itens mágicos...' },
+            magias: { label: 'Magias/Cantrips', type: 'textarea', placeholder: 'Magias conhecidas e cantrips...' },
+            ataques_especiais: { label: 'Feitos', type: 'textarea', placeholder: 'Feitos de classe e ancestralidade...' },
+            recursos_classe: { label: 'Habilidades de Classe', type: 'textarea', placeholder: 'Características especiais da classe...' },
+            idiomas: { label: 'Idiomas', type: 'text', placeholder: 'Ex: Comum, Élfico, Dracônico' },
+            
+            // Stats do Pathfinder 2e
+            pv: { label: 'Pontos de Vida', type: 'number', min: 1, default: 8 },
+            ca: { label: 'Classe de Armadura', type: 'number', min: 10, default: 10 },
+            iniciativa: { label: 'Iniciativa', type: 'number', default: 0 },
+            percepcao_passiva: { label: 'CD de Percepção', type: 'number', default: 10 },
+            historia_personagem: { label: 'História do Personagem', type: 'textarea', placeholder: 'Background e motivações em Golarion...' }
+        },
+        sections: [
+            { name: 'Informações Básicas', fields: ['nome', 'raca', 'classe', 'alinhamento', 'background'] },
+            { name: 'Atributos', fields: ['forca', 'destreza', 'constituicao', 'inteligencia', 'sabedoria', 'carisma'] },
+            { name: 'Perícias', fields: ['acrobacia', 'arcanismo', 'atletismo', 'enganacao', 'furtividade', 'historia', 'intuicao', 'intimidacao', 'investigacao', 'lidar_animais', 'medicina', 'natureza', 'percepcao', 'persuasao', 'prestidigitacao', 'religiao', 'sobrevivencia'] },
+            { name: 'Combate', fields: ['pv', 'ca', 'iniciativa', 'percepcao_passiva'] },
+            { name: 'Habilidades', fields: ['magias', 'ataques_especiais', 'recursos_classe'] },
+            { name: 'Equipamentos e Outros', fields: ['equipamentos', 'idiomas', 'historia_personagem'] }
+        ]
+    },
+    
+    'Call of Cthulhu': {
+        name: 'Call of Cthulhu',
+        fields: {
+            // Informações básicas do Call of Cthulhu
+            nome: { label: 'Nome do Investigador', type: 'text', required: true, placeholder: 'Ex: Dr. Henry Armitage' },
+            raca: { label: 'Ocupação', type: 'text', placeholder: 'Ex: Professor, Detetive, Jornalista' },
+            classe: { label: 'Arquétipo', type: 'text', placeholder: 'Ex: Acadêmico, Combatente, Especialista' },
+            alinhamento: { label: 'Motivação', type: 'text', placeholder: 'Ex: Busca por conhecimento, Justiça' },
+            background: { label: 'Antecedentes', type: 'text', placeholder: 'Ex: Universidade, Força Policial' },
+            
+            // Atributos do Call of Cthulhu (3d6 x 5)
+            forca: { label: 'Força', type: 'number', min: 15, max: 90, default: 50 },
+            destreza: { label: 'Destreza', type: 'number', min: 15, max: 90, default: 50 },
+            constituicao: { label: 'Constituição', type: 'number', min: 15, max: 90, default: 50 },
+            inteligencia: { label: 'Inteligência', type: 'number', min: 15, max: 90, default: 50 },
+            sabedoria: { label: 'Poder', type: 'number', min: 15, max: 90, default: 50 },
+            carisma: { label: 'Aparência', type: 'number', min: 15, max: 90, default: 50 },
+            
+            // Perícias específicas do Call of Cthulhu
+            acrobacia: { label: 'Escalar', type: 'number', min: 0, max: 99, default: 20 },
+            arcanismo: { label: 'Mitos de Cthulhu', type: 'number', min: 0, max: 99, default: 0 },
+            atletismo: { label: 'Saltar', type: 'number', min: 0, max: 99, default: 20 },
+            enganacao: { label: 'Enganar', type: 'number', min: 0, max: 99, default: 5 },
+            furtividade: { label: 'Furtividade', type: 'number', min: 0, max: 99, default: 20 },
+            historia: { label: 'História', type: 'number', min: 0, max: 99, default: 5 },
+            intuicao: { label: 'Psicologia', type: 'number', min: 0, max: 99, default: 10 },
+            intimidacao: { label: 'Intimidar', type: 'number', min: 0, max: 99, default: 15 },
+            investigacao: { label: 'Descobrir Pistas', type: 'number', min: 0, max: 99, default: 25 },
+            lidar_animais: { label: 'Cavalgar', type: 'number', min: 0, max: 99, default: 5 },
+            medicina: { label: 'Medicina', type: 'number', min: 0, max: 99, default: 1 },
+            natureza: { label: 'Ciência Natural', type: 'number', min: 0, max: 99, default: 1 },
+            percepcao: { label: 'Observar', type: 'number', min: 0, max: 99, default: 25 },
+            persuasao: { label: 'Persuadir', type: 'number', min: 0, max: 99, default: 10 },
+            prestidigitacao: { label: 'Prestidigitação', type: 'number', min: 0, max: 99, default: 10 },
+            religiao: { label: 'Ocultismo', type: 'number', min: 0, max: 99, default: 5 },
+            sobrevivencia: { label: 'Rastreamento', type: 'number', min: 0, max: 99, default: 10 },
+            
+            // Equipamentos e aspectos do Call of Cthulhu
+            equipamentos: { label: 'Posses', type: 'textarea', placeholder: 'Livros, armas, equipamentos de investigação...' },
+            magias: { label: 'Magias/Rituais', type: 'textarea', placeholder: 'Magias conhecidas (perigosas!)...' },
+            ataques_especiais: { label: 'Fobias/Manias', type: 'textarea', placeholder: 'Medos e obsessões do investigador...' },
+            recursos_classe: { label: 'Contatos', type: 'textarea', placeholder: 'Aliados, informantes, recursos...' },
+            idiomas: { label: 'Idiomas', type: 'text', placeholder: 'Ex: Inglês, Latim, Grego Antigo' },
+            
+            // Stats específicos do Call of Cthulhu
+            pv: { label: 'Pontos de Vida', type: 'number', min: 1, max: 30, default: 10 },
+            ca: { label: 'Sanidade', type: 'number', min: 0, max: 99, default: 50 },
+            iniciativa: { label: 'Iniciativa', type: 'number', default: 0 },
+            percepcao_passiva: { label: 'Pontos de Magia', type: 'number', min: 0, max: 50, default: 10 },
+            historia_personagem: { label: 'História do Investigador', type: 'textarea', placeholder: 'Como chegou aos mistérios do sobrenatural...' }
+        },
+        sections: [
+            { name: 'Informações Básicas', fields: ['nome', 'raca', 'classe', 'alinhamento', 'background'] },
+            { name: 'Atributos', fields: ['forca', 'destreza', 'constituicao', 'inteligencia', 'sabedoria', 'carisma'] },
+            { name: 'Perícias', fields: ['acrobacia', 'arcanismo', 'atletismo', 'enganacao', 'furtividade', 'historia', 'intuicao', 'intimidacao', 'investigacao', 'lidar_animais', 'medicina', 'natureza', 'percepcao', 'persuasao', 'prestidigitacao', 'religiao', 'sobrevivencia'] },
+            { name: 'Combate', fields: ['pv', 'ca', 'iniciativa', 'percepcao_passiva'] },
+            { name: 'Habilidades', fields: ['magias', 'ataques_especiais', 'recursos_classe'] },
+            { name: 'Equipamentos e Outros', fields: ['equipamentos', 'idiomas', 'historia_personagem'] }
+        ]
     }
 };
 
@@ -419,4 +541,88 @@ function generateFieldHTML(fieldName, config) {
         <label class="form-label" for="${fieldName}">${config.label}</label>
         ${inputHTML}
     `;
+}
+
+// Função principal para carregar template
+function loadSystemTemplate() {
+    const systemSelect = document.getElementById('systemSelect');
+    const templateType = document.getElementById('templateType');
+    
+    if (!systemSelect || !templateType) return;
+    
+    const systemName = systemSelect.value;
+    const type = templateType.value;
+    
+    console.log(`Carregando template para: ${systemName}`);
+    
+    // Adaptar campos iniciais baseados no sistema
+    adaptInitialFields(systemName);
+    
+    // Gerar formulário baseado no sistema
+    generateTemplateForm(systemName, 'systemFieldsContainer');
+}
+
+// Função para adaptar campos iniciais baseados no sistema
+function adaptInitialFields(systemName) {
+    const nameLabel = document.getElementById('characterNameLabel');
+    const levelLabel = document.getElementById('levelLabel');
+    const levelInput = document.getElementById('level');
+    
+    if (!nameLabel || !levelLabel || !levelInput) return;
+    
+    switch (systemName) {
+        case 'Vampire':
+            nameLabel.textContent = 'Nome do Vampiro';
+            levelLabel.textContent = 'Geração';
+            levelInput.min = 1;
+            levelInput.max = 15;
+            levelInput.value = 13;
+            levelInput.placeholder = 'Geração vampírica';
+            break;
+            
+        case 'Call of Cthulhu':
+            nameLabel.textContent = 'Nome do Investigador';
+            levelLabel.textContent = 'Idade';
+            levelInput.min = 18;
+            levelInput.max = 90;
+            levelInput.value = 25;
+            levelInput.placeholder = 'Idade do investigador';
+            break;
+            
+        case '3D&T':
+            nameLabel.textContent = 'Nome do Personagem';
+            levelLabel.textContent = 'Pontos';
+            levelInput.min = 1;
+            levelInput.max = 10;
+            levelInput.value = 1;
+            levelInput.placeholder = 'Pontos de personagem';
+            break;
+            
+        case 'Pathfinder':
+            nameLabel.textContent = 'Nome do Personagem';
+            levelLabel.textContent = 'Nível';
+            levelInput.min = 1;
+            levelInput.max = 20;
+            levelInput.value = 1;
+            levelInput.placeholder = 'Nível do personagem';
+            break;
+            
+        case 'Tormenta20':
+            nameLabel.textContent = 'Nome do Personagem';
+            levelLabel.textContent = 'Nível';
+            levelInput.min = 1;
+            levelInput.max = 20;
+            levelInput.value = 1;
+            levelInput.placeholder = 'Nível do personagem';
+            break;
+            
+        default: // D&D 5e
+            nameLabel.textContent = 'Nome do Personagem';
+            levelLabel.textContent = 'Nível';
+            levelInput.min = 1;
+            levelInput.max = 20;
+            levelInput.value = 1;
+            levelInput.placeholder = 'Nível do personagem';
+            break;
+    }
 }
