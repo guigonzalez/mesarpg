@@ -23,6 +23,8 @@ class CombatGrid {
         this.measuring = false;
         this.measureStart = null;
         this.measureEnd = null;
+        this.backgroundImage = null;
+        this.imageLoaded = false;
         
         this.initEventListeners();
         this.draw();
@@ -262,6 +264,18 @@ class CombatGrid {
         this.gridScale = parseFloat(scale);
     }
     
+    setBackgroundImage(image) {
+        this.backgroundImage = image;
+        this.imageLoaded = true;
+        this.draw();
+    }
+    
+    clearBackgroundImage() {
+        this.backgroundImage = null;
+        this.imageLoaded = false;
+        this.draw();
+    }
+    
     draw() {
         this.ctx.save();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -269,6 +283,11 @@ class CombatGrid {
         // Aplicar transformações
         this.ctx.translate(this.panX, this.panY);
         this.ctx.scale(this.scale, this.scale);
+        
+        // Desenhar imagem de fundo
+        if (this.backgroundImage && this.imageLoaded) {
+            this.drawBackgroundImage();
+        }
         
         // Desenhar grid
         if (this.showGrid) {
@@ -287,8 +306,27 @@ class CombatGrid {
         this.ctx.restore();
     }
     
+    drawBackgroundImage() {
+        if (!this.backgroundImage) return;
+        
+        // Calcular tamanho para cobrir toda a área visível
+        const canvasWidth = this.canvas.width / this.scale;
+        const canvasHeight = this.canvas.height / this.scale;
+        
+        // Desenhar a imagem para cobrir toda a área
+        this.ctx.globalAlpha = 0.8; // Tornar ligeiramente transparente
+        this.ctx.drawImage(
+            this.backgroundImage,
+            -this.panX / this.scale,
+            -this.panY / this.scale,
+            canvasWidth,
+            canvasHeight
+        );
+        this.ctx.globalAlpha = 1.0; // Restaurar opacidade
+    }
+    
     drawGrid() {
-        this.ctx.strokeStyle = '#dee2e6';
+        this.ctx.strokeStyle = this.backgroundImage ? 'rgba(222, 226, 230, 0.7)' : '#dee2e6';
         this.ctx.lineWidth = 1;
         
         const startX = Math.floor(-this.panX / this.scale / this.gridSize) * this.gridSize;
@@ -507,6 +545,38 @@ function setGridScale(scale) {
     if (grid && grid.setGridScale) {
         grid.setGridScale(scale);
     }
+}
+
+function uploadMap(input) {
+    if (!grid) return;
+    
+    const file = input.files[0];
+    if (!file) return;
+    
+    if (!file.type.match(/^image\/(png|jpeg|jpg)$/)) {
+        alert('Por favor, selecione apenas arquivos PNG ou JPEG.');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            grid.setBackgroundImage(img);
+            console.log('Mapa carregado com sucesso');
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    
+    // Limpar o input para permitir upload do mesmo arquivo novamente
+    input.value = '';
+}
+
+function clearMap() {
+    if (!grid) return;
+    grid.clearBackgroundImage();
+    console.log('Mapa removido');
 }
 
 function toggleGridConfig() {

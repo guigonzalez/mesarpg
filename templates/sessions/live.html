@@ -78,6 +78,17 @@
                             </div>
                         </div>
                         <div class="col-auto">
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="mapUpload" class="btn btn-outline-info btn-sm mb-0" title="Upload de mapa">
+                                    <i class="fas fa-upload"></i> Mapa
+                                </label>
+                                <input type="file" id="mapUpload" accept="image/png,image/jpeg,image/jpg" style="display: none;" onchange="uploadMap(this)">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearMap()" title="Remover mapa">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-auto">
                             <div class="btn-group btn-group-sm">
                                 <button type="button" class="btn btn-outline-secondary" onclick="zoomIn()" title="Zoom In">
                                     <i class="fas fa-plus"></i>
