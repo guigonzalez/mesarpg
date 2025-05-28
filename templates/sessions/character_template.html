@@ -305,13 +305,13 @@ function previewCharacter() {
     
     let previewHTML = `
         <div class="character-preview">
-            <h5>${formData.character_name || 'Personagem'}</h5>
+            <h5>${formData.nome || 'Personagem'}</h5>
             <div class="row g-3">
     `;
     
     // Mostrar campos principais
     for (const [key, value] of Object.entries(formData)) {
-        if (key !== 'character_name' && value) {
+        if (key !== 'nome' && value) {
             previewHTML += `
                 <div class="col-md-6">
                     <strong>${key.replace('_', ' ').toUpperCase()}:</strong> ${value}
@@ -332,7 +332,7 @@ function previewCharacter() {
 function createCharacter() {
     const formData = collectFormData();
     
-    if (!formData.character_name) {
+    if (!formData.nome) {
         showNotification('Nome do personagem é obrigatório', 'error');
         return;
     }
