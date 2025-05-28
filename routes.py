@@ -93,11 +93,19 @@ def list():
     if status_filter:
         query = query.filter(Session.status == status_filter)
     
-    sessions = query.order_by(Session.created_at.desc()).paginate(
-        page=page, per_page=12, error_out=False
-    )
+    # Get user's own sessions and other sessions separately
+    if current_user.is_authenticated:
+        user_sessions = query.filter(Session.master_id == current_user.id).order_by(Session.created_at.desc()).all()
+        other_sessions = query.filter(Session.master_id != current_user.id).order_by(Session.created_at.desc()).paginate(
+            page=page, per_page=12, error_out=False
+        )
+    else:
+        user_sessions = []
+        other_sessions = query.order_by(Session.created_at.desc()).paginate(
+            page=page, per_page=12, error_out=False
+        )
     
-    return render_template('sessions/list.html', sessions=sessions, 
+    return render_template('sessions/list.html', user_sessions=user_sessions, other_sessions=other_sessions,
                          system_filter=system_filter, beginner_filter=beginner_filter, status_filter=status_filter)
 
 @sessions_bp.route('/create', methods=['GET', 'POST'])
