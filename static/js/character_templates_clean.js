@@ -548,22 +548,33 @@ function loadSystemTemplate() {
     const systemSelect = document.getElementById('systemSelect');
     const templateType = document.getElementById('templateType');
     
-    if (!systemSelect || !templateType) return;
+    if (!systemSelect || !templateType) {
+        console.error('Elementos de seleção não encontrados!');
+        return;
+    }
     
     const systemName = systemSelect.value;
     const type = templateType.value;
     
-    console.log(`Carregando template para: ${systemName} (Tipo: ${type})`);
+    console.log(`=== CARREGANDO TEMPLATE ===`);
+    console.log(`Sistema: ${systemName}`);
+    console.log(`Tipo: ${type}`);
+    
+    // Limpar container primeiro
+    const container = document.getElementById('systemFieldsContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
     
     // Adaptar campos iniciais baseados no sistema e tipo
     adaptInitialFields(systemName, type);
     
-    // Gerar formulário baseado no sistema e tipo
+    // Decidir qual tipo de formulário gerar
     if (type === 'npc' || type === 'monster') {
-        console.log(`Gerando formulário SIMPLIFICADO para ${type}`);
+        console.log(`🔥 GERANDO FORMULÁRIO SIMPLIFICADO para ${type.toUpperCase()}`);
         generateSimplifiedForm(systemName, type, 'systemFieldsContainer');
     } else {
-        console.log(`Gerando formulário AVANÇADO para ${type}`);
+        console.log(`⚡ GERANDO FORMULÁRIO AVANÇADO para ${type.toUpperCase()}`);
         generateTemplateForm(systemName, 'systemFieldsContainer');
     }
 }
