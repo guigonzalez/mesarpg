@@ -337,20 +337,20 @@ class CombatGrid {
         this.ctx.fill();
         this.ctx.stroke();
         
-        // Desenhar ícone usando os mesmos símbolos dos botões
+        // Desenhar ícone usando símbolos simples (não emojis)
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = `${this.gridSize * 0.4}px Arial`;
+        this.ctx.font = `bold ${this.gridSize * 0.3}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         
         const iconMap = {
-            player: '⚔️',  // Mesmo ícone do botão jogador
-            enemy: '💀',   // Mesmo ícone do botão inimigo
-            npc: '👥',     // Mesmo ícone do botão NPC
-            object: '📦'   // Mesmo ícone do botão objeto
+            player: '♦',   // Losango para jogador
+            enemy: '♠',    // Espada para inimigo
+            npc: '♣',      // Trevo para NPC
+            object: '■'    // Quadrado para objeto
         };
         
-        this.ctx.fillText(iconMap[token.tokenType] || '❓', token.x, token.y);
+        this.ctx.fillText(iconMap[token.tokenType] || '?', token.x, token.y);
     }
     
     drawMarkers() {
@@ -396,47 +396,71 @@ class CombatGrid {
 let grid;
 
 // Inicializar quando a página carregar
-document.addEventListener('DOMContentLoaded', function() {
-    // Aguardar um pouco para garantir que todos os elementos estejam carregados
-    setTimeout(() => {
-        const canvas = document.getElementById('gameGrid');
-        if (canvas) {
+function initializeGrid() {
+    const canvas = document.getElementById('gameGrid');
+    if (canvas && canvas.getContext) {
+        try {
             grid = new CombatGrid();
+            console.log('Grid de combate inicializado com sucesso');
+        } catch (error) {
+            console.error('Erro ao inicializar grid:', error);
         }
-    }, 100);
+    } else {
+        console.warn('Canvas gameGrid não encontrado ou não suportado');
+    }
+}
+
+// Tentar inicializar quando DOM carregar
+document.addEventListener('DOMContentLoaded', function() {
+    initializeGrid();
+});
+
+// Tentar novamente após carregar completamente
+window.addEventListener('load', function() {
+    if (!grid) {
+        initializeGrid();
+    }
 });
 
 // Funções globais para os botões
 function toggleTokenMode() {
+    if (!grid) return;
     grid.currentMode = 'token';
     updateButtonStates();
 }
 
 function toggleMarkerMode() {
+    if (!grid) return;
     grid.currentMode = 'marker';
     updateButtonStates();
 }
 
 function toggleMeasureMode() {
+    if (!grid) return;
     grid.currentMode = 'measure';
     updateButtonStates();
 }
 
 function clearGrid() {
+    if (!grid) return;
     grid.tokens = [];
     grid.markers = [];
     grid.draw();
 }
 
 function toggleGrid() {
+    if (!grid) return;
     grid.showGrid = !grid.showGrid;
     grid.draw();
     
     const btn = document.getElementById('gridBtn');
-    btn.classList.toggle('active', grid.showGrid);
+    if (btn) {
+        btn.classList.toggle('active', grid.showGrid);
+    }
 }
 
 function selectToken(tokenType) {
+    if (!grid) return;
     grid.selectedToken = tokenType;
     grid.currentMode = 'token';
     
@@ -444,23 +468,29 @@ function selectToken(tokenType) {
     document.querySelectorAll('.token-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[data-token="${tokenType}"]`).classList.add('active');
+    const tokenBtn = document.querySelector(`[data-token="${tokenType}"]`);
+    if (tokenBtn) {
+        tokenBtn.classList.add('active');
+    }
     updateButtonStates();
 }
 
 function zoomIn() {
+    if (!grid) return;
     grid.scale *= 1.2;
     grid.scale = Math.min(3, grid.scale);
     grid.draw();
 }
 
 function zoomOut() {
+    if (!grid) return;
     grid.scale *= 0.8;
     grid.scale = Math.max(0.5, grid.scale);
     grid.draw();
 }
 
 function resetZoom() {
+    if (!grid) return;
     grid.scale = 1;
     grid.panX = 0;
     grid.panY = 0;
@@ -468,13 +498,13 @@ function resetZoom() {
 }
 
 function setGridSize(size) {
-    if (grid) {
+    if (grid && grid.setGridSize) {
         grid.setGridSize(size);
     }
 }
 
 function setGridScale(scale) {
-    if (grid) {
+    if (grid && grid.setGridScale) {
         grid.setGridScale(scale);
     }
 }
