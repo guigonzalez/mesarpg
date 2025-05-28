@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}NPCs e Criaturas - {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">
+                                <i class="fas fa-mask me-2"></i>NPCs e Criaturas
+                            </h4>
+                            <p class="text-muted mb-0">{{ session.title }} - {{ session.system }}</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('sessions.npc_template', id=session.id) }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Criar NPC/Criatura
+                            </a>
+                            <a href="{{ url_for('sessions.live', id=session.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar para Mesa
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NPCs Section -->
+            {% if npcs %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>NPCs ({{ npcs|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for npc in npcs %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary">{{ npc.character_name }}</h6>
+                                    <p class="card-text small text-muted mb-2">
+                                        {% if npc.race %}{{ npc.race }}{% endif %}
+                                        {% if npc.character_class and npc.race %} • {% endif %}
+                                        {% if npc.character_class %}{{ npc.character_class }}{% endif %}
+                                    </p>
+                                    {% if npc.description %}
+                                    <p class="card-text small">{{ npc.description[:100] }}{% if npc.description|length > 100 %}...{% endif %}</p>
+                                    {% endif %}
+                                    <div class="d-flex gap-2 mt-auto">
+                                        <a href="{{ url_for('sessions.view_character_sheet', session_id=session.id, character_id=npc.id) }}" 
+                                           class="btn btn-sm btn-outline-primary flex-fill">
+                                            <i class="fas fa-eye me-1"></i>Ver
+                                        </a>
+                                        <a href="{{ url_for('sessions.edit_character_sheet', session_id=session.id, character_id=npc.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Criaturas Section -->
+            {% if creatures %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-dragon me-2"></i>Criaturas ({{ creatures|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for creature in creatures %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card h-100 border-warning">
+                                <div class="card-body">
+                                    <h6 class="card-title text-warning">{{ creature.character_name }}</h6>
+                                    <p class="card-text small text-muted mb-2">
+                                        {% if creature.race %}{{ creature.race }}{% endif %}
+                                        {% if creature.level %} • Nível {{ creature.level }}{% endif %}
+                                    </p>
+                                    {% if creature.description %}
+                                    <p class="card-text small">{{ creature.description[:100] }}{% if creature.description|length > 100 %}...{% endif %}</p>
+                                    {% endif %}
+                                    <div class="d-flex gap-2 mt-auto">
+                                        <a href="{{ url_for('sessions.view_character_sheet', session_id=session.id, character_id=creature.id) }}" 
+                                           class="btn btn-sm btn-outline-warning flex-fill">
+                                            <i class="fas fa-eye me-1"></i>Ver
+                                        </a>
+                                        <a href="{{ url_for('sessions.edit_character_sheet', session_id=session.id, character_id=creature.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Estado vazio -->
+            {% if not npcs and not creatures %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-mask fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum NPC ou Criatura criado</h5>
+                    <p class="text-muted mb-4">Use o criador simplificado para adicionar NPCs e criaturas à sua sessão.</p>
+                    <a href="{{ url_for('sessions.npc_template', id=session.id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Criar Primeiro NPC/Criatura
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.border-primary {
+    border-color: #0d6efd !important;
+}
+
+.border-warning {
+    border-color: #ffc107 !important;
+}
+</style>
+{% endblock %}

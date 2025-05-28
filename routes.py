@@ -655,7 +655,35 @@ def character_template(id):
         flash('Apenas o mestre pode usar o criador de fichas.', 'error')
         return redirect(url_for('sessions.character_sheets', id=id))
     
-    return render_template('sessions/character_template.html', session=session)
+    return render_template('sessions/character_template.html', session=session, template_type='player')
+
+@sessions_bp.route('/<int:id>/npcs')
+@login_required
+def npcs_list(id):
+    session = Session.query.get_or_404(id)
+    
+    # Verificar se é o mestre da sessão
+    if session.master_id != current_user.id:
+        flash('Apenas o mestre pode gerenciar NPCs e Criaturas.', 'error')
+        return redirect(url_for('sessions.character_sheets', id=id))
+    
+    # Buscar NPCs e Criaturas da sessão
+    npcs = CharacterSheet.query.filter_by(session_id=id, character_class='NPC').all()
+    creatures = CharacterSheet.query.filter_by(session_id=id, character_class='Criatura').all()
+    
+    return render_template('sessions/npcs.html', session=session, npcs=npcs, creatures=creatures)
+
+@sessions_bp.route('/<int:id>/npcs/template')
+@login_required
+def npc_template(id):
+    session = Session.query.get_or_404(id)
+    
+    # Verificar se é o mestre da sessão
+    if session.master_id != current_user.id:
+        flash('Apenas o mestre pode criar NPCs e Criaturas.', 'error')
+        return redirect(url_for('sessions.character_sheets', id=id))
+    
+    return render_template('sessions/npc_template.html', session=session)
 
 @sessions_bp.route('/<int:id>/characters/from-template', methods=['POST'])
 @login_required  

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Criador de NPCs e Criaturas - {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">
+                                <i class="fas fa-mask me-2"></i>Criador de NPCs e Criaturas - {{ session.system }}
+                            </h4>
+                            <p class="text-muted mb-0">{{ session.title }}</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seletor de Sistema -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>Configuração
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Sistema de RPG</label>
+                            <select id="systemSelect" class="form-select" onchange="loadNPCTemplate()">
+                                <option value="D&D 5e" {% if session.system == "D&D 5e" %}selected{% endif %}>Dungeons & Dragons 5ª Edição</option>
+                                <option value="Tormenta20" {% if session.system == "Tormenta20" %}selected{% endif %}>Tormenta20</option>
+                                <option value="Call of Cthulhu" {% if session.system == "Call of Cthulhu" %}selected{% endif %}>Call of Cthulhu</option>
+                                <option value="Vampire" {% if session.system == "Vampire: The Masquerade" %}selected{% endif %}>Vampire: The Masquerade</option>
+                                <option value="Pathfinder" {% if session.system == "Pathfinder" %}selected{% endif %}>Pathfinder</option>
+                                <option value="3D&T" {% if session.system == "3D&T" %}selected{% endif %}>3D&T Alpha</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo</label>
+                            <select id="templateType" class="form-select" onchange="loadNPCTemplate()">
+                                <option value="npc">NPC/Antagonista</option>
+                                <option value="monster">Criatura/Monstro</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-primary" onclick="loadNPCTemplate()">
+                            <i class="fas fa-sync me-1"></i>Carregar Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário Principal -->
+            <form method="POST" action="{{ url_for('sessions.create_from_template', id=session.id) }}">
+                <!-- Campos Básicos (sempre presentes) -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user me-2"></i>Informações Básicas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label" id="characterNameLabel" for="character_name">Nome</label>
+                                <input type="text" class="form-control" id="character_name" name="character_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="template_type">Tipo</label>
+                                <select class="form-select" id="template_type" name="template_type">
+                                    <option value="NPC">NPC</option>
+                                    <option value="Criatura">Criatura</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Container para campos específicos do sistema -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Campos Específicos
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="systemFieldsContainer">
+                            <!-- Os campos específicos serão inseridos aqui via JavaScript -->
+                            <div class="text-center py-4">
+                                <i class="fas fa-cog fa-spin fa-2x text-muted mb-3"></i>
+                                <p class="text-muted">Selecione um sistema e tipo para carregar os campos...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Criar NPC/Criatura
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/character_templates_clean.js') }}"></script>
+<script>
+// Função específica para carregar templates de NPCs
+function loadNPCTemplate() {
+    const systemSelect = document.getElementById('systemSelect');
+    const templateType = document.getElementById('templateType');
+    
+    if (!systemSelect || !templateType) {
+        console.error('Elementos de seleção não encontrados!');
+        return;
+    }
+    
+    const systemName = systemSelect.value;
+    const type = templateType.value;
+    
+    console.log(`=== CARREGANDO TEMPLATE NPC/CRIATURA ===`);
+    console.log(`Sistema: ${systemName}`);
+    console.log(`Tipo: ${type}`);
+    
+    // Limpar container primeiro
+    const container = document.getElementById('systemFieldsContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
+    
+    // Sempre gerar formulário simplificado para NPCs/Criaturas
+    console.log(`🔥 GERANDO FORMULÁRIO SIMPLIFICADO para ${type.toUpperCase()}`);
+    generateSimplifiedForm(systemName, type, 'systemFieldsContainer');
+    
+    // Atualizar o campo tipo
+    const templateTypeField = document.getElementById('template_type');
+    if (templateTypeField) {
+        templateTypeField.value = type === 'npc' ? 'NPC' : 'Criatura';
+    }
+}
+
+// Carregar template inicial quando a página carrega
+document.addEventListener('DOMContentLoaded', function() {
+    loadNPCTemplate();
+});
+</script>
+
+<style>
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+#systemFieldsContainer {
+    min-height: 200px;
+}
+
+.text-center input {
+    font-weight: bold;
+}
+</style>
+{% endblock %}
