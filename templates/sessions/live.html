@@ -478,5 +478,87 @@ document.getElementById('chatInput').addEventListener('keypress', function(e) {
 .dice-rolls {
     text-align: center;
 }
+
+/* Estilos para chat */
+.chat-message {
+    margin-bottom: 8px;
+}
+
+.chat-bubble {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 8px 12px;
+    max-width: 90%;
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.chat-bubble.own-message {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.chat-bubble.dice-message {
+    background: #e3f2fd;
+    border-color: #1976d2;
+}
+
+.chat-bubble.own-message.dice-message {
+    background: #1976d2;
+    color: white;
+}
+
+.chat-bubble.system-message {
+    background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+    text-align: center;
+    margin: 0 auto;
+    font-style: italic;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.username {
+    font-size: 0.85em;
+}
+
+.timestamp {
+    font-size: 0.75em;
+}
+
+.own-message .username,
+.own-message .timestamp {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.dice-roll-chat {
+    margin: 0;
+}
+
+.dice-roll-chat .dice-result {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+
+.own-message .dice-roll-chat .dice-result {
+    background: rgba(255, 255, 255, 0.95);
+}
 </style>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/grid.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dice.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}

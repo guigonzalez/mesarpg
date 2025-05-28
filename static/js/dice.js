@@ -97,16 +97,14 @@ function quickRoll(sides) {
 function rollInitiative() {
     const notation = '1d20+DEX';
     const results = rollDiceNotation(1, 20, 0);
-    
-    // Personalizar para iniciativa
-    const resultDiv = document.getElementById('diceResult');
     const roll = results.rolls[0];
     
-    let resultHTML = `
-        <div class="dice-roll-result border rounded p-2 bg-light">
+    // Personalizar para iniciativa
+    let initiativeMessage = `
+        <div class="dice-roll-chat">
             <div class="d-flex justify-content-between align-items-center mb-1">
                 <strong>Iniciativa</strong>
-                <span class="badge bg-success fs-6">${roll} + DEX</span>
+                <span class="badge bg-success">${roll} + DEX</span>
             </div>
             <div class="dice-rolls">
                 <span class="dice-result" title="d20: ${roll}">${roll}</span>
@@ -115,24 +113,8 @@ function rollInitiative() {
         </div>
     `;
     
-    // Adicionar ao histórico
-    const existingResults = resultDiv.querySelectorAll('.dice-roll-result');
-    if (existingResults.length >= 3) {
-        existingResults[0].remove();
-    }
-    
-    resultDiv.insertAdjacentHTML('afterbegin', resultHTML);
-    
-    // Animar o novo resultado
-    const newResult = resultDiv.firstElementChild;
-    newResult.style.opacity = '0';
-    newResult.style.transform = 'translateY(-10px)';
-    
-    setTimeout(() => {
-        newResult.style.transition = 'all 0.3s ease';
-        newResult.style.opacity = '1';
-        newResult.style.transform = 'translateY(0)';
-    }, 10);
+    // Enviar para o chat
+    sendChatMessage(initiativeMessage, 'dice');
 }
 
 // Função para rolar dados via notação (ex: "2d6+3")
