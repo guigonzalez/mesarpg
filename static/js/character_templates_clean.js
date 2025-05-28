@@ -3,8 +3,7 @@ const RPG_TEMPLATES = {
     'D&D 5e': {
         name: 'Dungeons & Dragons 5ª Edição',
         fields: {
-            // Informações básicas do personagem
-            nome: { label: 'Nome do Personagem', type: 'text', required: true },
+            // Informações básicas do personagem (nome já está no formulário base)
             raca: { label: 'Raça', type: 'text', placeholder: 'Ex: Humano, Elfo, Anão' },
             classe: { label: 'Classe', type: 'text', placeholder: 'Ex: Guerreiro, Mago, Ladino' },
             alinhamento: { label: 'Alinhamento', type: 'text', placeholder: 'Ex: Leal e Bom' },
@@ -172,8 +171,7 @@ const RPG_TEMPLATES = {
     'Vampire': {
         name: 'Vampire: The Masquerade',
         fields: {
-            // Informações básicas específicas do Vampire
-            nome: { label: 'Nome do Vampiro', type: 'text', required: true, placeholder: 'Ex: Magnus Blackthorne' },
+            // Informações básicas específicas do Vampire (nome já está no formulário base)
             raca: { label: 'Clã', type: 'text', placeholder: 'Ex: Brujah, Toreador, Ventrue, Nosferatu' },
             classe: { label: 'Conceito', type: 'text', placeholder: 'Ex: Rebelde, Artista, Político, Investigador' },
             alinhamento: { label: 'Natureza/Comportamento', type: 'text', placeholder: 'Ex: Visionário/Conformista' },
@@ -233,8 +231,7 @@ const RPG_TEMPLATES = {
     '3D&T': {
         name: '3D&T Alpha',
         fields: {
-            // Informações básicas específicas do 3D&T
-            nome: { label: 'Nome do Personagem', type: 'text', required: true, placeholder: 'Ex: Kenji Yamamoto' },
+            // Informações básicas específicas do 3D&T (nome já está no formulário base)
             raca: { label: 'Raça/Origem', type: 'text', placeholder: 'Ex: Humano, Youkai, Robô, Alienígena' },
             classe: { label: 'Classe/Conceito', type: 'text', placeholder: 'Ex: Lutador, Mago, Inventor, Detetive' },
             alinhamento: { label: 'Tendência', type: 'text', placeholder: 'Ex: Ordeiro e Bom, Neutro, Caótico' },
