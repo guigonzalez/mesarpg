@@ -397,9 +397,13 @@ let grid;
 
 // Inicializar quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('gameGrid')) {
-        grid = new CombatGrid();
-    }
+    // Aguardar um pouco para garantir que todos os elementos estejam carregados
+    setTimeout(() => {
+        const canvas = document.getElementById('gameGrid');
+        if (canvas) {
+            grid = new CombatGrid();
+        }
+    }, 100);
 });
 
 // Funções globais para os botões
@@ -472,6 +476,22 @@ function setGridSize(size) {
 function setGridScale(scale) {
     if (grid) {
         grid.setGridScale(scale);
+    }
+}
+
+function toggleGridConfig() {
+    const content = document.getElementById('gridConfigContent');
+    const btn = document.getElementById('toggleConfigBtn');
+    const icon = btn.querySelector('i');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.className = 'fas fa-eye-slash';
+        btn.title = 'Ocultar configurações';
+    } else {
+        content.style.display = 'none';
+        icon.className = 'fas fa-eye';
+        btn.title = 'Mostrar configurações';
     }
 }
 
