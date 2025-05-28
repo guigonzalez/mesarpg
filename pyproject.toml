@@ -15,4 +15,5 @@ dependencies = [
     "wtforms>=3.2.1",
     "stripe>=12.1.0",
     "flask-wtf>=1.2.2",
+    "pytz>=2025.2",
 ]

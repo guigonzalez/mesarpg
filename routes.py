@@ -4,6 +4,8 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
+from datetime import datetime
+import pytz
 from app import db
 from models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage
 from forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm
@@ -427,14 +429,21 @@ def get_chat_messages(session_id):
         .order_by(ChatMessage.created_at.asc())\
         .limit(100).all()
     
+    # Timezone de São Paulo
+    sp_tz = pytz.timezone('America/Sao_Paulo')
+    
     messages_data = []
     for msg in messages:
+        # Converter UTC para horário de São Paulo
+        utc_time = msg.created_at.replace(tzinfo=pytz.UTC)
+        sp_time = utc_time.astimezone(sp_tz)
+        
         messages_data.append({
             'id': msg.id,
             'username': msg.user.username,
             'message': msg.message,
             'message_type': msg.message_type,
-            'created_at': msg.created_at.strftime('%H:%M'),
+            'created_at': sp_time.strftime('%H:%M'),
             'is_current_user': msg.user_id == current_user.id
         })
     
@@ -476,6 +485,11 @@ def send_chat_message(session_id):
     db.session.add(chat_message)
     db.session.commit()
     
+    # Timezone de São Paulo
+    sp_tz = pytz.timezone('America/Sao_Paulo')
+    utc_time = chat_message.created_at.replace(tzinfo=pytz.UTC)
+    sp_time = utc_time.astimezone(sp_tz)
+    
     return jsonify({
         'success': True,
         'message': {
@@ -483,7 +497,7 @@ def send_chat_message(session_id):
             'username': current_user.username,
             'message': chat_message.message,
             'message_type': chat_message.message_type,
-            'created_at': chat_message.created_at.strftime('%H:%M'),
+            'created_at': sp_time.strftime('%H:%M'),
             'is_current_user': True
         }
     })
