@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}{{ character.character_name }} - {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Cabeçalho da Ficha -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">
+                                <i class="fas fa-user-circle me-2"></i>{{ character.character_name }}
+                            </h4>
+                            <small>{{ character.character_class }} - Nível {{ character.level }}</small>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('sessions.character_sheets', id=session.id) }}" class="btn btn-light btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                            {% if current_user.id == session.master_id or current_user.id == character.player_id %}
+                            <a href="{{ url_for('sessions.edit_character_sheet', id=session.id, character_id=character.id) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit me-1"></i>Editar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Informações Básicas -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-id-card me-2"></i>Informações Básicas
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <strong>Raça:</strong><br>
+                                    <span class="text-muted">{{ character.race or 'Não definido' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Classe:</strong><br>
+                                    <span class="text-muted">{{ character.character_class or 'Não definido' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Nível:</strong><br>
+                                    <span class="badge bg-primary">{{ character.level }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Background:</strong><br>
+                                    <span class="text-muted">{{ character.background or 'Não definido' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Atributos -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-dumbbell me-2"></i>Atributos
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-4 text-center">
+                                    <div class="bg-light p-2 rounded">
+                                        <strong>FOR</strong><br>
+                                        <span class="h5">{{ character.strength }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <div class="bg-light p-2 rounded">
+                                        <strong>DES</strong><br>
+                                        <span class="h5">{{ character.dexterity }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <div class="bg-light p-2 rounded">
+                                        <strong>CON</strong><br>
+                                        <span class="h5">{{ character.constitution }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <div class="bg-light p-2 rounded">
+                                        <strong>INT</strong><br>
+                                        <span class="h5">{{ character.intelligence }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <div class="bg-light p-2 rounded">
+                                        <strong>SAB</strong><br>
+                                        <span class="h5">{{ character.wisdom }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <div class="bg-light p-2 rounded">
+                                        <strong>CAR</strong><br>
+                                        <span class="h5">{{ character.charisma }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combate -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-shield-alt me-2"></i>Combate
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-6 text-center">
+                                    <div class="bg-danger text-white p-2 rounded">
+                                        <strong>PV</strong><br>
+                                        <span class="h5">{{ character.hit_points }}/{{ character.max_hit_points }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <div class="bg-info text-white p-2 rounded">
+                                        <strong>CA</strong><br>
+                                        <span class="h5">{{ character.armor_class }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-12 text-center">
+                                    <div class="bg-success text-white p-2 rounded">
+                                        <strong>Velocidade</strong><br>
+                                        <span class="h5">{{ character.speed }} pés</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Equipamentos -->
+                {% if character.equipment %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-backpack me-2"></i>Equipamentos
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-muted" style="white-space: pre-wrap;">{{ character.equipment }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Magias -->
+                {% if character.spells %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-magic me-2"></i>Magias
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-muted" style="white-space: pre-wrap;">{{ character.spells }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Descrição Física -->
+                {% if character.description %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-eye me-2"></i>Descrição Física
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-muted" style="white-space: pre-wrap;">{{ character.description }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- História -->
+                {% if character.backstory %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-book me-2"></i>História Pessoal
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-muted" style="white-space: pre-wrap;">{{ character.backstory }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Anotações -->
+                {% if character.notes %}
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-sticky-note me-2"></i>Anotações
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-muted" style="white-space: pre-wrap;">{{ character.notes }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Imagem do Personagem -->
+            {% if character.character_image_url %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-image me-2"></i>Imagem do Personagem
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <img src="{{ character.character_image_url }}" alt="{{ character.character_name }}" 
+                                 class="img-fluid rounded" style="max-height: 400px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: none;
+}
+
+.card-header {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.badge {
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
