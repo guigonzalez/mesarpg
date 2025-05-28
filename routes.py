@@ -650,10 +650,16 @@ def edit_character_sheet(session_id, character_id):
 def character_template(id):
     session = Session.query.get_or_404(id)
     
-    # Verificar se é o mestre da sessão
+    # Verificar se o usuário pode acessar esta sessão
     if session.master_id != current_user.id:
-        flash('Apenas o mestre pode usar o criador de fichas.', 'error')
-        return redirect(url_for('sessions.character_sheets', id=id))
+        application = SessionApplication.query.filter_by(
+            session_id=id,
+            player_id=current_user.id,
+            status='approved'
+        ).first()
+        if not application:
+            flash('Você não tem acesso a esta sessão.', 'error')
+            return redirect(url_for('sessions.list'))
     
     return render_template('sessions/character_template.html', session=session, template_type='player')
 
