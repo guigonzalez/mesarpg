@@ -17,6 +17,9 @@
                     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#playersModal">
                         <i class="fas fa-users me-1"></i>Jogadores
                     </button>
+                    <a href="{{ url_for('sessions.character_sheets', id=session.id) }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-scroll me-1"></i>Personagens
+                    </a>
                     <a href="{{ url_for('campaign.diary', session_id=session.id) }}" class="btn btn-sm btn-outline-info">
                         <i class="fas fa-book me-1"></i>Diário
                     </a>

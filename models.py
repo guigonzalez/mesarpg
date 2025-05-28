@@ -156,3 +156,55 @@ class ChatMessage(db.Model):
     
     def __repr__(self):
         return f'<ChatMessage {self.user.username}: {self.message[:50]}>'
+
+
+class CharacterSheet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('session.id'), nullable=False)
+    player_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    character_name = db.Column(db.String(100), nullable=False)
+    character_class = db.Column(db.String(50))
+    level = db.Column(db.Integer, default=1)
+    race = db.Column(db.String(50))
+    background = db.Column(db.String(100))
+    
+    # Atributos principais
+    strength = db.Column(db.Integer, default=10)
+    dexterity = db.Column(db.Integer, default=10)
+    constitution = db.Column(db.Integer, default=10)
+    intelligence = db.Column(db.Integer, default=10)
+    wisdom = db.Column(db.Integer, default=10)
+    charisma = db.Column(db.Integer, default=10)
+    
+    # Stats básicos
+    armor_class = db.Column(db.Integer, default=10)
+    hit_points = db.Column(db.Integer, default=8)
+    max_hit_points = db.Column(db.Integer, default=8)
+    speed = db.Column(db.Integer, default=30)
+    
+    # Informações do personagem
+    description = db.Column(db.Text)
+    backstory = db.Column(db.Text)
+    equipment = db.Column(db.Text)
+    spells = db.Column(db.Text)
+    notes = db.Column(db.Text)
+    
+    # URL da imagem do personagem
+    character_image_url = db.Column(db.String(255))
+    
+    # Controle de visibilidade
+    is_public = db.Column(db.Boolean, default=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    session = db.relationship('Session', backref='character_sheets')
+    player = db.relationship('User', backref='character_sheets')
+    
+    def get_modifier(self, ability_score):
+        """Calcula o modificador de um atributo"""
+        return (ability_score - 10) // 2
+    
+    def __repr__(self):
+        return f'<CharacterSheet {self.character_name} - {self.player.username}>'

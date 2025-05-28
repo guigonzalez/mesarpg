@@ -7,8 +7,8 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 import pytz
 from app import db
-from models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage
-from forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm
+from models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterSheet
+from forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm, CharacterSheetForm
 
 # Create blueprints
 main_bp = Blueprint('main', __name__)
@@ -501,3 +501,146 @@ def send_chat_message(session_id):
             'is_current_user': True
         }
     })
+
+# Character Sheet routes
+@sessions_bp.route('/<int:id>/characters')
+@login_required
+def character_sheets(id):
+    session = Session.query.get_or_404(id)
+    
+    # Verificar se o usuário pode acessar esta sessão
+    if session.master_id != current_user.id:
+        application = SessionApplication.query.filter_by(
+            session_id=id,
+            player_id=current_user.id,
+            status='approved'
+        ).first()
+        if not application:
+            flash('Você não tem acesso a esta sessão.', 'error')
+            return redirect(url_for('sessions.list'))
+    
+    # Buscar fichas da sessão
+    if session.master_id == current_user.id:
+        # Mestre vê todas as fichas públicas
+        character_sheets = CharacterSheet.query.filter_by(session_id=id, is_public=True).all()
+    else:
+        # Jogador vê apenas suas fichas e fichas públicas de outros
+        character_sheets = CharacterSheet.query.filter(
+            CharacterSheet.session_id == id,
+            db.or_(
+                CharacterSheet.player_id == current_user.id,
+                CharacterSheet.is_public == True
+            )
+        ).all()
+    
+    return render_template('sessions/characters.html', session=session, character_sheets=character_sheets)
+
+@sessions_bp.route('/<int:id>/characters/new')
+@login_required
+def new_character_sheet(id):
+    session = Session.query.get_or_404(id)
+    
+    # Verificar se o usuário pode acessar esta sessão
+    if session.master_id != current_user.id:
+        application = SessionApplication.query.filter_by(
+            session_id=id,
+            player_id=current_user.id,
+            status='approved'
+        ).first()
+        if not application:
+            flash('Você não tem acesso a esta sessão.', 'error')
+            return redirect(url_for('sessions.list'))
+    
+    form = CharacterSheetForm()
+    
+    if form.validate_on_submit():
+        character_sheet = CharacterSheet(
+            session_id=id,
+            player_id=current_user.id,
+            character_name=form.character_name.data,
+            character_class=form.character_class.data,
+            level=form.level.data,
+            race=form.race.data,
+            background=form.background.data,
+            strength=form.strength.data,
+            dexterity=form.dexterity.data,
+            constitution=form.constitution.data,
+            intelligence=form.intelligence.data,
+            wisdom=form.wisdom.data,
+            charisma=form.charisma.data,
+            armor_class=form.armor_class.data,
+            hit_points=form.hit_points.data,
+            max_hit_points=form.max_hit_points.data,
+            speed=form.speed.data,
+            description=form.description.data,
+            backstory=form.backstory.data,
+            equipment=form.equipment.data,
+            spells=form.spells.data,
+            notes=form.notes.data,
+            character_image_url=form.character_image_url.data,
+            is_public=form.is_public.data
+        )
+        
+        db.session.add(character_sheet)
+        db.session.commit()
+        
+        flash('Ficha de personagem criada com sucesso!', 'success')
+        return redirect(url_for('sessions.character_sheets', id=id))
+    
+    return render_template('sessions/new_character.html', session=session, form=form)
+
+@sessions_bp.route('/<int:session_id>/characters/<int:character_id>')
+@login_required
+def view_character_sheet(session_id, character_id):
+    session = Session.query.get_or_404(session_id)
+    character = CharacterSheet.query.get_or_404(character_id)
+    
+    # Verificar se o usuário pode ver esta ficha
+    if character.session_id != session_id:
+        flash('Ficha não encontrada nesta sessão.', 'error')
+        return redirect(url_for('sessions.character_sheets', id=session_id))
+    
+    # Verificar permissões
+    can_view = False
+    if session.master_id == current_user.id:
+        can_view = True
+    elif character.player_id == current_user.id:
+        can_view = True
+    elif character.is_public:
+        # Verificar se é jogador aprovado na sessão
+        application = SessionApplication.query.filter_by(
+            session_id=session_id,
+            player_id=current_user.id,
+            status='approved'
+        ).first()
+        can_view = application is not None
+    
+    if not can_view:
+        flash('Você não tem permissão para ver esta ficha.', 'error')
+        return redirect(url_for('sessions.character_sheets', id=session_id))
+    
+    return render_template('sessions/view_character.html', session=session, character=character)
+
+@sessions_bp.route('/<int:session_id>/characters/<int:character_id>/edit')
+@login_required
+def edit_character_sheet(session_id, character_id):
+    session = Session.query.get_or_404(session_id)
+    character = CharacterSheet.query.get_or_404(character_id)
+    
+    # Verificar se o usuário pode editar esta ficha
+    if character.player_id != current_user.id and session.master_id != current_user.id:
+        flash('Você não tem permissão para editar esta ficha.', 'error')
+        return redirect(url_for('sessions.character_sheets', id=session_id))
+    
+    form = CharacterSheetForm(obj=character)
+    
+    if form.validate_on_submit():
+        form.populate_obj(character)
+        character.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        flash('Ficha atualizada com sucesso!', 'success')
+        return redirect(url_for('sessions.view_character_sheet', session_id=session_id, character_id=character_id))
+    
+    return render_template('sessions/edit_character.html', session=session, character=character, form=form)

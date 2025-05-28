@@ -127,3 +127,46 @@ class DiaryEntryForm(FlaskForm):
     ], default='entry')
     is_public = BooleanField('Entrada pública')
     submit = SubmitField('Adicionar entrada')
+
+class CharacterSheetForm(FlaskForm):
+    character_name = StringField('Nome do Personagem', validators=[DataRequired(), Length(max=100)], 
+                                render_kw={"placeholder": "Ex: Aragorn"})
+    character_class = StringField('Classe', validators=[Length(max=50)], 
+                                 render_kw={"placeholder": "Ex: Guerreiro, Mago, Ladino"})
+    level = IntegerField('Nível', validators=[Optional(), NumberRange(min=1, max=20)], default=1)
+    race = StringField('Raça', validators=[Length(max=50)], 
+                      render_kw={"placeholder": "Ex: Humano, Elfo, Anão"})
+    background = StringField('Antecedente', validators=[Length(max=100)], 
+                            render_kw={"placeholder": "Ex: Soldado, Artesão, Nobre"})
+    
+    # Atributos principais
+    strength = IntegerField('Força', validators=[Optional(), NumberRange(min=1, max=30)], default=10)
+    dexterity = IntegerField('Destreza', validators=[Optional(), NumberRange(min=1, max=30)], default=10)
+    constitution = IntegerField('Constituição', validators=[Optional(), NumberRange(min=1, max=30)], default=10)
+    intelligence = IntegerField('Inteligência', validators=[Optional(), NumberRange(min=1, max=30)], default=10)
+    wisdom = IntegerField('Sabedoria', validators=[Optional(), NumberRange(min=1, max=30)], default=10)
+    charisma = IntegerField('Carisma', validators=[Optional(), NumberRange(min=1, max=30)], default=10)
+    
+    # Stats básicos
+    armor_class = IntegerField('Classe de Armadura', validators=[Optional(), NumberRange(min=1, max=50)], default=10)
+    hit_points = IntegerField('Pontos de Vida Atuais', validators=[Optional(), NumberRange(min=0, max=999)], default=8)
+    max_hit_points = IntegerField('Pontos de Vida Máximos', validators=[Optional(), NumberRange(min=1, max=999)], default=8)
+    speed = IntegerField('Velocidade', validators=[Optional(), NumberRange(min=0, max=200)], default=30)
+    
+    # Informações do personagem
+    description = TextAreaField('Descrição Física', 
+                               render_kw={"rows": 3, "placeholder": "Descreva a aparência do personagem..."})
+    backstory = TextAreaField('História Pessoal', 
+                             render_kw={"rows": 4, "placeholder": "Conte a história e motivações do personagem..."})
+    equipment = TextAreaField('Equipamentos', 
+                             render_kw={"rows": 4, "placeholder": "Liste armas, armaduras, itens mágicos..."})
+    spells = TextAreaField('Magias', 
+                          render_kw={"rows": 4, "placeholder": "Liste magias conhecidas e slots disponíveis..."})
+    notes = TextAreaField('Anotações', 
+                         render_kw={"rows": 3, "placeholder": "Anotações gerais sobre o personagem..."})
+    
+    character_image_url = StringField('URL da Imagem do Personagem', 
+                                     render_kw={"placeholder": "https://exemplo.com/imagem.jpg"})
+    
+    is_public = BooleanField('Ficha pública (visível para outros jogadores)', default=True)
+    submit = SubmitField('Salvar Ficha')
