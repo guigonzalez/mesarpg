@@ -471,8 +471,8 @@ def send_chat_message(session_id):
     if not message_text:
         return jsonify({'error': 'Mensagem não pode estar vazia'}), 400
     
-    if len(message_text) > 500:
-        return jsonify({'error': 'Mensagem muito longa'}), 400
+    if len(message_text) > 2000:
+        return jsonify({'error': 'Mensagem muito longa (máximo 2000 caracteres)'}), 400
     
     # Criar nova mensagem
     chat_message = ChatMessage(
