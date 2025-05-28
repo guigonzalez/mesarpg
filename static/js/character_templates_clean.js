@@ -553,76 +553,88 @@ function loadSystemTemplate() {
     const systemName = systemSelect.value;
     const type = templateType.value;
     
-    console.log(`Carregando template para: ${systemName}`);
+    console.log(`Carregando template para: ${systemName} (Tipo: ${type})`);
     
-    // Adaptar campos iniciais baseados no sistema
-    adaptInitialFields(systemName);
+    // Adaptar campos iniciais baseados no sistema e tipo
+    adaptInitialFields(systemName, type);
     
     // Gerar formulário baseado no sistema
     generateTemplateForm(systemName, 'systemFieldsContainer');
 }
 
-// Função para adaptar campos iniciais baseados no sistema
-function adaptInitialFields(systemName) {
+// Função para adaptar campos iniciais baseados no sistema e tipo
+function adaptInitialFields(systemName, templateType = 'player') {
     const nameLabel = document.getElementById('characterNameLabel');
     const levelLabel = document.getElementById('levelLabel');
     const levelInput = document.getElementById('level');
     
     if (!nameLabel || !levelLabel || !levelInput) return;
     
+    // Adaptar nome baseado no tipo
+    let baseName = 'Nome do Personagem';
+    switch (templateType) {
+        case 'npc':
+            baseName = 'Nome do NPC';
+            break;
+        case 'monster':
+            baseName = 'Nome da Criatura';
+            break;
+        default:
+            baseName = 'Nome do Personagem';
+    }
+    
+    // Adaptar campos baseado no sistema
     switch (systemName) {
         case 'Vampire':
-            nameLabel.textContent = 'Nome do Vampiro';
-            levelLabel.textContent = 'Geração';
+            if (templateType === 'monster') {
+                nameLabel.textContent = 'Nome da Criatura';
+                levelLabel.textContent = 'Poder';
+            } else {
+                nameLabel.textContent = templateType === 'npc' ? 'Nome do Vampiro NPC' : 'Nome do Vampiro';
+                levelLabel.textContent = 'Geração';
+            }
             levelInput.min = 1;
             levelInput.max = 15;
-            levelInput.value = 13;
-            levelInput.placeholder = 'Geração vampírica';
+            levelInput.value = templateType === 'monster' ? 5 : 13;
+            levelInput.placeholder = templateType === 'monster' ? 'Nível de poder' : 'Geração vampírica';
             break;
             
         case 'Call of Cthulhu':
-            nameLabel.textContent = 'Nome do Investigador';
-            levelLabel.textContent = 'Idade';
-            levelInput.min = 18;
-            levelInput.max = 90;
-            levelInput.value = 25;
-            levelInput.placeholder = 'Idade do investigador';
+            if (templateType === 'monster') {
+                nameLabel.textContent = 'Nome da Criatura';
+                levelLabel.textContent = 'Poder';
+                levelInput.min = 1;
+                levelInput.max = 20;
+                levelInput.value = 5;
+                levelInput.placeholder = 'Nível de poder sobrenatural';
+            } else {
+                nameLabel.textContent = templateType === 'npc' ? 'Nome do NPC' : 'Nome do Investigador';
+                levelLabel.textContent = 'Idade';
+                levelInput.min = 18;
+                levelInput.max = 90;
+                levelInput.value = 25;
+                levelInput.placeholder = 'Idade do personagem';
+            }
             break;
             
         case '3D&T':
-            nameLabel.textContent = 'Nome do Personagem';
+            nameLabel.textContent = baseName;
             levelLabel.textContent = 'Pontos';
             levelInput.min = 1;
-            levelInput.max = 10;
-            levelInput.value = 1;
-            levelInput.placeholder = 'Pontos de personagem';
+            levelInput.max = templateType === 'monster' ? 15 : 10;
+            levelInput.value = templateType === 'monster' ? 5 : 1;
+            levelInput.placeholder = templateType === 'monster' ? 'Pontos de criatura' : 'Pontos de personagem';
             break;
             
         case 'Pathfinder':
-            nameLabel.textContent = 'Nome do Personagem';
-            levelLabel.textContent = 'Nível';
-            levelInput.min = 1;
-            levelInput.max = 20;
-            levelInput.value = 1;
-            levelInput.placeholder = 'Nível do personagem';
-            break;
-            
         case 'Tormenta20':
-            nameLabel.textContent = 'Nome do Personagem';
-            levelLabel.textContent = 'Nível';
-            levelInput.min = 1;
-            levelInput.max = 20;
-            levelInput.value = 1;
-            levelInput.placeholder = 'Nível do personagem';
-            break;
-            
         default: // D&D 5e
-            nameLabel.textContent = 'Nome do Personagem';
-            levelLabel.textContent = 'Nível';
-            levelInput.min = 1;
-            levelInput.max = 20;
-            levelInput.value = 1;
-            levelInput.placeholder = 'Nível do personagem';
+            nameLabel.textContent = baseName;
+            levelLabel.textContent = templateType === 'monster' ? 'ND' : 'Nível';
+            levelInput.min = templateType === 'monster' ? 0 : 1;
+            levelInput.max = templateType === 'monster' ? 30 : 20;
+            levelInput.value = templateType === 'monster' ? 1 : 1;
+            levelInput.placeholder = templateType === 'monster' ? 'Nível de Desafio' : 'Nível do personagem';
             break;
     }
 }
