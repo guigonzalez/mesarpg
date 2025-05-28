@@ -2,8 +2,13 @@
 class CombatGrid {
     constructor() {
         this.canvas = document.getElementById('gameGrid');
+        if (!this.canvas) {
+            console.warn('Canvas gameGrid não encontrado');
+            return;
+        }
         this.ctx = this.canvas.getContext('2d');
-        this.gridSize = 30; // Tamanho de cada quadrado do grid em pixels
+        this.gridSize = 40; // Tamanho de cada quadrado do grid em pixels
+        this.gridScale = 1.5; // Escala métrica: 1 quadrado = 1.5 metros
         this.scale = 1;
         this.panX = 0;
         this.panY = 0;
@@ -15,6 +20,9 @@ class CombatGrid {
         this.isDragging = false;
         this.dragStart = { x: 0, y: 0 };
         this.selectedElement = null;
+        this.measuring = false;
+        this.measureStart = null;
+        this.measureEnd = null;
         
         this.initEventListeners();
         this.draw();
@@ -68,6 +76,22 @@ class CombatGrid {
             return;
         }
         
+        if (this.currentMode === 'measure') {
+            if (!this.measuring) {
+                this.measureStart = { x: pos.x, y: pos.y };
+                this.measuring = true;
+                this.measureEnd = null;
+            } else {
+                this.measureEnd = { x: pos.x, y: pos.y };
+                this.showMeasurement();
+                this.measuring = false;
+                this.measureStart = null;
+                this.measureEnd = null;
+            }
+            this.draw();
+            return;
+        }
+        
         // Verificar se clicou em um token existente
         this.selectedElement = this.getElementAt(pos.x, pos.y);
         
@@ -81,6 +105,13 @@ class CombatGrid {
     }
     
     onMouseMove(e) {
+        if (this.currentMode === 'measure' && this.measuring) {
+            const pos = this.getMousePos(e);
+            this.measureEnd = { x: pos.x, y: pos.y };
+            this.draw();
+            return;
+        }
+        
         if (!this.isDragging) return;
         
         const deltaX = e.clientX - this.dragStart.x;
@@ -189,6 +220,48 @@ class CombatGrid {
         this.draw();
     }
     
+    showMeasurement() {
+        if (!this.measureStart || !this.measureEnd) return;
+        
+        const dx = this.measureEnd.x - this.measureStart.x;
+        const dy = this.measureEnd.y - this.measureStart.y;
+        const pixelDistance = Math.sqrt(dx * dx + dy * dy);
+        const gridDistance = pixelDistance / this.gridSize;
+        const realDistance = gridDistance * this.gridScale;
+        
+        // Mostrar resultado em um alert temporário
+        const distanceText = `Distância: ${realDistance.toFixed(1)}m (${gridDistance.toFixed(1)} quadrados)`;
+        
+        // Criar elemento de notificação temporário
+        const notification = document.createElement('div');
+        notification.textContent = distanceText;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 3000);
+    }
+    
+    setGridSize(size) {
+        this.gridSize = parseInt(size);
+        this.draw();
+    }
+    
+    setGridScale(scale) {
+        this.gridScale = parseFloat(scale);
+    }
+    
     draw() {
         this.ctx.save();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -207,6 +280,9 @@ class CombatGrid {
         
         // Desenhar tokens
         this.drawTokens();
+        
+        // Desenhar linha de medição
+        this.drawMeasurementLine();
         
         this.ctx.restore();
     }
@@ -251,13 +327,6 @@ class CombatGrid {
             object: '#6c757d'
         };
         
-        const icons = {
-            player: '👤',
-            enemy: '💀',
-            npc: '👥',
-            object: '📦'
-        };
-        
         this.ctx.fillStyle = colors[token.tokenType] || '#6c757d';
         this.ctx.strokeStyle = '#ffffff';
         this.ctx.lineWidth = 2;
@@ -268,20 +337,20 @@ class CombatGrid {
         this.ctx.fill();
         this.ctx.stroke();
         
-        // Desenhar ícone
+        // Desenhar ícone usando os mesmos símbolos dos botões
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = `${this.gridSize * 0.5}px Arial`;
+        this.ctx.font = `${this.gridSize * 0.4}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         
         const iconMap = {
-            player: '♦',
-            enemy: '♠',
-            npc: '♣',
-            object: '■'
+            player: '⚔️',  // Mesmo ícone do botão jogador
+            enemy: '💀',   // Mesmo ícone do botão inimigo
+            npc: '👥',     // Mesmo ícone do botão NPC
+            object: '📦'   // Mesmo ícone do botão objeto
         };
         
-        this.ctx.fillText(iconMap[token.tokenType] || '?', token.x, token.y);
+        this.ctx.fillText(iconMap[token.tokenType] || '❓', token.x, token.y);
     }
     
     drawMarkers() {
@@ -294,6 +363,31 @@ class CombatGrid {
             this.ctx.arc(marker.x, marker.y, 5, 0, 2 * Math.PI);
             this.ctx.fill();
             this.ctx.stroke();
+        }
+    }
+    
+    drawMeasurementLine() {
+        if (this.currentMode === 'measure' && this.measureStart && this.measureEnd) {
+            this.ctx.strokeStyle = '#ff6b6b';
+            this.ctx.lineWidth = 3;
+            this.ctx.setLineDash([5, 5]);
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.measureStart.x, this.measureStart.y);
+            this.ctx.lineTo(this.measureEnd.x, this.measureEnd.y);
+            this.ctx.stroke();
+            
+            // Pontos de início e fim
+            this.ctx.fillStyle = '#ff6b6b';
+            this.ctx.setLineDash([]);
+            
+            this.ctx.beginPath();
+            this.ctx.arc(this.measureStart.x, this.measureStart.y, 4, 0, 2 * Math.PI);
+            this.ctx.fill();
+            
+            this.ctx.beginPath();
+            this.ctx.arc(this.measureEnd.x, this.measureEnd.y, 4, 0, 2 * Math.PI);
+            this.ctx.fill();
         }
     }
 }
@@ -367,6 +461,18 @@ function resetZoom() {
     grid.panX = 0;
     grid.panY = 0;
     grid.draw();
+}
+
+function setGridSize(size) {
+    if (grid) {
+        grid.setGridSize(size);
+    }
+}
+
+function setGridScale(scale) {
+    if (grid) {
+        grid.setGridScale(scale);
+    }
 }
 
 function updateButtonStates() {
