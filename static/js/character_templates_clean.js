@@ -558,8 +558,12 @@ function loadSystemTemplate() {
     // Adaptar campos iniciais baseados no sistema e tipo
     adaptInitialFields(systemName, type);
     
-    // Gerar formulário baseado no sistema
-    generateTemplateForm(systemName, 'systemFieldsContainer');
+    // Gerar formulário baseado no sistema e tipo
+    if (type === 'npc' || type === 'monster') {
+        generateSimplifiedForm(systemName, type, 'systemFieldsContainer');
+    } else {
+        generateTemplateForm(systemName, 'systemFieldsContainer');
+    }
 }
 
 // Função para adaptar campos iniciais baseados no sistema e tipo
@@ -644,4 +648,260 @@ function adaptInitialFields(systemName, templateType = 'player') {
             levelInput.placeholder = templateType === 'monster' ? 'Nível de Desafio' : 'Nível do personagem';
             break;
     }
+}
+
+// Templates simplificados baseados no CSV fornecido
+const SIMPLIFIED_TEMPLATES = {
+    'D&D 5e': {
+        npc: {
+            title: 'NPC Simplificado - D&D 5e',
+            fields: [
+                { name: 'nome_npc', label: 'Nome', type: 'text', required: true },
+                { name: 'raca_classe', label: 'Raça / Classe', type: 'text', placeholder: 'Ex: Humano Guerreiro' },
+                { name: 'atributos_principais', label: 'Atributos Principais', type: 'text', placeholder: 'FOR 16, DES 14, CON 15' },
+                { name: 'pv_npc', label: 'PV', type: 'number', min: 1, default: 20 },
+                { name: 'ca_npc', label: 'CA', type: 'number', min: 10, default: 15 },
+                { name: 'iniciativa_npc', label: 'Iniciativa', type: 'number', default: 2 },
+                { name: 'pericias_principais', label: 'Perícias Principais', type: 'text', placeholder: 'Intimidação +5, Percepção +3' },
+                { name: 'habilidades_npc', label: 'Habilidades', type: 'textarea', placeholder: 'Habilidades especiais...' },
+                { name: 'motivacao', label: 'Motivação', type: 'textarea', placeholder: 'O que motiva este NPC...' },
+                { name: 'recompensa', label: 'Recompensa', type: 'text', placeholder: 'XP, ouro, itens...' }
+            ]
+        },
+        monster: {
+            title: 'Monstro Simplificado - D&D 5e',
+            fields: [
+                { name: 'nome_monstro', label: 'Nome', type: 'text', required: true },
+                { name: 'tipo_monstro', label: 'Tipo', type: 'text', placeholder: 'Besta, Morto-vivo, Dragão...' },
+                { name: 'nd', label: 'ND', type: 'number', min: 0, max: 30, default: 1 },
+                { name: 'pv_monstro', label: 'PV', type: 'number', min: 1, default: 25 },
+                { name: 'ca_monstro', label: 'CA', type: 'number', min: 10, default: 13 },
+                { name: 'deslocamento', label: 'Deslocamento', type: 'text', placeholder: '9m, voo 18m' },
+                { name: 'atributos_monstro', label: 'Atributos', type: 'text', placeholder: 'FOR 18, DES 12, CON 16...' },
+                { name: 'ataques', label: 'Ataques', type: 'textarea', placeholder: 'Garra +6 (1d8+4), Mordida +7 (2d6+4)...' },
+                { name: 'sentidos', label: 'Sentidos', type: 'text', placeholder: 'Visão no escuro 18m, Percepção passiva 12' },
+                { name: 'ambiente', label: 'Ambiente', type: 'text', placeholder: 'Florestas, cavernas...' },
+                { name: 'reacoes', label: 'Reações', type: 'textarea', placeholder: 'Reações e habilidades especiais...' }
+            ]
+        }
+    },
+    'Vampire': {
+        npc: {
+            title: 'NPC Simplificado - Vampire',
+            fields: [
+                { name: 'nome_npc', label: 'Nome', type: 'text', required: true },
+                { name: 'cla', label: 'Clã', type: 'text', placeholder: 'Brujah, Toreador, Ventrue...' },
+                { name: 'geracao', label: 'Geração', type: 'number', min: 1, max: 15, default: 13 },
+                { name: 'disciplinas', label: 'Disciplinas', type: 'text', placeholder: 'Dominação 2, Presença 1' },
+                { name: 'motivacao_vampiro', label: 'Motivação', type: 'textarea', placeholder: 'Objetivos vampíricos...' },
+                { name: 'pv_vampiro', label: 'PV', type: 'number', min: 1, default: 7 },
+                { name: 'sangue', label: 'Sangue', type: 'number', min: 1, default: 10 },
+                { name: 'atributo_social', label: 'Atributo Social', type: 'text', placeholder: 'Carisma 4, Manipulação 3...' }
+            ]
+        },
+        monster: {
+            title: 'Criatura Simplificada - Vampire',
+            fields: [
+                { name: 'nome_criatura', label: 'Nome', type: 'text', required: true },
+                { name: 'tipo_criatura', label: 'Tipo', type: 'text', placeholder: 'Lupino, Fantasma, Demônio...' },
+                { name: 'pv_criatura', label: 'PV', type: 'number', min: 1, default: 15 },
+                { name: 'defesa_criatura', label: 'Defesa', type: 'number', min: 1, default: 3 },
+                { name: 'poderes_criatura', label: 'Poderes', type: 'textarea', placeholder: 'Poderes sobrenaturais...' },
+                { name: 'instinto', label: 'Instinto', type: 'text', placeholder: 'Comportamento natural...' },
+                { name: 'perigosidade', label: 'Perigosidade', type: 'text', placeholder: 'Baixa, Média, Alta, Extrema' }
+            ]
+        }
+    },
+    'Call of Cthulhu': {
+        npc: {
+            title: 'NPC Simplificado - Call of Cthulhu',
+            fields: [
+                { name: 'nome_npc', label: 'Nome', type: 'text', required: true },
+                { name: 'ocupacao_npc', label: 'Ocupação', type: 'text', placeholder: 'Professor, Detetive, Médico...' },
+                { name: 'sanidade_npc', label: 'Sanidade', type: 'number', min: 0, max: 99, default: 60 },
+                { name: 'pv_npc', label: 'PV', type: 'number', min: 1, default: 12 },
+                { name: 'pm_npc', label: 'PM', type: 'number', min: 0, default: 12 },
+                { name: 'pericias_npc', label: 'Perícias', type: 'text', placeholder: 'Medicina 70%, Biblioteca 60%...' },
+                { name: 'motivacao_npc', label: 'Motivação', type: 'textarea', placeholder: 'O que move este investigador...' },
+                { name: 'estado_mental', label: 'Estado Mental', type: 'text', placeholder: 'Estável, Ansioso, Paranóico...' }
+            ]
+        },
+        monster: {
+            title: 'Criatura Simplificada - Call of Cthulhu',
+            fields: [
+                { name: 'nome_criatura', label: 'Nome', type: 'text', required: true },
+                { name: 'pv_criatura', label: 'PV', type: 'number', min: 1, default: 20 },
+                { name: 'defesa_criatura', label: 'Defesa', type: 'number', min: 0, default: 2 },
+                { name: 'acoes', label: 'Ações', type: 'textarea', placeholder: 'Ataques e ações especiais...' },
+                { name: 'efeitos_psicologicos', label: 'Efeitos Psicológicos', type: 'textarea', placeholder: 'Perdas de sanidade...' },
+                { name: 'sentidos_criatura', label: 'Sentidos', type: 'text', placeholder: 'Visão no escuro, teleponia...' },
+                { name: 'conhecimento_mitico', label: 'Conhecimento Mítico', type: 'text', placeholder: 'Mitos de Cthulhu relacionados...' }
+            ]
+        }
+    },
+    '3D&T': {
+        npc: {
+            title: 'NPC Simplificado - 3D&T Alpha',
+            fields: [
+                { name: 'nome_npc', label: 'Nome', type: 'text', required: true },
+                { name: 'elemento', label: 'Elemento', type: 'text', placeholder: 'Fogo, Água, Terra, Ar, Luz, Trevas' },
+                { name: 'pv_npc', label: 'PV', type: 'number', min: 1, default: 10 },
+                { name: 'pm_npc', label: 'PM', type: 'number', min: 0, default: 10 },
+                { name: 'fa_fd', label: 'FA/FD', type: 'text', placeholder: 'FA 2, FD 1' },
+                { name: 'vantagens', label: 'Vantagens', type: 'textarea', placeholder: 'Vantagens únicas...' },
+                { name: 'motivacao_npc', label: 'Motivação', type: 'textarea', placeholder: 'Objetivos do personagem...' },
+                { name: 'atributo_forte', label: 'Atributo Forte', type: 'text', placeholder: 'Força, Habilidade, Resistência...' }
+            ]
+        },
+        monster: {
+            title: 'Monstro Simplificado - 3D&T Alpha',
+            fields: [
+                { name: 'nome_monstro', label: 'Nome', type: 'text', required: true },
+                { name: 'pv_monstro', label: 'PV', type: 'number', min: 1, default: 15 },
+                { name: 'pm_monstro', label: 'PM', type: 'number', min: 0, default: 5 },
+                { name: 'fa_fd_monstro', label: 'FA/FD', type: 'text', placeholder: 'FA 3, FD 2' },
+                { name: 'ataque_monstro', label: 'Ataque', type: 'textarea', placeholder: 'Forma de ataque principal...' },
+                { name: 'habilidade_especial', label: 'Habilidade Especial', type: 'textarea', placeholder: 'Poder único...' },
+                { name: 'fraqueza', label: 'Fraqueza', type: 'text', placeholder: 'Vulnerabilidade específica...' }
+            ]
+        }
+    },
+    'Pathfinder': {
+        npc: {
+            title: 'NPC Simplificado - Pathfinder',
+            fields: [
+                { name: 'nome_npc', label: 'Nome', type: 'text', required: true },
+                { name: 'classe_papel', label: 'Classe / Papel', type: 'text', placeholder: 'Guerreiro / Guarda' },
+                { name: 'atributos_npc', label: 'Atributos', type: 'text', placeholder: 'FOR 16, DES 14, CON 15...' },
+                { name: 'pv_npc', label: 'PV', type: 'number', min: 1, default: 18 },
+                { name: 'ca_npc', label: 'CA', type: 'number', min: 10, default: 16 },
+                { name: 'iniciativa_npc', label: 'Iniciativa', type: 'number', default: 2 },
+                { name: 'habilidades_npc', label: 'Habilidades', type: 'textarea', placeholder: 'Feitos e habilidades...' },
+                { name: 'equipamento_npc', label: 'Equipamento', type: 'text', placeholder: 'Armas e armaduras principais...' },
+                { name: 'alianca', label: 'Aliança', type: 'text', placeholder: 'Facção ou grupo...' }
+            ]
+        },
+        monster: {
+            title: 'Monstro Simplificado - Pathfinder',
+            fields: [
+                { name: 'nome_monstro', label: 'Nome', type: 'text', required: true },
+                { name: 'tipo_monstro', label: 'Tipo', type: 'text', placeholder: 'Animal, Besta, Morto-vivo...' },
+                { name: 'nd_pathfinder', label: 'ND', type: 'number', min: 0, max: 25, default: 1 },
+                { name: 'atributos_monstro', label: 'Atributos', type: 'text', placeholder: 'FOR 18, DES 12...' },
+                { name: 'pv_monstro', label: 'PV', type: 'number', min: 1, default: 22 },
+                { name: 'ca_monstro', label: 'CA', type: 'number', min: 10, default: 14 },
+                { name: 'ataques_monstro', label: 'Ataques', type: 'textarea', placeholder: 'Formas de ataque...' },
+                { name: 'resistencias', label: 'Resistências', type: 'text', placeholder: 'Resistências e imunidades...' },
+                { name: 'ambiente_monstro', label: 'Ambiente', type: 'text', placeholder: 'Habitat natural...' }
+            ]
+        }
+    },
+    'Tormenta20': {
+        npc: {
+            title: 'NPC Simplificado - Tormenta20',
+            fields: [
+                { name: 'nome_npc', label: 'Nome', type: 'text', required: true },
+                { name: 'classe_nex', label: 'Classe / NEX', type: 'text', placeholder: 'Guerreiro NEX 25%' },
+                { name: 'tendencia', label: 'Tendência', type: 'text', placeholder: 'Ordeiro e Bom' },
+                { name: 'pv_npc', label: 'PV', type: 'number', min: 1, default: 20 },
+                { name: 'defesa_npc', label: 'Defesa', type: 'number', min: 10, default: 15 },
+                { name: 'deslocamento_npc', label: 'Deslocamento', type: 'text', placeholder: '9m' },
+                { name: 'poderes_npc', label: 'Poderes', type: 'textarea', placeholder: 'Poderes conhecidos...' },
+                { name: 'historico_npc', label: 'Histórico', type: 'textarea', placeholder: 'Background do NPC...' }
+            ]
+        },
+        monster: {
+            title: 'Monstro Simplificado - Tormenta20',
+            fields: [
+                { name: 'nome_monstro', label: 'Nome', type: 'text', required: true },
+                { name: 'tipo_monstro', label: 'Tipo', type: 'text', placeholder: 'Animal, Morto-vivo, Aberração...' },
+                { name: 'nivel_monstro', label: 'Nível', type: 'number', min: 1, max: 20, default: 1 },
+                { name: 'pv_monstro', label: 'PV', type: 'number', min: 1, default: 25 },
+                { name: 'defesa_monstro', label: 'Defesa', type: 'number', min: 10, default: 13 },
+                { name: 'atributos_monstro', label: 'Atributos', type: 'text', placeholder: 'FOR 4, DES 2, CON 3...' },
+                { name: 'poderes_monstro', label: 'Poderes', type: 'textarea', placeholder: 'Habilidades especiais...' },
+                { name: 'testes', label: 'Testes', type: 'text', placeholder: 'Modificadores de teste...' }
+            ]
+        }
+    }
+};
+
+// Função para gerar formulário simplificado
+function generateSimplifiedForm(systemName, type, containerId) {
+    console.log(`Gerando formulário simplificado para: ${systemName} - ${type}`);
+    
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error('Container não encontrado:', containerId);
+        return;
+    }
+    
+    // Mapear tipo para template
+    const templateKey = type === 'npc' ? 'npc' : 'monster';
+    const template = SIMPLIFIED_TEMPLATES[systemName]?.[templateKey];
+    
+    if (!template) {
+        console.error(`Template simplificado não encontrado para: ${systemName} - ${templateKey}`);
+        return;
+    }
+    
+    console.log(`Template simplificado encontrado: ${template.title}`);
+    
+    container.innerHTML = '';
+    
+    // Título da seção
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'mb-4';
+    titleDiv.innerHTML = `
+        <h6 class="text-primary mb-3 border-bottom pb-2">
+            <i class="fas fa-bolt me-2"></i>${template.title}
+        </h6>
+    `;
+    container.appendChild(titleDiv);
+    
+    // Container dos campos
+    const fieldsRow = document.createElement('div');
+    fieldsRow.className = 'row g-3';
+    
+    template.fields.forEach(field => {
+        const colDiv = document.createElement('div');
+        colDiv.className = getColumnClass(field.type);
+        
+        const fieldHTML = generateSimplifiedFieldHTML(field);
+        colDiv.innerHTML = fieldHTML;
+        
+        fieldsRow.appendChild(colDiv);
+    });
+    
+    container.appendChild(fieldsRow);
+    
+    console.log(`Formulário simplificado gerado com ${template.fields.length} campos`);
+}
+
+// Função para gerar HTML de campo simplificado
+function generateSimplifiedFieldHTML(field) {
+    let inputHTML = '';
+    
+    switch (field.type) {
+        case 'number':
+            inputHTML = `<input type="number" class="form-control text-center" id="${field.name}" name="${field.name}" 
+                        min="${field.min || 0}" max="${field.max || 100}" value="${field.default || 0}">`;
+            break;
+        case 'text':
+            inputHTML = `<input type="text" class="form-control" id="${field.name}" name="${field.name}" 
+                        placeholder="${field.placeholder || ''}" value="${field.default || ''}"
+                        ${field.required ? 'required' : ''}>`;
+            break;
+        case 'textarea':
+            inputHTML = `<textarea class="form-control" id="${field.name}" name="${field.name}" rows="3" 
+                        placeholder="${field.placeholder || ''}">${field.default || ''}</textarea>`;
+            break;
+        default:
+            inputHTML = `<input type="text" class="form-control" id="${field.name}" name="${field.name}" value="${field.default || ''}">`;
+    }
+    
+    return `
+        <label class="form-label" for="${field.name}">${field.label}</label>
+        ${inputHTML}
+    `;
 }

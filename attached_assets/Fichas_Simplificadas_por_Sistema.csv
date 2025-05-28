@@ -1,0 +1,13 @@
+Sistema,Categoria,Campos Simplificados
+D&D 5e,NPC,"['Nome', 'Raça / Classe', 'Atributos principais', 'PV', 'CA', 'Iniciativa', 'Perícias principais', 'Habilidades', 'Motivação', 'Recompensa']"
+D&D 5e,Monstro,"['Nome', 'Tipo', 'ND', 'PV', 'CA', 'Deslocamento', 'Atributos', 'Ataques', 'Sentidos', 'Ambiente', 'Reações']"
+Tormenta20,NPC,"['Nome', 'Classe / NEX', 'Tendência', 'PV', 'Defesa', 'Deslocamento', 'Poderes', 'Histórico']"
+Tormenta20,Monstro,"['Nome', 'Tipo', 'Nível', 'PV', 'Defesa', 'Atributos', 'Poderes', 'Testes']"
+Call of Cthulhu,NPC,"['Nome', 'Ocupação', 'Sanidade', 'PV', 'PM', 'Perícias', 'Motivação', 'Estado Mental']"
+Call of Cthulhu,Criatura,"['Nome', 'PV', 'Defesa', 'Ações', 'Efeitos Psicológicos', 'Sentidos', 'Conhecimento Mítico']"
+Vampire: The Masquerade,NPC,"['Nome', 'Clã', 'Geração', 'Disciplinas', 'Motivação', 'PV', 'Sangue', 'Atributo Social']"
+Vampire: The Masquerade,Criatura,"['Nome', 'Tipo', 'PV', 'Defesa', 'Poderes', 'Instinto', 'Perigosidade']"
+Pathfinder,NPC,"['Nome', 'Classe / Papel', 'Atributos', 'PV', 'CA', 'Iniciativa', 'Habilidades', 'Equipamento', 'Aliança']"
+Pathfinder,Monstro,"['Nome', 'Tipo', 'ND', 'Atributos', 'PV', 'CA', 'Ataques', 'Resistências', 'Ambiente']"
+3D&T Alpha,NPC,"['Nome', 'Elemento', 'PV', 'PM', 'FA/FD', 'Vantagens', 'Motivação', 'Atributo Forte']"
+3D&T Alpha,Monstro,"['Nome', 'PV', 'PM', 'FA/FD', 'Ataque', 'Habilidade Especial', 'Fraqueza']"
