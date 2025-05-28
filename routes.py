@@ -621,7 +621,7 @@ def view_character_sheet(session_id, character_id):
     
     return render_template('sessions/view_character.html', session=session, character=character)
 
-@sessions_bp.route('/<int:session_id>/characters/<int:character_id>/edit')
+@sessions_bp.route('/<int:session_id>/characters/<int:character_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_character_sheet(session_id, character_id):
     session = Session.query.get_or_404(session_id)
