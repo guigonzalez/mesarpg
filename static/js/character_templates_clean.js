@@ -560,8 +560,10 @@ function loadSystemTemplate() {
     
     // Gerar formulário baseado no sistema e tipo
     if (type === 'npc' || type === 'monster') {
+        console.log(`Gerando formulário SIMPLIFICADO para ${type}`);
         generateSimplifiedForm(systemName, type, 'systemFieldsContainer');
     } else {
+        console.log(`Gerando formulário AVANÇADO para ${type}`);
         generateTemplateForm(systemName, 'systemFieldsContainer');
     }
 }
