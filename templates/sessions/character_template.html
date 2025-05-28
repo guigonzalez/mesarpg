@@ -369,8 +369,18 @@ function collectFormData() {
     
     for (const [key, value] of formData.entries()) {
         if (value) {
-            data[key] = value;
+            // Converter checkboxes para booleanos
+            if (key === 'is_public' || key === 'auto_calculate') {
+                data[key] = value === 'on' || value === true;
+            } else {
+                data[key] = value;
+            }
         }
+    }
+    
+    // Garantir que is_public seja sempre definido (padrão true se não existir)
+    if (!data.hasOwnProperty('is_public')) {
+        data.is_public = true;
     }
     
     return data;
