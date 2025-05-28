@@ -698,11 +698,16 @@ def create_from_template(id):
     # Dados do template vêm do JavaScript/formulário
     template_data = request.get_json()
     
+    # Converter checkbox para booleano corretamente
+    is_public_value = template_data.get('is_public', True)
+    if isinstance(is_public_value, str):
+        is_public_value = is_public_value.lower() in ['true', 'on', '1', 'yes']
+    
     # Criar ficha baseada no template
     character_sheet = CharacterSheet(
         session_id=id,
         player_id=current_user.id,  # Mestre cria a ficha inicialmente
-        character_name=template_data.get('character_name', 'Personagem'),
+        character_name=template_data.get('nome', 'Personagem'),
         character_class=template_data.get('character_class', ''),
         level=template_data.get('level', 1),
         race=template_data.get('race', ''),
@@ -723,7 +728,7 @@ def create_from_template(id):
         spells=template_data.get('spells', ''),
         notes=template_data.get('notes', ''),
         character_image_url=template_data.get('character_image_url', ''),
-        is_public=template_data.get('is_public', True)
+        is_public=is_public_value
     )
     
     db.session.add(character_sheet)
