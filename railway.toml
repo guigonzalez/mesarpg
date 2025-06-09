@@ -1,0 +1,10 @@
+[build]
+builder = "nixpacks"
+buildCommand = "uv sync"
+
+[deploy]
+startCommand = "gunicorn --bind 0.0.0.0:$PORT main:flask_app"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10 
