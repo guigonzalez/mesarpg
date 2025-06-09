@@ -1,5 +1,6 @@
 import os
 import logging
+from dotenv import load_dotenv
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -7,10 +8,11 @@ from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+# Carregar variáveis de ambiente
+load_dotenv()
 
 class Base(DeclarativeBase):
     pass
-
 
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
@@ -41,14 +43,14 @@ def create_app():
     login_manager.init_app(app)
 
     # Import models and user loader
-    from models import User
+    from mesarpg_app.models import User
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
     # Register blueprints
-    from routes import main_bp, auth_bp, sessions_bp, profile_bp, masters_bp, campaign_bp
+    from mesarpg_app.routes import main_bp, auth_bp, sessions_bp, profile_bp, masters_bp, campaign_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(sessions_bp, url_prefix='/sessions')
@@ -58,9 +60,9 @@ def create_app():
 
     with app.app_context():
         # Import all models to ensure tables are created
-        import models  # noqa: F401
+        import mesarpg_app.models  # noqa: F401
         db.create_all()
 
     return app
 
-app = create_app()
+app = create_app() 
