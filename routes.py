@@ -464,8 +464,11 @@ def send_chat_message(session_id):
         if not application:
             return jsonify({'error': 'Acesso negado'}), 403
     
-    data = request.get_json()
-    message_text = data.get('message', '').strip()
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Dados de mensagem inválidos'}), 400
+
+    message_text = (data.get('message') or '').strip()
     message_type = data.get('type', 'text')
     
     if not message_text:
@@ -702,7 +705,9 @@ def create_from_template(id):
         return redirect(url_for('sessions.character_sheets', id=id))
     
     # Dados do template vêm do JavaScript/formulário
-    template_data = request.get_json()
+    template_data = request.get_json(silent=True)
+    if not isinstance(template_data, dict):
+        return jsonify({'error': 'Dados do template inválidos'}), 400
     
     # Converter checkbox para booleano corretamente
     is_public_value = template_data.get('is_public', True)
