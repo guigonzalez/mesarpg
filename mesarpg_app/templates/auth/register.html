@@ -19,7 +19,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 {{ form.username.label(class="form-label fw-semibold") }}
-                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), required=True, minlength=3, maxlength=20, autocomplete="username", pattern="^[^\s]+$") }}
+                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), required=True, minlength=3, maxlength=20, autocomplete="username", pattern="^[^\s]+$", autofocus=True) }}
                                 {% if form.username.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.username.errors %}{{ error }}{% endfor %}
@@ -117,4 +117,51 @@
         </div>
     </div>
 </div>
+
+<script>
+// Diagnóstico simplificado de foco
+function logFocusInfo() {
+    const activeElement = document.activeElement;
+    console.log('Elemento ativo:', activeElement.tagName, activeElement.type, activeElement.id);
+    
+    // Verificar se há elementos pai focáveis
+    let parent = activeElement.parentElement;
+    while (parent && parent !== document.body) {
+        if (parent.tabIndex >= 0) {
+            console.log('⚠️ Elemento pai focável encontrado:', parent.tagName, 'tabindex:', parent.tabIndex);
+        }
+        parent = parent.parentElement;
+    }
+}
+
+// Monitorar teclas pressionadas
+document.addEventListener('keydown', function(e) {
+    if (e.key === ' ') {
+        console.log('=== ESPAÇO PRESSIONADO ===');
+        console.log('Elemento em foco:', e.target.tagName, e.target.type, e.target.id);
+        logFocusInfo();
+        
+        // Prevenir comportamento padrão apenas se necessário
+        if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+            // Permitir espaço em campos de texto, mas prevenir se estiver vazio
+            if (e.target.value === '') {
+                console.log('Prevenindo espaço em campo vazio');
+                e.preventDefault();
+            }
+        } else if (e.target.tagName === 'BUTTON' && e.target.type === 'submit') {
+            // Prevenir espaço no botão de submit
+            console.log('Prevenindo espaço no botão de submit');
+            e.preventDefault();
+        }
+    }
+});
+
+// Verificar foco inicial
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        console.log('=== VERIFICAÇÃO INICIAL ===');
+        logFocusInfo();
+    }, 100);
+});
+</script>
 {% endblock %}

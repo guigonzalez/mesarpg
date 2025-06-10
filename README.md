@@ -12,16 +12,18 @@ Uma plataforma web para conectar jogadores e mestres de RPG de mesa, facilitando
 - **Diário de Campanha**: Registro de eventos e notas da campanha
 - **Sistema de Avaliações**: Avaliação de mestres e jogadores
 - **Interface Responsiva**: Design moderno e acessível
+- **Acessibilidade**: Navegação por teclado, leitores de tela, temas claro/escuro
 
 ## 🚀 Tecnologias
 
 - **Backend**: Flask (Python)
 - **Banco de Dados**: SQLAlchemy (SQLite/PostgreSQL)
-- **Frontend**: HTML, CSS, JavaScript, Bootstrap
+- **Frontend**: HTML, CSS, JavaScript, Bootstrap 5
 - **Autenticação**: Flask-Login
 - **Formulários**: Flask-WTF, WTForms
 - **Gerenciador de Pacotes**: uv
 - **Servidor WSGI**: Gunicorn
+- **Deploy**: Railway (configurado e funcionando)
 
 ## 📋 Pré-requisitos
 
@@ -65,17 +67,19 @@ A aplicação estará disponível em: http://localhost:5001
 
 ## 🚀 Deploy
 
-Temos guias completos para diferentes opções de deploy:
+### ✅ Deploy Ativo na Railway
 
-### 🎯 Recomendações por perfil:
+O projeto está **deployado e funcionando** na Railway com:
+- ✅ Banco PostgreSQL configurado
+- ✅ Gunicorn como servidor WSGI
+- ✅ Variáveis de ambiente configuradas
+- ✅ Domínio público ativo
+
+### 📚 Guias de Deploy Disponíveis:
 
 - **🚀 Iniciantes/MVP**: [Railway ou Render](./deploy/railway-render.md) - Gratuito e fácil
 - **🖥️ Controle total**: [VPS Tradicional](./deploy/vps.md) - Máximo controle
 - **🐳 Escalabilidade**: [Docker](./deploy/docker.md) - Containerização
-
-### 📚 Guias completos:
-- [Guia Principal de Deploy](./deploy/README.md) - Visão geral de todas as opções
-- [Configurações de Produção](./deploy/production-config.md) - Arquivos de configuração
 
 ## 🏗️ Estrutura do Projeto
 
@@ -95,6 +99,7 @@ mesarpg/
 ├── pyproject.toml        # Dependências e configurações
 ├── Dockerfile            # Configuração Docker
 ├── docker-compose.yml    # Orquestração Docker
+├── Procfile              # Configuração Railway
 └── gunicorn.conf.py      # Configuração Gunicorn
 ```
 
@@ -121,6 +126,27 @@ WTF_CSRF_SECRET_KEY=outra-chave-super-secreta-aqui
 ### Banco de Dados
 
 A aplicação usa SQLAlchemy com suporte a SQLite (desenvolvimento) e PostgreSQL (produção).
+
+## 🎯 Melhorias Recentes
+
+### ✅ UX/UI Corrigidas
+- **Navegação por teclado**: Tab/Shift+Tab funcionam perfeitamente
+- **Foco de formulários**: Corrigido problema de foco duplo
+- **Acessibilidade**: Melhorada navegação para leitores de tela
+- **Temas**: Suporte a tema claro/escuro
+- **Responsividade**: Interface otimizada para mobile
+
+### ✅ Deploy Otimizado
+- **Railway**: Configurado e funcionando
+- **Gunicorn**: Configurado para produção
+- **PostgreSQL**: Banco de dados configurado
+- **Performance**: Otimizações para ambiente de produção
+
+### ✅ Código Organizado
+- **Estrutura**: Projeto reorganizado em pacote
+- **Dependências**: Atualizadas e limpas
+- **Documentação**: Guias completos de deploy
+- **Testes**: Estrutura preparada para testes
 
 ## 🧪 Testes
 

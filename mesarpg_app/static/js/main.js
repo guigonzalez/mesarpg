@@ -114,9 +114,22 @@ function initializeDatepicker() {
 
 // Initialize accessibility features
 function initializeAccessibility() {
-    // Add keyboard navigation for cards
+    // Clean up any existing tabindex on cards with forms
+    const cardsWithForms = document.querySelectorAll('.card:has(form)');
+    cardsWithForms.forEach(card => {
+        if (card.hasAttribute('tabindex')) {
+            card.removeAttribute('tabindex');
+        }
+    });
+    
+    // Add keyboard navigation for cards (but exclude cards with forms)
     const cards = document.querySelectorAll('.card');
     cards.forEach(card => {
+        // Skip cards that contain forms to avoid focus issues
+        if (card.querySelector('form')) {
+            return;
+        }
+        
         if (card.querySelector('a')) {
             card.setAttribute('tabindex', '0');
             card.addEventListener('keydown', function(e) {

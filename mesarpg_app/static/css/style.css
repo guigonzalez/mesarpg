@@ -633,14 +633,15 @@ body {
   min-height: 44px; /* Accessible touch target */
 }
 
-.form-control:invalid {
+.form-control:invalid:not(:focus):not(:placeholder-shown) {
   border-color: var(--error-color);
   box-shadow: 0 0 0 0.2rem rgba(229, 62, 62, 0.25);
 }
 
-.form-control:valid {
-  border-color: var(--success-color);
-  box-shadow: 0 0 0 0.2rem rgba(56, 161, 105, 0.25);
+.form-control:focus {
+  outline: 2px solid var(--focus-color) !important;
+  outline-offset: 1px !important;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.15) !important;
 }
 
 /* Error and Success States */
