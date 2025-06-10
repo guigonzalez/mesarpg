@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, IntegerField, BooleanField, FloatField, DateTimeField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, NumberRange
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, NumberRange, ValidationError
 from wtforms.widgets import TextArea
 
 
@@ -27,6 +27,10 @@ class RegisterForm(FlaskForm):
         ('both', 'Ambos')
     ], default='player')
     submit = SubmitField('Criar conta')
+
+    def validate_username(self, field):
+        if ' ' in field.data:
+            raise ValidationError('O nome de usuário não pode conter espaços.')
 
 
 class SessionForm(FlaskForm):

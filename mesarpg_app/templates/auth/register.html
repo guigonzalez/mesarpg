@@ -13,13 +13,13 @@
                         <p class="text-muted">Junte-se à comunidade MesaRPG</p>
                     </div>
 
-                    <form method="POST">
+                    <form method="POST" id="registerForm" autocomplete="on" novalidate>
                         {{ form.hidden_tag() }}
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 {{ form.username.label(class="form-label fw-semibold") }}
-                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), required=True, minlength=3, maxlength=20, autocomplete="username", pattern="^[^\s]+$") }}
                                 {% if form.username.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.username.errors %}{{ error }}{% endfor %}
@@ -28,7 +28,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 {{ form.full_name.label(class="form-label fw-semibold") }}
-                                {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+                                {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else ""), required=True, maxlength=100, autocomplete="name") }}
                                 {% if form.full_name.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.full_name.errors %}{{ error }}{% endfor %}
@@ -39,7 +39,7 @@
 
                         <div class="mb-3">
                             {{ form.email.label(class="form-label fw-semibold") }}
-                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), required=True, type="email", autocomplete="email") }}
                             {% if form.email.errors %}
                                 <div class="invalid-feedback">
                                     {% for error in form.email.errors %}{{ error }}{% endfor %}
@@ -49,7 +49,7 @@
 
                         <div class="mb-3">
                             {{ form.role.label(class="form-label fw-semibold") }}
-                            {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                            {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else ""), required=True) }}
                             {% if form.role.errors %}
                                 <div class="invalid-feedback">
                                     {% for error in form.role.errors %}{{ error }}{% endfor %}
@@ -67,7 +67,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 {{ form.password.label(class="form-label fw-semibold") }}
-                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), required=True, minlength=6, autocomplete="new-password") }}
                                 {% if form.password.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.password.errors %}{{ error }}{% endfor %}
@@ -76,7 +76,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 {{ form.password2.label(class="form-label fw-semibold") }}
-                                {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else "")) }}
+                                {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else ""), required=True, minlength=6, autocomplete="new-password") }}
                                 {% if form.password2.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.password2.errors %}{{ error }}{% endfor %}
@@ -86,7 +86,7 @@
                         </div>
 
                         <div class="d-grid mb-3">
-                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            {{ form.submit(class="btn btn-primary btn-lg", id="submitBtn") }}
                         </div>
                     </form>
 
