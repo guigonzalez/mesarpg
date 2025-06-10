@@ -600,7 +600,43 @@ def create_character_post(session_id):
     # Dados do formulário
     data = request.get_json()
     
+    # Debug: Log dos dados recebidos
+    print(f"DEBUG: Dados recebidos do frontend: {data}")
+    print(f"DEBUG: Campo 'name' recebido: {data.get('name')}")
+    print(f"DEBUG: Campo 'nome' recebido: {data.get('nome')}")
+    
     try:
+        # Mapeamento de campos dinâmicos para campos padrão
+        field_mapping = {
+            'nome': 'name',
+            'raça': 'race',
+            'classe': 'character_class',
+            'nível': 'level',
+            'força': 'strength',
+            'destreza': 'dexterity',
+            'constituição': 'constitution',
+            'inteligência': 'intelligence',
+            'sabedoria': 'wisdom',
+            'carisma': 'charisma',
+            'pv': 'hit_points',
+            'ca': 'armor_class',
+            'iniciativa': 'initiative',
+            'deslocamento': 'speed',
+            'perícias': 'skills',
+            'magias': 'spells',
+            'equipamentos': 'equipment',
+            'idiomas': 'languages',
+            'alinhamento': 'alignment',
+            'antecedente': 'background',
+            'história': 'backstory'
+        }
+        
+        # Aplicar mapeamento de campos dinâmicos para campos padrão
+        for dynamic_key, standard_key in field_mapping.items():
+            if dynamic_key in data and data[dynamic_key]:
+                data[standard_key] = data[dynamic_key]
+                print(f"DEBUG EDIT: Mapeando campo dinâmico '{dynamic_key}' → '{standard_key}' = '{data[dynamic_key]}'")
+        
         # Separar campos padrão dos campos dinâmicos
         standard_fields = {
             'name': data.get('name', 'Personagem'),
@@ -628,12 +664,32 @@ def create_character_post(session_id):
             'is_public': data.get('is_public', True)
         }
         
-        # Campos dinâmicos (todos os outros campos)
+        # Se não há nome mas há campo 'nome', usar o campo 'nome'
+        if (not standard_fields['name'] or standard_fields['name'] == 'Personagem') and data.get('nome'):
+            standard_fields['name'] = data.get('nome')
+            print(f"DEBUG: Usando campo 'nome' como name: {standard_fields['name']}")
+        
+        # Garantir que sempre há um nome
+        if not standard_fields['name'] or standard_fields['name'] == 'Personagem':
+            standard_fields['name'] = 'Personagem Sem Nome'
+            print(f"DEBUG: Usando nome padrão: {standard_fields['name']}")
+        
+        print(f"DEBUG: Nome final que será usado: {standard_fields['name']}")
+        
+        # Coletar campos dinâmicos (excluindo os que já foram mapeados para campos padrão)
         dynamic_fields = {}
-        standard_field_names = set(standard_fields.keys())
+        standard_field_names = set(field_mapping.values())
+        mapped_dynamic_fields = set(field_mapping.keys())  # Campos dinâmicos que foram mapeados
+        
         for key, value in data.items():
-            if key not in standard_field_names and value and str(value).strip():
+            # Excluir campos padrão e campos dinâmicos que foram mapeados
+            if (key not in standard_field_names and 
+                key not in ['name', 'character_type', 'level', 'description', 'notes', 'image_url', 'is_public'] and
+                key not in mapped_dynamic_fields):
                 dynamic_fields[key] = value
+                print(f"DEBUG EDIT: Campo dinâmico '{key}' = '{value}'")
+        
+        print(f"DEBUG EDIT: Campos dinâmicos coletados: {dynamic_fields}")
         
         character = Character(
             session_id=session_id,
@@ -641,9 +697,8 @@ def create_character_post(session_id):
             **standard_fields
         )
         
-        # Salvar campos dinâmicos
-        if dynamic_fields:
-            character.set_dynamic_fields(dynamic_fields)
+        # Salvar campos dinâmicos (sempre, mesmo se vazio)
+        character.set_dynamic_fields(dynamic_fields)
         
         db.session.add(character)
         db.session.commit()
@@ -752,37 +807,112 @@ def edit_character_post(session_id, character_id):
     # Dados do formulário
     data = request.get_json()
     
+    # Debug: Log dos dados recebidos
+    print(f"DEBUG EDIT: Dados recebidos do frontend: {data}")
+    print(f"DEBUG EDIT: Campo 'name' recebido: {data.get('name')}")
+    print(f"DEBUG EDIT: Campo 'nome' recebido: {data.get('nome')}")
+    
     try:
-        # Atualizar campos
-        character.name = data.get('name', character.name)
-        character.level = data.get('level', character.level)
-        character.race = data.get('race', character.race)
-        character.character_class = data.get('character_class', character.character_class)
-        character.background = data.get('background', character.background)
-        character.strength = data.get('strength', character.strength)
-        character.dexterity = data.get('dexterity', character.dexterity)
-        character.constitution = data.get('constitution', character.constitution)
-        character.intelligence = data.get('intelligence', character.intelligence)
-        character.wisdom = data.get('wisdom', character.wisdom)
-        character.charisma = data.get('charisma', character.charisma)
-        character.armor_class = data.get('armor_class', character.armor_class)
-        character.hit_points = data.get('hit_points', character.hit_points)
-        character.max_hit_points = data.get('max_hit_points', character.max_hit_points)
-        character.speed = data.get('speed', character.speed)
-        character.description = data.get('description', character.description)
-        character.backstory = data.get('backstory', character.backstory)
-        character.equipment = data.get('equipment', character.equipment)
-        character.spells = data.get('spells', character.spells)
-        character.notes = data.get('notes', character.notes)
-        character.image_url = data.get('image_url', character.image_url)
-        character.is_public = data.get('is_public', character.is_public)
+        # Mapeamento de campos dinâmicos para campos padrão
+        field_mapping = {
+            'nome': 'name',
+            'raça': 'race',
+            'classe': 'character_class',
+            'nível': 'level',
+            'força': 'strength',
+            'destreza': 'dexterity',
+            'constituição': 'constitution',
+            'inteligência': 'intelligence',
+            'sabedoria': 'wisdom',
+            'carisma': 'charisma',
+            'pv': 'hit_points',
+            'ca': 'armor_class',
+            'iniciativa': 'initiative',
+            'deslocamento': 'speed',
+            'perícias': 'skills',
+            'magias': 'spells',
+            'equipamentos': 'equipment',
+            'idiomas': 'languages',
+            'alinhamento': 'alignment',
+            'antecedente': 'background',
+            'história': 'backstory'
+        }
+        
+        # Aplicar mapeamento de campos dinâmicos para campos padrão
+        for dynamic_key, standard_key in field_mapping.items():
+            if dynamic_key in data and data[dynamic_key]:
+                data[standard_key] = data[dynamic_key]
+                print(f"DEBUG EDIT: Mapeando campo dinâmico '{dynamic_key}' → '{standard_key}' = '{data[dynamic_key]}'")
+        
+        # Separar campos padrão dos campos dinâmicos
+        standard_fields = {
+            'name': data.get('name', character.name),
+            'character_type': data.get('character_type', character.character_type),
+            'level': data.get('level', character.level),
+            'race': data.get('race', character.race),
+            'character_class': data.get('character_class', character.character_class),
+            'background': data.get('background', character.background),
+            'strength': data.get('strength', character.strength),
+            'dexterity': data.get('dexterity', character.dexterity),
+            'constitution': data.get('constitution', character.constitution),
+            'intelligence': data.get('intelligence', character.intelligence),
+            'wisdom': data.get('wisdom', character.wisdom),
+            'charisma': data.get('charisma', character.charisma),
+            'armor_class': data.get('armor_class', character.armor_class),
+            'hit_points': data.get('hit_points', character.hit_points),
+            'max_hit_points': data.get('hit_points', character.hit_points),
+            'speed': data.get('speed', character.speed),
+            'description': data.get('description', character.description),
+            'backstory': data.get('backstory', character.backstory),
+            'equipment': data.get('equipment', character.equipment),
+            'spells': data.get('spells', character.spells),
+            'notes': data.get('notes', character.notes),
+            'image_url': data.get('image_url', character.image_url),
+            'is_public': data.get('is_public', character.is_public)
+        }
+        
+        # Se não há nome mas há campo 'nome', usar o campo 'nome'
+        if (not standard_fields['name'] or standard_fields['name'] == character.name) and data.get('nome'):
+            standard_fields['name'] = data.get('nome')
+            print(f"DEBUG EDIT: Usando campo 'nome' como name: {standard_fields['name']}")
+        
+        # Garantir que sempre há um nome
+        if not standard_fields['name']:
+            standard_fields['name'] = character.name
+            print(f"DEBUG EDIT: Usando nome atual: {standard_fields['name']}")
+        
+        print(f"DEBUG EDIT: Nome final que será usado: {standard_fields['name']}")
+        
+        # Coletar campos dinâmicos (excluindo os que já foram mapeados para campos padrão)
+        dynamic_fields = {}
+        standard_field_names = set(standard_fields.keys())
+        for key, value in data.items():
+            if key not in standard_field_names:
+                # Incluir todos os campos dinâmicos, mesmo vazios, para permitir limpeza
+                dynamic_fields[key] = value if value is not None else ''
+                print(f"DEBUG EDIT: Campo dinâmico '{key}' = '{value}'")
+        
+        print(f"DEBUG EDIT: Campos dinâmicos coletados: {dynamic_fields}")
+        
+        # Atualizar campos padrão
+        for field, value in standard_fields.items():
+            old_value = getattr(character, field)
+            setattr(character, field, value)
+            if old_value != value:
+                print(f"DEBUG EDIT: Campo padrão '{field}' atualizado: '{old_value}' → '{value}'")
+        
+        # Salvar campos dinâmicos (sempre, mesmo se vazio)
+        old_dynamic_fields = character.get_dynamic_fields()
+        character.set_dynamic_fields(dynamic_fields)
+        print(f"DEBUG EDIT: Campos dinâmicos atualizados: {old_dynamic_fields} → {dynamic_fields}")
+        
         character.updated_at = datetime.utcnow()
         
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': 'Personagem atualizado com sucesso!'
+            'message': f'{character.character_type.title()} atualizado com sucesso!'
         })
         
     except Exception as e:

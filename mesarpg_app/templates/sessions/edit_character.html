@@ -3,290 +3,433 @@
 {% block title %}Editar {{ character.name }} - {{ session.title }}{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Header -->
-            <div class="card mb-4">
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.live', id=session.id) }}">{{ session.title }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.characters_list', session_id=session.id) }}">Personagens</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}">{{ character.name }}</a></li>
+                    <li class="breadcrumb-item active">Editar</li>
+                </ol>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>Editar {{ character.name }}</h3>
+                    <p class="text-muted mb-0">Sistema: {{ session.system }}</p>
+                </div>
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4 class="card-title mb-1">
-                                <i class="fas fa-edit me-2"></i>Editar {{ character.name }}
-                            </h4>
-                            <p class="text-muted mb-0">{{ session.title }} - {{ session.system }}</p>
+                    <form id="characterForm">
+                        <!-- Seleção de Tipo -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="characterType" class="form-label">Tipo de Personagem</label>
+                                <select class="form-select" id="characterType" name="character_type" required>
+                                    <option value="">Selecione o tipo...</option>
+                                    <option value="player" {% if character.character_type == 'player' %}selected{% endif %}>Personagem do Jogador</option>
+                                    <option value="npc" {% if character.character_type == 'npc' %}selected{% endif %}>NPC</option>
+                                    <option value="creature" {% if character.character_type == 'creature' %}selected{% endif %}>Criatura/Monstro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6" id="categoryContainer" style="display: none;">
+                                <label for="category" class="form-label">Categoria</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">Selecione a categoria...</option>
+                                </select>
+                            </div>
                         </div>
-                        <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" 
-                           class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i>Voltar
-                        </a>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Formulário -->
-            <form id="characterForm">
-                <!-- Tipo de Personagem -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-tag me-2"></i>Tipo de Personagem
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="character_type" id="type_player" value="player" 
-                                           {% if character.character_type == 'player' %}checked{% endif %}>
-                                    <label class="form-check-label" for="type_player">
-                                        <i class="fas fa-user text-primary me-1"></i>Personagem do Jogador
-                                    </label>
-                                </div>
-                            </div>
-                            {% if is_master %}
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="character_type" id="type_npc" value="npc"
-                                           {% if character.character_type == 'npc' %}checked{% endif %}>
-                                    <label class="form-check-label" for="type_npc">
-                                        <i class="fas fa-mask text-success me-1"></i>NPC
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="character_type" id="type_creature" value="creature"
-                                           {% if character.character_type == 'creature' %}checked{% endif %}>
-                                    <label class="form-check-label" for="type_creature">
-                                        <i class="fas fa-dragon text-warning me-1"></i>Criatura
-                                    </label>
-                                </div>
-                            </div>
-                            {% endif %}
+                        <!-- Campos Dinâmicos -->
+                        <div id="dynamicFields">
+                            <!-- Os campos serão carregados dinamicamente aqui -->
                         </div>
-                    </div>
-                </div>
 
-                <!-- Informações Básicas -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-info-circle me-2"></i>Informações Básicas
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">Nome *</label>
-                                <input type="text" class="form-control" id="name" name="name" value="{{ character.name }}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="character_class" class="form-label">Classe</label>
-                                <input type="text" class="form-control" id="character_class" name="character_class" value="{{ character.character_class or '' }}">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="race" class="form-label">Raça</label>
-                                <input type="text" class="form-control" id="race" name="race" value="{{ character.race or '' }}">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="level" class="form-label">Nível</label>
-                                <input type="number" class="form-control" id="level" name="level" min="1" max="20" value="{{ character.level }}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Atributos -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-dumbbell me-2"></i>Atributos
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-2 col-4 mb-3">
-                                <label for="strength" class="form-label">FOR</label>
-                                <input type="number" class="form-control text-center" id="strength" name="strength" min="1" max="20" value="{{ character.strength }}">
-                            </div>
-                            <div class="col-md-2 col-4 mb-3">
-                                <label for="dexterity" class="form-label">DES</label>
-                                <input type="number" class="form-control text-center" id="dexterity" name="dexterity" min="1" max="20" value="{{ character.dexterity }}">
-                            </div>
-                            <div class="col-md-2 col-4 mb-3">
-                                <label for="constitution" class="form-label">CON</label>
-                                <input type="number" class="form-control text-center" id="constitution" name="constitution" min="1" max="20" value="{{ character.constitution }}">
-                            </div>
-                            <div class="col-md-2 col-4 mb-3">
-                                <label for="intelligence" class="form-label">INT</label>
-                                <input type="number" class="form-control text-center" id="intelligence" name="intelligence" min="1" max="20" value="{{ character.intelligence }}">
-                            </div>
-                            <div class="col-md-2 col-4 mb-3">
-                                <label for="wisdom" class="form-label">SAB</label>
-                                <input type="number" class="form-control text-center" id="wisdom" name="wisdom" min="1" max="20" value="{{ character.wisdom }}">
-                            </div>
-                            <div class="col-md-2 col-4 mb-3">
-                                <label for="charisma" class="form-label">CAR</label>
-                                <input type="number" class="form-control text-center" id="charisma" name="charisma" min="1" max="20" value="{{ character.charisma }}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Combate -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-shield-alt me-2"></i>Combate
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="armor_class" class="form-label">Classe de Armadura</label>
-                                <input type="number" class="form-control" id="armor_class" name="armor_class" min="10" value="{{ character.armor_class }}">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="hit_points" class="form-label">Pontos de Vida</label>
-                                <input type="number" class="form-control" id="hit_points" name="hit_points" min="1" value="{{ character.hit_points }}">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="speed" class="form-label">Deslocamento (pés)</label>
-                                <input type="number" class="form-control" id="speed" name="speed" min="5" value="{{ character.speed }}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Descrições -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-align-left me-2"></i>Descrições
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Descrição</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Descrição física, personalidade, etc.">{{ character.description or '' }}</textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="backstory" class="form-label">História</label>
-                            <textarea class="form-control" id="backstory" name="backstory" rows="3" placeholder="História do personagem, background, etc.">{{ character.backstory or '' }}</textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="equipment" class="form-label">Equipamentos</label>
-                            <textarea class="form-control" id="equipment" name="equipment" rows="2" placeholder="Armas, armaduras, itens, etc.">{{ character.equipment or '' }}</textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="spells" class="form-label">Magias e Habilidades</label>
-                            <textarea class="form-control" id="spells" name="spells" rows="3" placeholder="Magias conhecidas, habilidades especiais, etc.">{{ character.spells or '' }}</textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">Notas</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Anotações adicionais, observações, etc.">{{ character.notes or '' }}</textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Configurações -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-cog me-2"></i>Configurações
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="is_public" name="is_public" 
-                                   {% if character.is_public %}checked{% endif %}>
-                            <label class="form-check-label" for="is_public">
-                                Público (visível para outros jogadores da sessão)
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botões -->
-                <div class="card">
-                    <div class="card-body">
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-1"></i>Cancelar
+                            <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i>Salvar Alterações
+                                <i class="fas fa-save"></i> Salvar Alterações
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Modal de Sucesso -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sucesso!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Personagem atualizado com sucesso!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <a href="#" id="viewCharacterBtn" class="btn btn-primary">Ver Personagem</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
-document.getElementById('characterForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+// Forçar reload do JavaScript para evitar cache
+console.log('DEBUG: Script de edição de personagem carregado - versão 1.0');
+
+document.addEventListener('DOMContentLoaded', function() {
+    const characterTypeSelect = document.getElementById('characterType');
+    const categoryContainer = document.getElementById('categoryContainer');
+    const categorySelect = document.getElementById('category');
+    const dynamicFields = document.getElementById('dynamicFields');
+    const characterForm = document.getElementById('characterForm');
     
-    // Coletar dados do formulário
-    const formData = new FormData(this);
-    const data = {};
+    const system = '{{ session.system }}';
+    const characterData = {{ character.dynamic_fields|tojson|safe if character.dynamic_fields else '{}' }};
     
-    for (let [key, value] of formData.entries()) {
-        if (key === 'is_public') {
-            data[key] = true; // Checkbox checked
-        } else if (key === 'level' || key === 'strength' || key === 'dexterity' || 
-                   key === 'constitution' || key === 'intelligence' || key === 'wisdom' || 
-                   key === 'charisma' || key === 'armor_class' || key === 'hit_points' || 
-                   key === 'speed') {
-            data[key] = parseInt(value) || 0;
-        } else {
-            data[key] = value;
+    // Adicionar campos padrão do personagem aos dados
+    const allCharacterData = {
+        ...characterData,
+        name: '{{ character.name }}',
+        level: {{ character.level }},
+        race: '{{ character.race or "" }}',
+        character_class: '{{ character.character_class or "" }}',
+        background: '{{ character.background or "" }}',
+        strength: {{ character.strength }},
+        dexterity: {{ character.dexterity }},
+        constitution: {{ character.constitution }},
+        intelligence: {{ character.intelligence }},
+        wisdom: {{ character.wisdom }},
+        charisma: {{ character.charisma }},
+        armor_class: {{ character.armor_class }},
+        hit_points: {{ character.hit_points }},
+        speed: {{ character.speed }},
+        description: '{{ character.description or "" }}',
+        backstory: '{{ character.backstory or "" }}',
+        equipment: '{{ character.equipment or "" }}',
+        spells: '{{ character.spells or "" }}',
+        notes: '{{ character.notes or "" }}',
+        image_url: '{{ character.image_url or "" }}',
+        is_public: {{ 'true' if character.is_public else 'false' }}
+    };
+    
+    console.log('DEBUG: Dados completos do personagem carregados:', allCharacterData);
+    
+    // Carregar campos quando o tipo de personagem muda
+    characterTypeSelect.addEventListener('change', function() {
+        const characterType = this.value;
+        
+        if (!characterType) {
+            categoryContainer.style.display = 'none';
+            dynamicFields.innerHTML = '';
+            return;
         }
+        
+        // Carregar campos dinâmicos
+        loadDynamicFields(system, characterType);
+    });
+    
+    // Carregar campos quando a categoria muda
+    categorySelect.addEventListener('change', function() {
+        const characterType = characterTypeSelect.value;
+        const category = this.value;
+        
+        if (category) {
+            loadFieldsForCategory(system, characterType, category);
+        }
+    });
+    
+    function loadDynamicFields(system, characterType) {
+        console.log(`DEBUG: Enviando para API - Sistema: '${system}', Tipo: '${characterType}'`);
+        fetch(`/sessions/api/character-fields/${encodeURIComponent(system)}/${characterType}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Campos dinâmicos recebidos:', data);
+                if (data.success) {
+                    if (characterType === 'player') {
+                        dynamicFields.innerHTML = '';
+                        for (const [category, fields] of Object.entries(data.fields)) {
+                            if (fields && fields.length) {
+                                addFieldSection(category, fields);
+                            }
+                        }
+                        categoryContainer.style.display = 'none';
+                    } else {
+                        // Para NPCs/Criaturas
+                        const categories = data.categories || [];
+                        if (categories.length > 1) {
+                            // Mostrar seletor de categoria
+                            categoryContainer.style.display = 'block';
+                            categorySelect.innerHTML = '<option value="">Selecione a categoria...</option>';
+                            categories.forEach(category => {
+                                const option = document.createElement('option');
+                                option.value = category;
+                                option.textContent = category;
+                                categorySelect.appendChild(option);
+                            });
+                            dynamicFields.innerHTML = '';
+                        } else if (categories.length === 1) {
+                            // Só uma categoria, renderizar direto
+                            categoryContainer.style.display = 'none';
+                            dynamicFields.innerHTML = '';
+                            addFieldSection(categories[0], data.fields[categories[0]]);
+                        } else {
+                            categoryContainer.style.display = 'none';
+                            dynamicFields.innerHTML = '';
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar campos:', error);
+            });
     }
     
-    // Adicionar max_hit_points igual a hit_points
-    data.max_hit_points = data.hit_points;
+    function loadFieldsForCategory(system, characterType, category) {
+        fetch(`/sessions/api/character-fields/${encodeURIComponent(system)}/${characterType}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.fields[category]) {
+                    dynamicFields.innerHTML = '';
+                    addFieldSection(category, data.fields[category]);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar campos da categoria:', error);
+            });
+    }
     
-    // Enviar dados
-    fetch('{{ url_for("sessions.edit_character_post", session_id=session.id, character_id=character.id) }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            alert(result.message);
-            window.location.href = '{{ url_for("sessions.view_character", session_id=session.id, character_id=character.id) }}';
-        } else {
-            alert('Erro: ' + result.error);
+    function addFieldSection(category, fields) {
+        const section = document.createElement('div');
+        section.className = 'row mb-3';
+        
+        const sectionTitle = document.createElement('div');
+        sectionTitle.className = 'col-12';
+        sectionTitle.innerHTML = `<h5 class="text-primary">${category}</h5>`;
+        section.appendChild(sectionTitle);
+        
+        fields.forEach(field => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'col-md-6 mb-2';
+            
+            const fieldName = field.nome || field;
+            const fieldType = field.tipo || 'texto';
+            const fieldKey = fieldName.toLowerCase().replace(/\s+/g, '_');
+            
+            // Obter valor atual do personagem
+            let currentValue = '';
+            
+            // Mapeamento de campos para garantir compatibilidade
+            const fieldMappings = {
+                'nome': ['name', 'nome'],
+                'raça': ['race', 'raça'],
+                'classe': ['character_class', 'classe'],
+                'nível': ['level', 'nível'],
+                'força': ['strength', 'força'],
+                'destreza': ['dexterity', 'destreza'],
+                'constituição': ['constitution', 'constituição'],
+                'inteligência': ['intelligence', 'inteligência'],
+                'sabedoria': ['wisdom', 'sabedoria'],
+                'carisma': ['charisma', 'carisma'],
+                'pv': ['hit_points', 'pv'],
+                'ca': ['armor_class', 'ca'],
+                'iniciativa': ['initiative', 'iniciativa'],
+                'deslocamento': ['speed', 'deslocamento'],
+                'perícias': ['skills', 'perícias'],
+                'magias': ['spells', 'magias'],
+                'equipamentos': ['equipment', 'equipamentos'],
+                'idiomas': ['languages', 'idiomas'],
+                'alinhamento': ['alignment', 'alinhamento'],
+                'antecedente': ['background', 'antecedente'],
+                'história': ['backstory', 'história']
+            };
+            
+            // Tentar encontrar o valor usando diferentes chaves possíveis
+            const possibleKeys = fieldMappings[fieldKey] || [fieldKey];
+            for (const key of possibleKeys) {
+                if (allCharacterData[key] !== undefined && allCharacterData[key] !== null && allCharacterData[key] !== '') {
+                    currentValue = allCharacterData[key];
+                    console.log(`DEBUG: Campo '${fieldName}' (${fieldKey}) carregado com valor: "${currentValue}" (chave: ${key})`);
+                    break;
+                }
+            }
+            
+            if (fieldType === 'grupo' && field.subcampos) {
+                // Campo de grupo (ex: Atributos)
+                fieldDiv.className = 'col-12 mb-3';
+                fieldDiv.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">${fieldName}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                ${field.subcampos.map(subfield => {
+                                    const subfieldKey = subfield.nome.toLowerCase().replace(/\s+/g, '_');
+                                    
+                                    // Mapeamento específico para subcampos
+                                    const subfieldMappings = {
+                                        'força': ['strength', 'força'],
+                                        'destreza': ['dexterity', 'destreza'],
+                                        'constituição': ['constitution', 'constituição'],
+                                        'inteligência': ['intelligence', 'inteligência'],
+                                        'sabedoria': ['wisdom', 'sabedoria'],
+                                        'carisma': ['charisma', 'carisma']
+                                    };
+                                    
+                                    // Tentar encontrar o valor usando diferentes chaves possíveis
+                                    const possibleSubKeys = subfieldMappings[subfieldKey] || [subfieldKey];
+                                    let subfieldValue = '10'; // valor padrão
+                                    
+                                    for (const key of possibleSubKeys) {
+                                        if (allCharacterData[key] !== undefined && allCharacterData[key] !== null && allCharacterData[key] !== '') {
+                                            subfieldValue = allCharacterData[key];
+                                            console.log(`DEBUG: Subcampo '${subfield.nome}' (${subfieldKey}) carregado com valor: "${subfieldValue}" (chave: ${key})`);
+                                            break;
+                                        }
+                                    }
+                                    
+                                    return `
+                                        <div class="col-md-2 mb-2">
+                                            <label class="form-label small">${subfield.nome}</label>
+                                            <input type="number" class="form-control form-control-sm" 
+                                                   name="${subfieldKey}" 
+                                                   value="${subfieldValue}" min="1" max="30">
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (fieldType === 'lista_texto') {
+                // Campo de lista de texto
+                fieldDiv.className = 'col-12 mb-3';
+                fieldDiv.innerHTML = `
+                    <label class="form-label">${fieldName}</label>
+                    <textarea class="form-control" name="${fieldKey}" 
+                              rows="3" placeholder="Digite cada item em uma linha separada">${currentValue}</textarea>
+                    <small class="form-text text-muted">Digite cada item em uma linha separada</small>
+                `;
+            } else if (fieldType === 'numérico') {
+                // Campo numérico
+                fieldDiv.innerHTML = `
+                    <label class="form-label">${fieldName}</label>
+                    <input type="number" class="form-control" 
+                           name="${fieldKey}" 
+                           value="${currentValue || '0'}" min="0">
+                `;
+            } else {
+                // Campo de texto (padrão)
+                fieldDiv.innerHTML = `
+                    <label class="form-label">${fieldName}</label>
+                    <input type="text" class="form-control" 
+                           name="${fieldKey}" value="${currentValue}">
+                `;
+            }
+            
+            section.appendChild(fieldDiv);
+        });
+        
+        dynamicFields.appendChild(section);
+    }
+    
+    // Envio do formulário
+    characterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        console.log('DEBUG: Formulário de edição submetido');
+        
+        const formData = new FormData(this);
+        const data = {
+            name: formData.get('name') || '{{ character.name }}',
+            character_type: formData.get('character_type'),
+            level: parseInt(formData.get('level')) || 1,
+            description: formData.get('description'),
+            notes: formData.get('notes'),
+            image_url: formData.get('image_url'),
+            is_public: formData.get('is_public') === 'on'
+        };
+        
+        console.log('DEBUG: Dados básicos coletados:', data);
+        
+        // Adicionar campos dinâmicos
+        const dynamicInputs = dynamicFields.querySelectorAll('input, textarea');
+        console.log('DEBUG: Campos dinâmicos encontrados:', dynamicInputs.length);
+        
+        dynamicInputs.forEach(input => {
+            console.log(`DEBUG: Campo dinâmico - name: "${input.name}", value: "${input.value}"`);
+            // Sempre adicionar o campo, mesmo se estiver vazio, para permitir limpeza
+            data[input.name] = input.value;
+            
+            // Mapear campo "nome" para "name" (campo principal do personagem)
+            if (input.name === 'nome') {
+                data.name = input.value;
+                console.log(`DEBUG: Campo 'nome' encontrado, mapeando para 'name': "${input.value}"`);
+            }
+        });
+        
+        // Garantir que sempre tenha um nome
+        if (!data.name) {
+            // Tentar encontrar o campo nome nos campos dinâmicos
+            const nomeInput = dynamicFields.querySelector('input[name="nome"]');
+            if (nomeInput && nomeInput.value.trim()) {
+                data.name = nomeInput.value.trim();
+                console.log(`DEBUG: Nome encontrado via querySelector: "${data.name}"`);
+            } else {
+                console.log('DEBUG: Nenhum nome encontrado, mostrando alerta');
+                alert('Por favor, preencha o nome do personagem.');
+                return;
+            }
         }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao atualizar personagem. Tente novamente.');
+        
+        // Log detalhado de todos os dados coletados
+        console.log('DEBUG: Todos os dados coletados do formulário:');
+        Object.entries(data).forEach(([key, value]) => {
+            console.log(`  ${key}: "${value}"`);
+        });
+        
+        console.log('Dados sendo enviados:', data);
+        
+        // Enviar dados
+        fetch(`/sessions/{{ session.id }}/characters/{{ character.id }}/edit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('successMessage').textContent = data.message;
+                document.getElementById('viewCharacterBtn').href = `/sessions/{{ session.id }}/characters/{{ character.id }}`;
+                
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            } else {
+                alert('Erro ao atualizar personagem: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao atualizar personagem');
+        });
     });
+
+    // Carregar campos dinâmicos automaticamente ao abrir a página
+    if (characterTypeSelect.value) {
+        loadDynamicFields(system, characterTypeSelect.value);
+    }
 });
 </script>
-
-<style>
-.card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.form-check-input:checked {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-}
-
-.text-center {
-    text-align: center;
-}
-</style>
 {% endblock %}

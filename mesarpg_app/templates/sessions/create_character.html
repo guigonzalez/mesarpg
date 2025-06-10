@@ -82,6 +82,9 @@
 
 {% block extra_scripts %}
 <script>
+// Forçar reload do JavaScript para evitar cache
+console.log('DEBUG: Script de criação de personagem carregado - versão 1.1');
+
 document.addEventListener('DOMContentLoaded', function() {
     const characterTypeSelect = document.getElementById('characterType');
     const categoryContainer = document.getElementById('categoryContainer');
@@ -251,9 +254,11 @@ document.addEventListener('DOMContentLoaded', function() {
     characterForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        console.log('DEBUG: Formulário submetido');
+        
         const formData = new FormData(this);
         const data = {
-            name: formData.get('name'),
+            name: formData.get('name') || 'Personagem', // Fallback se não houver campo name
             character_type: formData.get('character_type'),
             level: parseInt(formData.get('level')) || 1,
             description: formData.get('description'),
@@ -262,13 +267,40 @@ document.addEventListener('DOMContentLoaded', function() {
             is_public: formData.get('is_public') === 'on'
         };
         
+        console.log('DEBUG: Dados básicos coletados:', data);
+        
         // Adicionar campos dinâmicos
-        const dynamicInputs = dynamicFields.querySelectorAll('input');
+        const dynamicInputs = dynamicFields.querySelectorAll('input, textarea');
+        console.log('DEBUG: Campos dinâmicos encontrados:', dynamicInputs.length);
+        
         dynamicInputs.forEach(input => {
+            console.log(`DEBUG: Campo dinâmico - name: "${input.name}", value: "${input.value}"`);
             if (input.value.trim()) {
                 data[input.name] = input.value;
+                
+                // Mapear campo "nome" para "name" (campo principal do personagem)
+                if (input.name === 'nome') {
+                    data.name = input.value;
+                    console.log(`DEBUG: Campo 'nome' encontrado, mapeando para 'name': "${input.value}"`);
+                }
             }
         });
+        
+        // Garantir que sempre tenha um nome
+        if (!data.name || data.name === 'Personagem') {
+            // Tentar encontrar o campo nome nos campos dinâmicos
+            const nomeInput = dynamicFields.querySelector('input[name="nome"]');
+            if (nomeInput && nomeInput.value.trim()) {
+                data.name = nomeInput.value.trim();
+                console.log(`DEBUG: Nome encontrado via querySelector: "${data.name}"`);
+            } else {
+                console.log('DEBUG: Nenhum nome encontrado, mostrando alerta');
+                alert('Por favor, preencha o nome do personagem.');
+                return;
+            }
+        }
+        
+        console.log('Dados sendo enviados:', data);
         
         // Enviar dados
         fetch(`/sessions/{{ session.id }}/characters/create`, {
