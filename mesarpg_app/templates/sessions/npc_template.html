@@ -12,9 +12,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h4 class="card-title mb-1">
-                                <i class="fas fa-mask me-2"></i>Criador de NPCs e Criaturas - {{ session.system }}
+                                <i class="fas fa-mask me-2"></i>{% if character %}Editar{% else %}Criador de{% endif %} NPCs e Criaturas - {{ session.system }}
                             </h4>
-                            <p class="text-muted mb-0">{{ session.title }}</p>
+                            <p class="text-muted mb-0">{{ session.title }}{% if character %} - {{ character.character_name }}{% endif %}</p>
                         </div>
                         <div class="d-flex gap-2">
                             <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-outline-secondary">
@@ -48,8 +48,8 @@
                         <div class="col-md-6">
                             <label class="form-label">Tipo</label>
                             <select id="templateType" class="form-select" onchange="loadNPCTemplate()">
-                                <option value="npc">NPC/Antagonista</option>
-                                <option value="monster">Criatura/Monstro</option>
+                                <option value="npc" {% if character and character.character_class == 'NPC' %}selected{% endif %}>NPC/Antagonista</option>
+                                <option value="monster" {% if character and character.character_class == 'Criatura' %}selected{% endif %}>Criatura/Monstro</option>
                             </select>
                         </div>
                     </div>
@@ -87,8 +87,8 @@
                             <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-1"></i>Cancelar
                             </a>
-                            <button type="button" class="btn btn-success" onclick="saveNPC()">
-                                <i class="fas fa-save me-1"></i>Criar NPC/Criatura
+                            <button type="button" class="btn btn-success" onclick="{% if character %}updateNPC(){% else %}saveNPC(){% endif %}">
+                                <i class="fas fa-save me-1"></i>{% if character %}Atualizar{% else %}Criar{% endif %} NPC/Criatura
                             </button>
                         </div>
                     </div>
@@ -116,6 +116,9 @@ function loadNPCTemplate() {
     console.log(`=== CARREGANDO TEMPLATE NPC/CRIATURA ===`);
     console.log(`Sistema: ${systemName}`);
     console.log(`Tipo: ${type}`);
+    {% if character %}
+    console.log(`Editando: {{ character.character_name }}`);
+    {% endif %}
     
     // Limpar container primeiro
     const container = document.getElementById('systemFieldsContainer');
@@ -132,7 +135,75 @@ function loadNPCTemplate() {
     if (templateTypeField) {
         templateTypeField.value = type === 'npc' ? 'NPC' : 'Criatura';
     }
+    
+    // Se estiver editando, preencher os dados existentes
+    {% if character %}
+    setTimeout(() => {
+        populateExistingData();
+    }, 100);
+    {% endif %}
 }
+
+// Função para preencher dados existentes quando editando
+{% if character %}
+function populateExistingData() {
+    console.log('Preenchendo dados existentes...');
+    
+    // Mapear campos do personagem para os campos do formulário
+    const fieldMappings = {
+        'nome_npc': '{{ character.character_name }}',
+        'nome_monstro': '{{ character.character_name }}',
+        'nome_criatura': '{{ character.character_name }}',
+        'nivel': '{{ character.level }}',
+        'nivel_monstro': '{{ character.level }}',
+        'raca': '{{ character.race }}',
+        'tipo_monstro': '{{ character.race }}',
+        'background': '{{ character.background }}',
+        'historico_npc': '{{ character.background }}',
+        'forca': '{{ character.strength }}',
+        'destreza': '{{ character.dexterity }}',
+        'constituicao': '{{ character.constitution }}',
+        'vigor': '{{ character.constitution }}',
+        'inteligencia': '{{ character.intelligence }}',
+        'sabedoria': '{{ character.wisdom }}',
+        'raciocinio': '{{ character.wisdom }}',
+        'carisma': '{{ character.charisma }}',
+        'ca': '{{ character.armor_class }}',
+        'defesa': '{{ character.armor_class }}',
+        'defesa_npc': '{{ character.armor_class }}',
+        'defesa_monstro': '{{ character.armor_class }}',
+        'pv': '{{ character.hit_points }}',
+        'pv_npc': '{{ character.hit_points }}',
+        'pv_monstro': '{{ character.hit_points }}',
+        'pv_criatura': '{{ character.hit_points }}',
+        'deslocamento': '{{ character.speed }}',
+        'deslocamento_npc': '{{ character.speed }}',
+        'descricao': '{{ character.description }}',
+        'motivacao_npc': '{{ character.description }}',
+        'instinto': '{{ character.description }}',
+        'historia_personagem': '{{ character.backstory }}',
+        'historico_npc': '{{ character.backstory }}',
+        'equipamentos': '{{ character.equipment }}',
+        'equipamento_npc': '{{ character.equipment }}',
+        'magias': '{{ character.spells }}',
+        'poderes_npc': '{{ character.spells }}',
+        'poderes_monstro': '{{ character.spells }}',
+        'ataques_especiais': '{{ character.notes }}',
+        'acoes': '{{ character.notes }}',
+        'ataques_monstro': '{{ character.notes }}'
+    };
+    
+    // Preencher os campos
+    Object.keys(fieldMappings).forEach(fieldName => {
+        const field = document.getElementById(fieldName);
+        if (field && fieldMappings[fieldName]) {
+            field.value = fieldMappings[fieldName];
+        }
+    });
+    
+    console.log('Dados preenchidos com sucesso!');
+}
+{% endif %}
 
 // Função para salvar NPC/Criatura
 function saveNPC() {
@@ -224,6 +295,99 @@ function saveNPC() {
         alert('Erro ao salvar NPC/Criatura. Verifique o console para mais detalhes.');
     });
 }
+
+// Função para atualizar NPC/Criatura existente
+{% if character %}
+function updateNPC() {
+    console.log('=== ATUALIZANDO NPC/CRIATURA ===');
+    
+    const systemSelect = document.getElementById('systemSelect');
+    const templateType = document.getElementById('templateType');
+    
+    if (!systemSelect || !templateType) {
+        alert('Erro: Elementos de seleção não encontrados!');
+        return;
+    }
+    
+    const systemName = systemSelect.value;
+    const type = templateType.value;
+    const characterClass = type === 'npc' ? 'NPC' : 'Criatura';
+    
+    // Coletar todos os dados dos campos
+    const formData = {};
+    
+    // Adicionar campos básicos
+    formData.character_class = characterClass;
+    formData.is_public = true;
+    
+    // Coletar dados dos campos gerados dinamicamente
+    const container = document.getElementById('systemFieldsContainer');
+    const inputs = container.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        if (input.name && input.name.trim() !== '') {
+            let value = input.value;
+            
+            // Converter valores numéricos
+            if (input.type === 'number') {
+                value = value === '' ? 0 : parseInt(value) || 0;
+            }
+            
+            formData[input.name] = value;
+        }
+    });
+    
+    // Mapear campos específicos para o modelo CharacterSheet
+    const mappedData = {
+        character_name: formData.nome_npc || formData.nome_monstro || formData.nome_criatura || '{{ character.character_name }}',
+        character_class: characterClass,
+        level: formData.nivel || formData.nivel_monstro || {{ character.level }},
+        race: formData.raca || formData.tipo_monstro || '{{ character.race }}',
+        background: formData.background || formData.historico_npc || '{{ character.background }}',
+        strength: formData.forca || {{ character.strength }},
+        dexterity: formData.destreza || {{ character.dexterity }},
+        constitution: formData.constituicao || formData.vigor || {{ character.constitution }},
+        intelligence: formData.inteligencia || {{ character.intelligence }},
+        wisdom: formData.sabedoria || formData.raciocinio || {{ character.wisdom }},
+        charisma: formData.carisma || {{ character.charisma }},
+        armor_class: formData.ca || formData.defesa || formData.defesa_npc || formData.defesa_monstro || {{ character.armor_class }},
+        hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || {{ character.hit_points }},
+        max_hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || {{ character.max_hit_points }},
+        speed: formData.deslocamento || formData.deslocamento_npc || {{ character.speed }},
+        description: formData.descricao || formData.motivacao_npc || formData.instinto || '{{ character.description }}',
+        backstory: formData.historia_personagem || formData.historico_npc || '{{ character.backstory }}',
+        equipment: formData.equipamentos || formData.equipamento_npc || '{{ character.equipment }}',
+        spells: formData.magias || formData.poderes_npc || formData.poderes_monstro || '{{ character.spells }}',
+        notes: formData.ataques_especiais || formData.acoes || formData.ataques_monstro || '{{ character.notes }}',
+        is_public: true
+    };
+    
+    console.log('Dados mapeados para atualização:', mappedData);
+    
+    // Enviar dados para o servidor
+    fetch(`{{ url_for('sessions.update_npc_template', session_id=session.id, character_id=character.id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(mappedData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('NPC/Criatura atualizado com sucesso!');
+            window.location.href = `{{ url_for('sessions.npcs_list', id=session.id) }}`;
+        } else {
+            alert('Erro ao atualizar NPC/Criatura: ' + (data.error || 'Erro desconhecido'));
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao atualizar:', error);
+        alert('Erro ao atualizar NPC/Criatura. Verifique o console para mais detalhes.');
+    });
+}
+{% endif %}
 
 // Carregar template inicial quando a página carrega
 document.addEventListener('DOMContentLoaded', function() {

@@ -704,6 +704,81 @@ def npc_template(id):
     
     return render_template('sessions/npc_template.html', session=session)
 
+@sessions_bp.route('/<int:session_id>/npcs/<int:character_id>/edit-template')
+@login_required
+def edit_npc_template(session_id, character_id):
+    session = Session.query.get_or_404(session_id)
+    character = CharacterSheet.query.get_or_404(character_id)
+    
+    # Verificar se é o mestre da sessão
+    if session.master_id != current_user.id:
+        flash('Apenas o mestre pode editar NPCs e Criaturas.', 'error')
+        return redirect(url_for('sessions.npcs_list', id=session_id))
+    
+    # Verificar se é um NPC ou Criatura
+    if character.character_class not in ['NPC', 'Criatura']:
+        flash('Esta ficha não é um NPC ou Criatura.', 'error')
+        return redirect(url_for('sessions.npcs_list', id=session_id))
+    
+    return render_template('sessions/npc_template.html', session=session, character=character, is_editing=True)
+
+@sessions_bp.route('/<int:session_id>/npcs/<int:character_id>/update-template', methods=['POST'])
+@login_required
+def update_npc_template(session_id, character_id):
+    session = Session.query.get_or_404(session_id)
+    character = CharacterSheet.query.get_or_404(character_id)
+    
+    # Verificar se é o mestre da sessão
+    if session.master_id != current_user.id:
+        return jsonify({'error': 'Apenas o mestre pode editar NPCs e Criaturas.'}), 403
+    
+    # Verificar se é um NPC ou Criatura
+    if character.character_class not in ['NPC', 'Criatura']:
+        return jsonify({'error': 'Esta ficha não é um NPC ou Criatura.'}), 400
+    
+    # Dados do template vêm do JavaScript/formulário
+    template_data = request.get_json(silent=True)
+    if not isinstance(template_data, dict):
+        return jsonify({'error': 'Dados do template inválidos'}), 400
+    
+    try:
+        # Atualizar campos do personagem
+        character.character_name = template_data.get('character_name', character.character_name)
+        character.level = template_data.get('level', character.level)
+        character.race = template_data.get('race', character.race)
+        character.background = template_data.get('background', character.background)
+        character.strength = template_data.get('strength', character.strength)
+        character.dexterity = template_data.get('dexterity', character.dexterity)
+        character.constitution = template_data.get('constitution', character.constitution)
+        character.intelligence = template_data.get('intelligence', character.intelligence)
+        character.wisdom = template_data.get('wisdom', character.wisdom)
+        character.charisma = template_data.get('charisma', character.charisma)
+        character.armor_class = template_data.get('armor_class', character.armor_class)
+        character.hit_points = template_data.get('hit_points', character.hit_points)
+        character.max_hit_points = template_data.get('max_hit_points', character.max_hit_points)
+        character.speed = template_data.get('speed', character.speed)
+        character.description = template_data.get('description', character.description)
+        character.backstory = template_data.get('backstory', character.backstory)
+        character.equipment = template_data.get('equipment', character.equipment)
+        character.spells = template_data.get('spells', character.spells)
+        character.notes = template_data.get('notes', character.notes)
+        character.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'character_id': character.id,
+            'message': 'NPC/Criatura atualizado com sucesso!'
+        })
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao atualizar NPC/Criatura: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Erro interno do servidor ao atualizar NPC/Criatura'
+        }), 500
+
 @sessions_bp.route('/<int:id>/characters/from-template', methods=['POST'])
 @login_required  
 def create_from_template(id):
