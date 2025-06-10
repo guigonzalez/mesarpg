@@ -62,32 +62,6 @@
                 </div>
             </div>
 
-            <!-- Formulário Principal -->
-            <form method="POST" action="{{ url_for('sessions.create_from_template', id=session.id) }}">
-                <!-- Campos Básicos (sempre presentes) -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-user me-2"></i>Informações Básicas
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <label class="form-label" id="characterNameLabel" for="character_name">Nome</label>
-                                <input type="text" class="form-control" id="character_name" name="character_name" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label" for="template_type">Tipo</label>
-                                <select class="form-select" id="template_type" name="template_type">
-                                    <option value="NPC">NPC</option>
-                                    <option value="Criatura">Criatura</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Container para campos específicos do sistema -->
                 <div class="card mb-4">
                     <div class="card-header">
@@ -113,7 +87,7 @@
                             <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-1"></i>Cancelar
                             </a>
-                            <button type="submit" class="btn btn-success">
+                            <button type="button" class="btn btn-success" onclick="saveNPC()">
                                 <i class="fas fa-save me-1"></i>Criar NPC/Criatura
                             </button>
                         </div>
@@ -158,6 +132,97 @@ function loadNPCTemplate() {
     if (templateTypeField) {
         templateTypeField.value = type === 'npc' ? 'NPC' : 'Criatura';
     }
+}
+
+// Função para salvar NPC/Criatura
+function saveNPC() {
+    console.log('=== SALVANDO NPC/CRIATURA ===');
+    
+    const systemSelect = document.getElementById('systemSelect');
+    const templateType = document.getElementById('templateType');
+    
+    if (!systemSelect || !templateType) {
+        alert('Erro: Elementos de seleção não encontrados!');
+        return;
+    }
+    
+    const systemName = systemSelect.value;
+    const type = templateType.value;
+    const characterClass = type === 'npc' ? 'NPC' : 'Criatura';
+    
+    // Coletar todos os dados dos campos
+    const formData = {};
+    
+    // Adicionar campos básicos
+    formData.character_class = characterClass;
+    formData.is_public = true; // NPCs/Criaturas são sempre públicos para a sessão
+    
+    // Coletar dados dos campos gerados dinamicamente
+    const container = document.getElementById('systemFieldsContainer');
+    const inputs = container.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        if (input.name && input.name.trim() !== '') {
+            let value = input.value;
+            
+            // Converter valores numéricos
+            if (input.type === 'number') {
+                value = value === '' ? 0 : parseInt(value) || 0;
+            }
+            
+            formData[input.name] = value;
+        }
+    });
+    
+    // Mapear campos específicos para o modelo CharacterSheet
+    const mappedData = {
+        character_name: formData.nome_npc || formData.nome_monstro || formData.nome_criatura || 'NPC',
+        character_class: characterClass,
+        level: formData.nivel || formData.nivel_monstro || 1,
+        race: formData.raca || formData.tipo_monstro || '',
+        background: formData.background || formData.historico_npc || '',
+        strength: formData.forca || 10,
+        dexterity: formData.destreza || 10,
+        constitution: formData.constituicao || formData.vigor || 10,
+        intelligence: formData.inteligencia || 10,
+        wisdom: formData.sabedoria || formData.raciocinio || 10,
+        charisma: formData.carisma || 10,
+        armor_class: formData.ca || formData.defesa || formData.defesa_npc || formData.defesa_monstro || 10,
+        hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || 8,
+        max_hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || 8,
+        speed: formData.deslocamento || formData.deslocamento_npc || 30,
+        description: formData.descricao || formData.motivacao_npc || formData.instinto || '',
+        backstory: formData.historia_personagem || formData.historico_npc || '',
+        equipment: formData.equipamentos || formData.equipamento_npc || '',
+        spells: formData.magias || formData.poderes_npc || formData.poderes_monstro || '',
+        notes: formData.ataques_especiais || formData.acoes || formData.ataques_monstro || '',
+        is_public: true
+    };
+    
+    console.log('Dados mapeados:', mappedData);
+    
+    // Enviar dados para o servidor
+    fetch(`{{ url_for('sessions.create_from_template', id=session.id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(mappedData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('NPC/Criatura criado com sucesso!');
+            window.location.href = `{{ url_for('sessions.npcs_list', id=session.id) }}`;
+        } else {
+            alert('Erro ao criar NPC/Criatura: ' + (data.error || 'Erro desconhecido'));
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao salvar:', error);
+        alert('Erro ao salvar NPC/Criatura. Verifique o console para mais detalhes.');
+    });
 }
 
 // Carregar template inicial quando a página carrega

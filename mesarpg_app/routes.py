@@ -9,6 +9,7 @@ import pytz
 from mesarpg_app import db
 from mesarpg_app.models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterSheet, CharacterTemplate
 from mesarpg_app.forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm, CharacterSheetForm
+from sqlalchemy.exc import IntegrityError
 
 # Create blueprints
 main_bp = Blueprint('main', __name__)
@@ -62,10 +63,19 @@ def register():
         )
         user.set_password(form.password.data)
         db.session.add(user)
-        db.session.commit()
-        
-        flash('Conta criada com sucesso! Agora você pode fazer login.', 'success')
-        return redirect(url_for('auth.login'))
+        try:
+            db.session.commit()
+            flash('Conta criada com sucesso! Agora você pode fazer login.', 'success')
+            return redirect(url_for('auth.login'))
+        except IntegrityError as e:
+            db.session.rollback()
+            # Checa se o erro foi de email ou username duplicado
+            if 'user.email' in str(e.orig):
+                flash('Já existe uma conta com este email.', 'danger')
+            elif 'user.username' in str(e.orig):
+                flash('Já existe uma conta com este nome de usuário.', 'danger')
+            else:
+                flash('Erro ao criar conta. Tente novamente.', 'danger')
     
     return render_template('auth/register.html', form=form)
 
@@ -718,7 +728,7 @@ def create_from_template(id):
     character_sheet = CharacterSheet(
         session_id=id,
         player_id=current_user.id,  # Mestre cria a ficha inicialmente
-        character_name=template_data.get('nome', 'Personagem'),
+        character_name=template_data.get('character_name', 'Personagem'),
         character_class=template_data.get('character_class', ''),
         level=template_data.get('level', 1),
         race=template_data.get('race', ''),
@@ -742,11 +752,19 @@ def create_from_template(id):
         is_public=is_public_value
     )
     
-    db.session.add(character_sheet)
-    db.session.commit()
-    
-    return jsonify({
-        'success': True,
-        'character_id': character_sheet.id,
-        'message': 'Ficha criada com sucesso!'
-    })
+    try:
+        db.session.add(character_sheet)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'character_id': character_sheet.id,
+            'message': 'Ficha criada com sucesso!'
+        })
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao criar ficha: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Erro interno do servidor ao criar ficha'
+        }), 500
