@@ -42,11 +42,11 @@
                         <div class="col-lg-4 col-md-6">
                             <div class="card h-100 border-primary">
                                 <div class="card-body">
-                                    <h6 class="card-title text-primary">{{ npc.character_name }}</h6>
+                                    <h6 class="card-title text-primary">{{ npc.name }}</h6>
                                     <p class="card-text small text-muted mb-2">
                                         {% if npc.race %}{{ npc.race }}{% endif %}
-                                        {% if npc.character_class and npc.race %} • {% endif %}
-                                        {% if npc.character_class %}{{ npc.character_class }}{% endif %}
+                                        {% if npc.npc_type and npc.race %} • {% endif %}
+                                        {% if npc.npc_type %}{{ npc.npc_type }}{% endif %}
                                     </p>
                                     {% if npc.description %}
                                     <p class="card-text small">{{ npc.description[:100] }}{% if npc.description|length > 100 %}...{% endif %}</p>
@@ -84,7 +84,7 @@
                         <div class="col-lg-4 col-md-6">
                             <div class="card h-100 border-warning">
                                 <div class="card-body">
-                                    <h6 class="card-title text-warning">{{ creature.character_name }}</h6>
+                                    <h6 class="card-title text-warning">{{ creature.name }}</h6>
                                     <p class="card-text small text-muted mb-2">
                                         {% if creature.race %}{{ creature.race }}{% endif %}
                                         {% if creature.level %} • Nível {{ creature.level }}{% endif %}

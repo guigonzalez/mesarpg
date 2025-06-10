@@ -207,7 +207,7 @@ class CharacterSheet(db.Model):
         return (ability_score - 10) // 2
     
     def __repr__(self):
-        return f'<CharacterSheet {self.character_name} - {self.player.username}>'
+        return f'<CharacterSheet {self.character_name}>'
 
 
 class CharacterTemplate(db.Model):
@@ -255,3 +255,56 @@ class CharacterTemplate(db.Model):
     
     def __repr__(self):
         return f'<CharacterTemplate {self.template_name} - {self.system_name}>'
+
+
+class NPC(db.Model):
+    """Modelo para NPCs e Criaturas da sessão"""
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('session.id'), nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Mestre que criou
+    name = db.Column(db.String(100), nullable=False)
+    npc_type = db.Column(db.String(20), nullable=False)  # 'NPC' ou 'Criatura'
+    level = db.Column(db.Integer, default=1)
+    race = db.Column(db.String(50))
+    background = db.Column(db.String(100))
+    
+    # Atributos principais
+    strength = db.Column(db.Integer, default=10)
+    dexterity = db.Column(db.Integer, default=10)
+    constitution = db.Column(db.Integer, default=10)
+    intelligence = db.Column(db.Integer, default=10)
+    wisdom = db.Column(db.Integer, default=10)
+    charisma = db.Column(db.Integer, default=10)
+    
+    # Stats básicos
+    armor_class = db.Column(db.Integer, default=10)
+    hit_points = db.Column(db.Integer, default=8)
+    max_hit_points = db.Column(db.Integer, default=8)
+    speed = db.Column(db.Integer, default=30)
+    
+    # Informações do NPC/Criatura
+    description = db.Column(db.Text)
+    backstory = db.Column(db.Text)
+    equipment = db.Column(db.Text)
+    spells = db.Column(db.Text)
+    notes = db.Column(db.Text)
+    
+    # URL da imagem
+    image_url = db.Column(db.String(255))
+    
+    # Controle de visibilidade (sempre público para a sessão)
+    is_public = db.Column(db.Boolean, default=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    session = db.relationship('Session', backref='npcs')
+    creator = db.relationship('User', backref='created_npcs')
+    
+    def get_modifier(self, ability_score):
+        """Calcula o modificador de um atributo"""
+        return (ability_score - 10) // 2
+    
+    def __repr__(self):
+        return f'<NPC {self.name} ({self.npc_type})>'

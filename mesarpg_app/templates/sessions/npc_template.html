@@ -12,9 +12,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h4 class="card-title mb-1">
-                                <i class="fas fa-mask me-2"></i>{% if character %}Editar{% else %}Criador de{% endif %} NPCs e Criaturas - {{ session.system }}
+                                <i class="fas fa-mask me-2"></i>{% if npc %}Editar{% else %}Criador de{% endif %} NPCs e Criaturas - {{ session.system }}
                             </h4>
-                            <p class="text-muted mb-0">{{ session.title }}{% if character %} - {{ character.character_name }}{% endif %}</p>
+                            <p class="text-muted mb-0">{{ session.title }}{% if npc %} - {{ npc.name }}{% endif %}</p>
                         </div>
                         <div class="d-flex gap-2">
                             <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-outline-secondary">
@@ -48,8 +48,8 @@
                         <div class="col-md-6">
                             <label class="form-label">Tipo</label>
                             <select id="templateType" class="form-select" onchange="loadNPCTemplate()">
-                                <option value="npc" {% if character and character.character_class == 'NPC' %}selected{% endif %}>NPC/Antagonista</option>
-                                <option value="monster" {% if character and character.character_class == 'Criatura' %}selected{% endif %}>Criatura/Monstro</option>
+                                <option value="npc" {% if npc and npc.npc_type == 'NPC' %}selected{% endif %}>NPC/Antagonista</option>
+                                <option value="monster" {% if npc and npc.npc_type == 'Criatura' %}selected{% endif %}>Criatura/Monstro</option>
                             </select>
                         </div>
                     </div>
@@ -87,8 +87,8 @@
                             <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-1"></i>Cancelar
                             </a>
-                            <button type="button" class="btn btn-success" onclick="{% if character %}updateNPC(){% else %}saveNPC(){% endif %}">
-                                <i class="fas fa-save me-1"></i>{% if character %}Atualizar{% else %}Criar{% endif %} NPC/Criatura
+                            <button type="button" class="btn btn-success" onclick="{% if npc %}updateNPC(){% else %}saveNPC(){% endif %}">
+                                <i class="fas fa-save me-1"></i>{% if npc %}Atualizar{% else %}Criar{% endif %} NPC/Criatura
                             </button>
                         </div>
                     </div>
@@ -116,8 +116,8 @@ function loadNPCTemplate() {
     console.log(`=== CARREGANDO TEMPLATE NPC/CRIATURA ===`);
     console.log(`Sistema: ${systemName}`);
     console.log(`Tipo: ${type}`);
-    {% if character %}
-    console.log(`Editando: {{ character.character_name }}`);
+    {% if npc %}
+    console.log(`Editando: {{ npc.name }}`);
     {% endif %}
     
     // Limpar container primeiro
@@ -137,7 +137,7 @@ function loadNPCTemplate() {
     }
     
     // Se estiver editando, preencher os dados existentes
-    {% if character %}
+    {% if npc %}
     setTimeout(() => {
         populateExistingData();
     }, 100);
@@ -145,52 +145,52 @@ function loadNPCTemplate() {
 }
 
 // Função para preencher dados existentes quando editando
-{% if character %}
+{% if npc %}
 function populateExistingData() {
     console.log('Preenchendo dados existentes...');
     
     // Mapear campos do personagem para os campos do formulário
     const fieldMappings = {
-        'nome_npc': '{{ character.character_name }}',
-        'nome_monstro': '{{ character.character_name }}',
-        'nome_criatura': '{{ character.character_name }}',
-        'nivel': '{{ character.level }}',
-        'nivel_monstro': '{{ character.level }}',
-        'raca': '{{ character.race }}',
-        'tipo_monstro': '{{ character.race }}',
-        'background': '{{ character.background }}',
-        'historico_npc': '{{ character.background }}',
-        'forca': '{{ character.strength }}',
-        'destreza': '{{ character.dexterity }}',
-        'constituicao': '{{ character.constitution }}',
-        'vigor': '{{ character.constitution }}',
-        'inteligencia': '{{ character.intelligence }}',
-        'sabedoria': '{{ character.wisdom }}',
-        'raciocinio': '{{ character.wisdom }}',
-        'carisma': '{{ character.charisma }}',
-        'ca': '{{ character.armor_class }}',
-        'defesa': '{{ character.armor_class }}',
-        'defesa_npc': '{{ character.armor_class }}',
-        'defesa_monstro': '{{ character.armor_class }}',
-        'pv': '{{ character.hit_points }}',
-        'pv_npc': '{{ character.hit_points }}',
-        'pv_monstro': '{{ character.hit_points }}',
-        'pv_criatura': '{{ character.hit_points }}',
-        'deslocamento': '{{ character.speed }}',
-        'deslocamento_npc': '{{ character.speed }}',
-        'descricao': '{{ character.description }}',
-        'motivacao_npc': '{{ character.description }}',
-        'instinto': '{{ character.description }}',
-        'historia_personagem': '{{ character.backstory }}',
-        'historico_npc': '{{ character.backstory }}',
-        'equipamentos': '{{ character.equipment }}',
-        'equipamento_npc': '{{ character.equipment }}',
-        'magias': '{{ character.spells }}',
-        'poderes_npc': '{{ character.spells }}',
-        'poderes_monstro': '{{ character.spells }}',
-        'ataques_especiais': '{{ character.notes }}',
-        'acoes': '{{ character.notes }}',
-        'ataques_monstro': '{{ character.notes }}'
+        'nome_npc': '{{ npc.name }}',
+        'nome_monstro': '{{ npc.name }}',
+        'nome_criatura': '{{ npc.name }}',
+        'nivel': '{{ npc.level }}',
+        'nivel_monstro': '{{ npc.level }}',
+        'raca': '{{ npc.race }}',
+        'tipo_monstro': '{{ npc.race }}',
+        'background': '{{ npc.background }}',
+        'historico_npc': '{{ npc.background }}',
+        'forca': '{{ npc.strength }}',
+        'destreza': '{{ npc.dexterity }}',
+        'constituicao': '{{ npc.constitution }}',
+        'vigor': '{{ npc.constitution }}',
+        'inteligencia': '{{ npc.intelligence }}',
+        'sabedoria': '{{ npc.wisdom }}',
+        'raciocinio': '{{ npc.wisdom }}',
+        'carisma': '{{ npc.charisma }}',
+        'ca': '{{ npc.armor_class }}',
+        'defesa': '{{ npc.armor_class }}',
+        'defesa_npc': '{{ npc.armor_class }}',
+        'defesa_monstro': '{{ npc.armor_class }}',
+        'pv': '{{ npc.hit_points }}',
+        'pv_npc': '{{ npc.hit_points }}',
+        'pv_monstro': '{{ npc.hit_points }}',
+        'pv_criatura': '{{ npc.hit_points }}',
+        'deslocamento': '{{ npc.speed }}',
+        'deslocamento_npc': '{{ npc.speed }}',
+        'descricao': '{{ npc.description }}',
+        'motivacao_npc': '{{ npc.description }}',
+        'instinto': '{{ npc.description }}',
+        'historia_personagem': '{{ npc.backstory }}',
+        'historico_npc': '{{ npc.backstory }}',
+        'equipamentos': '{{ npc.equipment }}',
+        'equipamento_npc': '{{ npc.equipment }}',
+        'magias': '{{ npc.spells }}',
+        'poderes_npc': '{{ npc.spells }}',
+        'poderes_monstro': '{{ npc.spells }}',
+        'ataques_especiais': '{{ npc.notes }}',
+        'acoes': '{{ npc.notes }}',
+        'ataques_monstro': '{{ npc.notes }}'
     };
     
     // Preencher os campos
@@ -297,7 +297,7 @@ function saveNPC() {
 }
 
 // Função para atualizar NPC/Criatura existente
-{% if character %}
+{% if npc %}
 function updateNPC() {
     console.log('=== ATUALIZANDO NPC/CRIATURA ===');
     
@@ -339,33 +339,33 @@ function updateNPC() {
     
     // Mapear campos específicos para o modelo CharacterSheet
     const mappedData = {
-        character_name: formData.nome_npc || formData.nome_monstro || formData.nome_criatura || '{{ character.character_name }}',
+        character_name: formData.nome_npc || formData.nome_monstro || formData.nome_criatura || '{{ npc.name }}',
         character_class: characterClass,
-        level: formData.nivel || formData.nivel_monstro || {{ character.level }},
-        race: formData.raca || formData.tipo_monstro || '{{ character.race }}',
-        background: formData.background || formData.historico_npc || '{{ character.background }}',
-        strength: formData.forca || {{ character.strength }},
-        dexterity: formData.destreza || {{ character.dexterity }},
-        constitution: formData.constituicao || formData.vigor || {{ character.constitution }},
-        intelligence: formData.inteligencia || {{ character.intelligence }},
-        wisdom: formData.sabedoria || formData.raciocinio || {{ character.wisdom }},
-        charisma: formData.carisma || {{ character.charisma }},
-        armor_class: formData.ca || formData.defesa || formData.defesa_npc || formData.defesa_monstro || {{ character.armor_class }},
-        hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || {{ character.hit_points }},
-        max_hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || {{ character.max_hit_points }},
-        speed: formData.deslocamento || formData.deslocamento_npc || {{ character.speed }},
-        description: formData.descricao || formData.motivacao_npc || formData.instinto || '{{ character.description }}',
-        backstory: formData.historia_personagem || formData.historico_npc || '{{ character.backstory }}',
-        equipment: formData.equipamentos || formData.equipamento_npc || '{{ character.equipment }}',
-        spells: formData.magias || formData.poderes_npc || formData.poderes_monstro || '{{ character.spells }}',
-        notes: formData.ataques_especiais || formData.acoes || formData.ataques_monstro || '{{ character.notes }}',
+        level: formData.nivel || formData.nivel_monstro || {{ npc.level }},
+        race: formData.raca || formData.tipo_monstro || '{{ npc.race }}',
+        background: formData.background || formData.historico_npc || '{{ npc.background }}',
+        strength: formData.forca || {{ npc.strength }},
+        dexterity: formData.destreza || {{ npc.dexterity }},
+        constitution: formData.constituicao || formData.vigor || {{ npc.constitution }},
+        intelligence: formData.inteligencia || {{ npc.intelligence }},
+        wisdom: formData.sabedoria || formData.raciocinio || {{ npc.wisdom }},
+        charisma: formData.carisma || {{ npc.charisma }},
+        armor_class: formData.ca || formData.defesa || formData.defesa_npc || formData.defesa_monstro || {{ npc.armor_class }},
+        hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || {{ npc.hit_points }},
+        max_hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || {{ npc.max_hit_points }},
+        speed: formData.deslocamento || formData.deslocamento_npc || {{ npc.speed }},
+        description: formData.descricao || formData.motivacao_npc || formData.instinto || '{{ npc.description }}',
+        backstory: formData.historia_personagem || formData.historico_npc || '{{ npc.backstory }}',
+        equipment: formData.equipamentos || formData.equipamento_npc || '{{ npc.equipment }}',
+        spells: formData.magias || formData.poderes_npc || formData.poderes_monstro || '{{ npc.spells }}',
+        notes: formData.ataques_especiais || formData.acoes || formData.ataques_monstro || '{{ npc.notes }}',
         is_public: true
     };
     
     console.log('Dados mapeados para atualização:', mappedData);
     
     // Enviar dados para o servidor
-    fetch(`{{ url_for('sessions.update_npc_template', session_id=session.id, character_id=character.id) }}`, {
+    fetch(`{{ url_for('sessions.update_npc_template', session_id=session.id, character_id=npc.id) }}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

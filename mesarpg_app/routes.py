@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 import pytz
 from mesarpg_app import db
-from mesarpg_app.models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterSheet, CharacterTemplate
+from mesarpg_app.models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterSheet, CharacterTemplate, NPC
 from mesarpg_app.forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm, CharacterSheetForm
 from sqlalchemy.exc import IntegrityError
 
@@ -686,9 +686,9 @@ def npcs_list(id):
         flash('Apenas o mestre pode gerenciar NPCs e Criaturas.', 'error')
         return redirect(url_for('sessions.character_sheets', id=id))
     
-    # Buscar NPCs e Criaturas da sessão
-    npcs = CharacterSheet.query.filter_by(session_id=id, character_class='NPC').all()
-    creatures = CharacterSheet.query.filter_by(session_id=id, character_class='Criatura').all()
+    # Buscar NPCs e Criaturas da sessão usando o novo modelo
+    npcs = NPC.query.filter_by(session_id=id, npc_type='NPC').all()
+    creatures = NPC.query.filter_by(session_id=id, npc_type='Criatura').all()
     
     return render_template('sessions/npcs.html', session=session, npcs=npcs, creatures=creatures)
 
@@ -708,33 +708,33 @@ def npc_template(id):
 @login_required
 def edit_npc_template(session_id, character_id):
     session = Session.query.get_or_404(session_id)
-    character = CharacterSheet.query.get_or_404(character_id)
+    npc = NPC.query.get_or_404(character_id)
     
     # Verificar se é o mestre da sessão
     if session.master_id != current_user.id:
         flash('Apenas o mestre pode editar NPCs e Criaturas.', 'error')
         return redirect(url_for('sessions.npcs_list', id=session_id))
     
-    # Verificar se é um NPC ou Criatura
-    if character.character_class not in ['NPC', 'Criatura']:
-        flash('Esta ficha não é um NPC ou Criatura.', 'error')
+    # Verificar se o NPC pertence à sessão
+    if npc.session_id != session_id:
+        flash('NPC não encontrado nesta sessão.', 'error')
         return redirect(url_for('sessions.npcs_list', id=session_id))
     
-    return render_template('sessions/npc_template.html', session=session, character=character, is_editing=True)
+    return render_template('sessions/npc_template.html', session=session, npc=npc, is_editing=True)
 
 @sessions_bp.route('/<int:session_id>/npcs/<int:character_id>/update-template', methods=['POST'])
 @login_required
 def update_npc_template(session_id, character_id):
     session = Session.query.get_or_404(session_id)
-    character = CharacterSheet.query.get_or_404(character_id)
+    npc = NPC.query.get_or_404(character_id)
     
     # Verificar se é o mestre da sessão
     if session.master_id != current_user.id:
         return jsonify({'error': 'Apenas o mestre pode editar NPCs e Criaturas.'}), 403
     
-    # Verificar se é um NPC ou Criatura
-    if character.character_class not in ['NPC', 'Criatura']:
-        return jsonify({'error': 'Esta ficha não é um NPC ou Criatura.'}), 400
+    # Verificar se o NPC pertence à sessão
+    if npc.session_id != session_id:
+        return jsonify({'error': 'NPC não encontrado nesta sessão.'}), 400
     
     # Dados do template vêm do JavaScript/formulário
     template_data = request.get_json(silent=True)
@@ -742,33 +742,34 @@ def update_npc_template(session_id, character_id):
         return jsonify({'error': 'Dados do template inválidos'}), 400
     
     try:
-        # Atualizar campos do personagem
-        character.character_name = template_data.get('character_name', character.character_name)
-        character.level = template_data.get('level', character.level)
-        character.race = template_data.get('race', character.race)
-        character.background = template_data.get('background', character.background)
-        character.strength = template_data.get('strength', character.strength)
-        character.dexterity = template_data.get('dexterity', character.dexterity)
-        character.constitution = template_data.get('constitution', character.constitution)
-        character.intelligence = template_data.get('intelligence', character.intelligence)
-        character.wisdom = template_data.get('wisdom', character.wisdom)
-        character.charisma = template_data.get('charisma', character.charisma)
-        character.armor_class = template_data.get('armor_class', character.armor_class)
-        character.hit_points = template_data.get('hit_points', character.hit_points)
-        character.max_hit_points = template_data.get('max_hit_points', character.max_hit_points)
-        character.speed = template_data.get('speed', character.speed)
-        character.description = template_data.get('description', character.description)
-        character.backstory = template_data.get('backstory', character.backstory)
-        character.equipment = template_data.get('equipment', character.equipment)
-        character.spells = template_data.get('spells', character.spells)
-        character.notes = template_data.get('notes', character.notes)
-        character.updated_at = datetime.utcnow()
+        # Atualizar campos do NPC
+        npc.name = template_data.get('character_name', npc.name)
+        npc.npc_type = template_data.get('character_class', npc.npc_type)
+        npc.level = template_data.get('level', npc.level)
+        npc.race = template_data.get('race', npc.race)
+        npc.background = template_data.get('background', npc.background)
+        npc.strength = template_data.get('strength', npc.strength)
+        npc.dexterity = template_data.get('dexterity', npc.dexterity)
+        npc.constitution = template_data.get('constitution', npc.constitution)
+        npc.intelligence = template_data.get('intelligence', npc.intelligence)
+        npc.wisdom = template_data.get('wisdom', npc.wisdom)
+        npc.charisma = template_data.get('charisma', npc.charisma)
+        npc.armor_class = template_data.get('armor_class', npc.armor_class)
+        npc.hit_points = template_data.get('hit_points', npc.hit_points)
+        npc.max_hit_points = template_data.get('max_hit_points', npc.max_hit_points)
+        npc.speed = template_data.get('speed', npc.speed)
+        npc.description = template_data.get('description', npc.description)
+        npc.backstory = template_data.get('backstory', npc.backstory)
+        npc.equipment = template_data.get('equipment', npc.equipment)
+        npc.spells = template_data.get('spells', npc.spells)
+        npc.notes = template_data.get('notes', npc.notes)
+        npc.updated_at = datetime.utcnow()
         
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'character_id': character.id,
+            'npc_id': npc.id,
             'message': 'NPC/Criatura atualizado com sucesso!'
         })
     except Exception as e:
@@ -799,47 +800,96 @@ def create_from_template(id):
     if isinstance(is_public_value, str):
         is_public_value = is_public_value.lower() in ['true', 'on', '1', 'yes']
     
-    # Criar ficha baseada no template
-    character_sheet = CharacterSheet(
-        session_id=id,
-        player_id=current_user.id,  # Mestre cria a ficha inicialmente
-        character_name=template_data.get('character_name', 'Personagem'),
-        character_class=template_data.get('character_class', ''),
-        level=template_data.get('level', 1),
-        race=template_data.get('race', ''),
-        background=template_data.get('background', ''),
-        strength=template_data.get('strength', 10),
-        dexterity=template_data.get('dexterity', 10),
-        constitution=template_data.get('constitution', 10),
-        intelligence=template_data.get('intelligence', 10),
-        wisdom=template_data.get('wisdom', 10),
-        charisma=template_data.get('charisma', 10),
-        armor_class=template_data.get('armor_class', 10),
-        hit_points=template_data.get('hit_points', 8),
-        max_hit_points=template_data.get('max_hit_points', 8),
-        speed=template_data.get('speed', 30),
-        description=template_data.get('description', ''),
-        backstory=template_data.get('backstory', ''),
-        equipment=template_data.get('equipment', ''),
-        spells=template_data.get('spells', ''),
-        notes=template_data.get('notes', ''),
-        character_image_url=template_data.get('character_image_url', ''),
-        is_public=is_public_value
-    )
+    # Verificar se é um NPC/Criatura ou personagem de jogador
+    character_class = template_data.get('character_class', '')
     
-    try:
-        db.session.add(character_sheet)
-        db.session.commit()
+    if character_class in ['NPC', 'Criatura']:
+        # Criar NPC/Criatura usando o novo modelo
+        npc = NPC(
+            session_id=id,
+            created_by=current_user.id,
+            name=template_data.get('character_name', 'NPC'),
+            npc_type=character_class,
+            level=template_data.get('level', 1),
+            race=template_data.get('race', ''),
+            background=template_data.get('background', ''),
+            strength=template_data.get('strength', 10),
+            dexterity=template_data.get('dexterity', 10),
+            constitution=template_data.get('constitution', 10),
+            intelligence=template_data.get('intelligence', 10),
+            wisdom=template_data.get('wisdom', 10),
+            charisma=template_data.get('charisma', 10),
+            armor_class=template_data.get('armor_class', 10),
+            hit_points=template_data.get('hit_points', 8),
+            max_hit_points=template_data.get('max_hit_points', 8),
+            speed=template_data.get('speed', 30),
+            description=template_data.get('description', ''),
+            backstory=template_data.get('backstory', ''),
+            equipment=template_data.get('equipment', ''),
+            spells=template_data.get('spells', ''),
+            notes=template_data.get('notes', ''),
+            image_url=template_data.get('character_image_url', ''),
+            is_public=is_public_value
+        )
         
-        return jsonify({
-            'success': True,
-            'character_id': character_sheet.id,
-            'message': 'Ficha criada com sucesso!'
-        })
-    except Exception as e:
-        db.session.rollback()
-        print(f"Erro ao criar ficha: {e}")
-        return jsonify({
-            'success': False,
-            'error': 'Erro interno do servidor ao criar ficha'
-        }), 500
+        try:
+            db.session.add(npc)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'npc_id': npc.id,
+                'message': f'{character_class} criado com sucesso!'
+            })
+        except Exception as e:
+            db.session.rollback()
+            print(f"Erro ao criar NPC: {e}")
+            return jsonify({
+                'success': False,
+                'error': 'Erro interno do servidor ao criar NPC/Criatura'
+            }), 500
+    else:
+        # Criar ficha de personagem normal
+        character_sheet = CharacterSheet(
+            session_id=id,
+            player_id=current_user.id,  # Mestre cria a ficha inicialmente
+            character_name=template_data.get('character_name', 'Personagem'),
+            character_class=template_data.get('character_class', ''),
+            level=template_data.get('level', 1),
+            race=template_data.get('race', ''),
+            background=template_data.get('background', ''),
+            strength=template_data.get('strength', 10),
+            dexterity=template_data.get('dexterity', 10),
+            constitution=template_data.get('constitution', 10),
+            intelligence=template_data.get('intelligence', 10),
+            wisdom=template_data.get('wisdom', 10),
+            charisma=template_data.get('charisma', 10),
+            armor_class=template_data.get('armor_class', 10),
+            hit_points=template_data.get('hit_points', 8),
+            max_hit_points=template_data.get('max_hit_points', 8),
+            speed=template_data.get('speed', 30),
+            description=template_data.get('description', ''),
+            backstory=template_data.get('backstory', ''),
+            equipment=template_data.get('equipment', ''),
+            spells=template_data.get('spells', ''),
+            notes=template_data.get('notes', ''),
+            character_image_url=template_data.get('character_image_url', ''),
+            is_public=is_public_value
+        )
+        
+        try:
+            db.session.add(character_sheet)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'character_id': character_sheet.id,
+                'message': 'Ficha criada com sucesso!'
+            })
+        except Exception as e:
+            db.session.rollback()
+            print(f"Erro ao criar ficha: {e}")
+            return jsonify({
+                'success': False,
+                'error': 'Erro interno do servidor ao criar ficha'
+            }), 500
