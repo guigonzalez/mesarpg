@@ -124,16 +124,10 @@
                         
                         <div class="card-footer">
                             <div class="d-flex gap-2">
-                                <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" 
-                                   class="btn btn-sm btn-outline-primary flex-fill">
-                                    <i class="fas fa-eye me-1"></i>Ver
-                                </a>
-                                {% if character.player_id == current_user.id or session.master_id == current_user.id %}
                                 <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=character.id) }}" 
-                                   class="btn btn-sm btn-outline-secondary">
-                                    <i class="fas fa-edit"></i>
+                                   class="btn btn-sm btn-outline-primary flex-fill">
+                                    <i class="fas fa-edit me-1"></i>Editar
                                 </a>
-                                {% endif %}
                             </div>
                         </div>
                     </div>

@@ -543,12 +543,62 @@ def characters_list(session_id):
     npcs = Character.query.filter_by(session_id=session_id, character_type='npc').all()
     creatures = Character.query.filter_by(session_id=session_id, character_type='creature').all()
     
+    # Buscar campos dinâmicos do sistema/tipo
+    player_fields = SystemFieldConfig.get_character_fields(session.system, 'Personagem')
+    npc_fields = SystemFieldConfig.get_npc_fields(session.system, 'NPC')
+    creature_fields = SystemFieldConfig.get_npc_fields(session.system, 'Criatura')
+
+    # Mapeamento de nomes de campo para atributos padrão, por sistema
+    system = session.system
+    field_mapping = {}
+    if system == 'Tormenta20':
+        field_mapping = {
+            'raça': 'race',
+            'classe': 'character_class',
+            'nex': 'level',
+        }
+    elif system == 'Pathfinder':
+        field_mapping = {
+            'raça': 'race',
+            'classe': 'character_class',
+            'nível': 'level',
+        }
+    elif system == 'Vampire: The Masquerade':
+        field_mapping = {
+            'clã': 'clã',
+            'geração': 'geração',
+            'natureza': 'natureza',
+        }
+    elif system == '3D&T Alpha':
+        field_mapping = {
+            'elemento': 'elemento',
+            'classe': 'classe',
+            'nível': 'nível',
+        }
+    elif system == 'Call of Cthulhu':
+        field_mapping = {
+            'ocupação': 'ocupação',
+            'sanidade': 'sanidade',
+            'pontos de magia': 'pontos de magia',
+        }
+    else:
+        # D&D 5e e outros
+        field_mapping = {
+            'raça': 'race',
+            'classe': 'character_class',
+            'nível': 'level',
+        }
+
     return render_template('sessions/characters_list.html', 
                          session=session, 
                          players=players, 
                          npcs=npcs, 
                          creatures=creatures,
-                         is_master=is_master)
+                         is_master=is_master,
+                         player_fields=player_fields,
+                         npc_fields=npc_fields,
+                         creature_fields=creature_fields,
+                         field_mapping=field_mapping)
 
 @sessions_bp.route('/<int:session_id>/characters/create')
 @login_required
@@ -714,43 +764,6 @@ def create_character_post(session_id):
         print(f"Erro ao criar personagem: {e}")
         return jsonify({'error': 'Erro interno do servidor'}), 500
 
-@sessions_bp.route('/<int:session_id>/characters/<int:character_id>')
-@login_required
-def view_character(session_id, character_id):
-    """Visualizar personagem, NPC ou criatura"""
-    session = Session.query.get_or_404(session_id)
-    character = Character.query.get_or_404(character_id)
-    
-    # Verificar se o personagem pertence à sessão
-    if character.session_id != session_id:
-        flash('Personagem não encontrado nesta sessão.', 'error')
-        return redirect(url_for('sessions.characters_list', session_id=session_id))
-    
-    # Verificar permissões
-    is_master = session.master_id == current_user.id
-    is_player = SessionApplication.query.filter_by(
-        session_id=session_id,
-        player_id=current_user.id,
-        status='approved'
-    ).first() is not None
-    
-    can_view = False
-    if is_master:
-        can_view = True
-    elif is_player and character.is_public:
-        can_view = True
-    elif character.created_by == current_user.id:
-        can_view = True
-    
-    if not can_view:
-        flash('Você não tem permissão para ver este personagem.', 'error')
-        return redirect(url_for('sessions.characters_list', session_id=session_id))
-    
-    return render_template('sessions/view_character.html', 
-                         session=session, 
-                         character=character,
-                         is_master=is_master)
-
 @sessions_bp.route('/<int:session_id>/characters/<int:character_id>/edit')
 @login_required
 def edit_character(session_id, character_id):
@@ -774,7 +787,7 @@ def edit_character(session_id, character_id):
     
     if not can_edit:
         flash('Você não tem permissão para editar este personagem.', 'error')
-        return redirect(url_for('sessions.view_character', session_id=session_id, character_id=character_id))
+        return redirect(url_for('sessions.characters_list', session_id=session_id))
     
     return render_template('sessions/edit_character.html', 
                          session=session, 

@@ -10,8 +10,7 @@
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('sessions.live', id=session.id) }}">{{ session.title }}</a></li>
                     <li class="breadcrumb-item"><a href="{{ url_for('sessions.characters_list', session_id=session.id) }}">Personagens</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}">{{ character.name }}</a></li>
-                    <li class="breadcrumb-item active">Editar</li>
+                    <li class="breadcrumb-item active">{{ character.name }}</li>
                 </ol>
             </nav>
             
@@ -47,7 +46,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" class="btn btn-secondary">
+                            <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Voltar
                             </a>
                             <button type="submit" class="btn btn-primary">
@@ -74,7 +73,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                <a href="#" id="viewCharacterBtn" class="btn btn-primary">Ver Personagem</a>
+                <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-primary">Voltar à Lista</a>
             </div>
         </div>
     </div>
@@ -94,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const characterForm = document.getElementById('characterForm');
     
     const system = '{{ session.system }}';
-    const characterData = {{ character.dynamic_fields|tojson|safe if character.dynamic_fields else '{}' }};
+    const characterData = {{ character.get_dynamic_fields()|tojson|safe }};
     
     // Adicionar campos padrão do personagem aos dados
     const allCharacterData = {
@@ -412,7 +411,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 document.getElementById('successMessage').textContent = data.message;
-                document.getElementById('viewCharacterBtn').href = `/sessions/{{ session.id }}/characters/{{ character.id }}`;
                 
                 const successModal = new bootstrap.Modal(document.getElementById('successModal'));
                 successModal.show();

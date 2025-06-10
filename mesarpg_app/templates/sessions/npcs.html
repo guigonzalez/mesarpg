@@ -52,13 +52,9 @@
                                     <p class="card-text small">{{ npc.description[:100] }}{% if npc.description|length > 100 %}...{% endif %}</p>
                                     {% endif %}
                                     <div class="d-flex gap-2 mt-auto">
-                                        <a href="{{ url_for('sessions.view_npc', session_id=session.id, character_id=npc.id) }}" 
+                                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=npc.id) }}" 
                                            class="btn btn-sm btn-outline-primary flex-fill">
-                                            <i class="fas fa-eye me-1"></i>Ver
-                                        </a>
-                                        <a href="{{ url_for('sessions.edit_npc_template', session_id=session.id, character_id=npc.id) }}" 
-                                           class="btn btn-sm btn-outline-secondary">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="fas fa-edit me-1"></i>Editar
                                         </a>
                                     </div>
                                 </div>
@@ -93,11 +89,11 @@
                                     <p class="card-text small">{{ creature.description[:100] }}{% if creature.description|length > 100 %}...{% endif %}</p>
                                     {% endif %}
                                     <div class="d-flex gap-2 mt-auto">
-                                        <a href="{{ url_for('sessions.view_npc', session_id=session.id, character_id=creature.id) }}" 
+                                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=creature.id) }}" 
                                            class="btn btn-sm btn-outline-warning flex-fill">
-                                            <i class="fas fa-eye me-1"></i>Ver
+                                            <i class="fas fa-edit me-1"></i>Editar
                                         </a>
-                                        <a href="{{ url_for('sessions.edit_npc_template', session_id=session.id, character_id=creature.id) }}" 
+                                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=creature.id) }}" 
                                            class="btn btn-sm btn-outline-secondary">
                                             <i class="fas fa-edit"></i>
                                         </a>
