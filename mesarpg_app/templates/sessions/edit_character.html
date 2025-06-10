@@ -1,247 +1,292 @@
 {% extends "base.html" %}
 
-{% block title %}Editar {{ character.character_name }} - {{ session.title }}{% endblock %}
+{% block title %}Editar {{ character.name }} - {{ session.title }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <!-- Cabeçalho -->
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
             <div class="card mb-4">
-                <div class="card-header bg-warning text-dark">
+                <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-0">
-                                <i class="fas fa-edit me-2"></i>Editando: {{ character.character_name }}
+                            <h4 class="card-title mb-1">
+                                <i class="fas fa-edit me-2"></i>Editar {{ character.name }}
                             </h4>
-                            <small>{{ session.title }}</small>
+                            <p class="text-muted mb-0">{{ session.title }} - {{ session.system }}</p>
                         </div>
-                        <div>
-                            <a href="{{ url_for('sessions.character_sheets', id=session.id) }}" class="btn btn-light btn-sm">
-                                <i class="fas fa-arrow-left me-1"></i>Voltar
-                            </a>
-                        </div>
+                        <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Formulário de Edição -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-user-edit me-2"></i>Editar Ficha de Personagem
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST">
-                        {{ form.hidden_tag() }}
-                        
-                        <!-- Informações Básicas -->
-                        <div class="section-header mb-3">
-                            <h6 class="text-primary">
-                                <i class="fas fa-id-card me-2"></i>Informações Básicas
-                            </h6>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                {{ form.character_name.label(class="form-label") }}
-                                {{ form.character_name(class="form-control") }}
-                            </div>
-                            <div class="col-md-3">
-                                {{ form.level.label(class="form-label") }}
-                                {{ form.level(class="form-control text-center") }}
-                            </div>
-                            <div class="col-md-3">
-                                {{ form.race.label(class="form-label") }}
-                                {{ form.race(class="form-control") }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.character_class.label(class="form-label") }}
-                                {{ form.character_class(class="form-control") }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.background.label(class="form-label") }}
-                                {{ form.background(class="form-control") }}
-                            </div>
-                        </div>
-
-                        <!-- Atributos -->
-                        <div class="section-header mb-3">
-                            <h6 class="text-primary">
-                                <i class="fas fa-dumbbell me-2"></i>Atributos
-                            </h6>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-2">
-                                {{ form.strength.label(class="form-label") }}
-                                {{ form.strength(class="form-control text-center") }}
-                            </div>
-                            <div class="col-md-2">
-                                {{ form.dexterity.label(class="form-label") }}
-                                {{ form.dexterity(class="form-control text-center") }}
-                            </div>
-                            <div class="col-md-2">
-                                {{ form.constitution.label(class="form-label") }}
-                                {{ form.constitution(class="form-control text-center") }}
-                            </div>
-                            <div class="col-md-2">
-                                {{ form.intelligence.label(class="form-label") }}
-                                {{ form.intelligence(class="form-control text-center") }}
-                            </div>
-                            <div class="col-md-2">
-                                {{ form.wisdom.label(class="form-label") }}
-                                {{ form.wisdom(class="form-control text-center") }}
-                            </div>
-                            <div class="col-md-2">
-                                {{ form.charisma.label(class="form-label") }}
-                                {{ form.charisma(class="form-control text-center") }}
-                            </div>
-                        </div>
-
-                        <!-- Combate -->
-                        <div class="section-header mb-3">
-                            <h6 class="text-primary">
-                                <i class="fas fa-shield-alt me-2"></i>Combate
-                            </h6>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3">
-                                {{ form.armor_class.label(class="form-label") }}
-                                {{ form.armor_class(class="form-control text-center") }}
-                            </div>
-                            <div class="col-md-3">
-                                {{ form.hit_points.label(class="form-label") }}
-                                {{ form.hit_points(class="form-control text-center") }}
-                            </div>
-                            <div class="col-md-3">
-                                {{ form.max_hit_points.label(class="form-label") }}
-                                {{ form.max_hit_points(class="form-control text-center") }}
-                            </div>
-                            <div class="col-md-3">
-                                {{ form.speed.label(class="form-label") }}
-                                {{ form.speed(class="form-control text-center") }}
-                            </div>
-                        </div>
-
-                        <!-- Descrições -->
-                        <div class="section-header mb-3">
-                            <h6 class="text-primary">
-                                <i class="fas fa-book me-2"></i>Descrições
-                            </h6>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                {{ form.description.label(class="form-label") }}
-                                {{ form.description(class="form-control", rows="4") }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.backstory.label(class="form-label") }}
-                                {{ form.backstory(class="form-control", rows="4") }}
-                            </div>
-                        </div>
-
-                        <!-- Equipamentos e Magias -->
-                        <div class="section-header mb-3">
-                            <h6 class="text-primary">
-                                <i class="fas fa-backpack me-2"></i>Equipamentos e Habilidades
-                            </h6>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                {{ form.equipment.label(class="form-label") }}
-                                {{ form.equipment(class="form-control", rows="4") }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.spells.label(class="form-label") }}
-                                {{ form.spells(class="form-control", rows="4") }}
-                            </div>
-                        </div>
-
-                        <!-- Anotações e Imagem -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                {{ form.notes.label(class="form-label") }}
-                                {{ form.notes(class="form-control", rows="3") }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.character_image_url.label(class="form-label") }}
-                                {{ form.character_image_url(class="form-control") }}
-                            </div>
-                        </div>
-
-                        <!-- Configurações -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
+            <!-- Formulário -->
+            <form id="characterForm">
+                <!-- Tipo de Personagem -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tag me-2"></i>Tipo de Personagem
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
                                 <div class="form-check">
-                                    {{ form.is_public(class="form-check-input") }}
-                                    {{ form.is_public.label(class="form-check-label") }}
+                                    <input class="form-check-input" type="radio" name="character_type" id="type_player" value="player" 
+                                           {% if character.character_type == 'player' %}checked{% endif %}>
+                                    <label class="form-check-label" for="type_player">
+                                        <i class="fas fa-user text-primary me-1"></i>Personagem do Jogador
+                                    </label>
                                 </div>
                             </div>
+                            {% if is_master %}
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="character_type" id="type_npc" value="npc"
+                                           {% if character.character_type == 'npc' %}checked{% endif %}>
+                                    <label class="form-check-label" for="type_npc">
+                                        <i class="fas fa-mask text-success me-1"></i>NPC
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="character_type" id="type_creature" value="creature"
+                                           {% if character.character_type == 'creature' %}checked{% endif %}>
+                                    <label class="form-check-label" for="type_creature">
+                                        <i class="fas fa-dragon text-warning me-1"></i>Criatura
+                                    </label>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Botões -->
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ url_for('sessions.character_sheets', id=session.id) }}" class="btn btn-outline-secondary">
+                <!-- Informações Básicas -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Informações Básicas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Nome *</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ character.name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="character_class" class="form-label">Classe</label>
+                                <input type="text" class="form-control" id="character_class" name="character_class" value="{{ character.character_class or '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="race" class="form-label">Raça</label>
+                                <input type="text" class="form-control" id="race" name="race" value="{{ character.race or '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="level" class="form-label">Nível</label>
+                                <input type="number" class="form-control" id="level" name="level" min="1" max="20" value="{{ character.level }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Atributos -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-dumbbell me-2"></i>Atributos
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2 col-4 mb-3">
+                                <label for="strength" class="form-label">FOR</label>
+                                <input type="number" class="form-control text-center" id="strength" name="strength" min="1" max="20" value="{{ character.strength }}">
+                            </div>
+                            <div class="col-md-2 col-4 mb-3">
+                                <label for="dexterity" class="form-label">DES</label>
+                                <input type="number" class="form-control text-center" id="dexterity" name="dexterity" min="1" max="20" value="{{ character.dexterity }}">
+                            </div>
+                            <div class="col-md-2 col-4 mb-3">
+                                <label for="constitution" class="form-label">CON</label>
+                                <input type="number" class="form-control text-center" id="constitution" name="constitution" min="1" max="20" value="{{ character.constitution }}">
+                            </div>
+                            <div class="col-md-2 col-4 mb-3">
+                                <label for="intelligence" class="form-label">INT</label>
+                                <input type="number" class="form-control text-center" id="intelligence" name="intelligence" min="1" max="20" value="{{ character.intelligence }}">
+                            </div>
+                            <div class="col-md-2 col-4 mb-3">
+                                <label for="wisdom" class="form-label">SAB</label>
+                                <input type="number" class="form-control text-center" id="wisdom" name="wisdom" min="1" max="20" value="{{ character.wisdom }}">
+                            </div>
+                            <div class="col-md-2 col-4 mb-3">
+                                <label for="charisma" class="form-label">CAR</label>
+                                <input type="number" class="form-control text-center" id="charisma" name="charisma" min="1" max="20" value="{{ character.charisma }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combate -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shield-alt me-2"></i>Combate
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="armor_class" class="form-label">Classe de Armadura</label>
+                                <input type="number" class="form-control" id="armor_class" name="armor_class" min="10" value="{{ character.armor_class }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="hit_points" class="form-label">Pontos de Vida</label>
+                                <input type="number" class="form-control" id="hit_points" name="hit_points" min="1" value="{{ character.hit_points }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="speed" class="form-label">Deslocamento (pés)</label>
+                                <input type="number" class="form-control" id="speed" name="speed" min="5" value="{{ character.speed }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descrições -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-align-left me-2"></i>Descrições
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Descrição física, personalidade, etc.">{{ character.description or '' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="backstory" class="form-label">História</label>
+                            <textarea class="form-control" id="backstory" name="backstory" rows="3" placeholder="História do personagem, background, etc.">{{ character.backstory or '' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="equipment" class="form-label">Equipamentos</label>
+                            <textarea class="form-control" id="equipment" name="equipment" rows="2" placeholder="Armas, armaduras, itens, etc.">{{ character.equipment or '' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="spells" class="form-label">Magias e Habilidades</label>
+                            <textarea class="form-control" id="spells" name="spells" rows="3" placeholder="Magias conhecidas, habilidades especiais, etc.">{{ character.spells or '' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notas</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Anotações adicionais, observações, etc.">{{ character.notes or '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configurações -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>Configurações
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_public" name="is_public" 
+                                   {% if character.is_public %}checked{% endif %}>
+                            <label class="form-check-label" for="is_public">
+                                Público (visível para outros jogadores da sessão)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-1"></i>Cancelar
                             </a>
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-1"></i>Salvar Alterações
                             </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 </div>
 
-<style>
-.section-header {
-    border-bottom: 2px solid #e9ecef;
-    padding-bottom: 8px;
-}
-
-.form-label {
-    font-weight: 600;
-    color: #495057;
-}
-
-.card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border: none;
-}
-
-.card-header {
-    background: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-}
-</style>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Prevenir navegação indevida ao pressionar espaço em campos de texto
-    const textInputs = document.querySelectorAll('input[type="text"], textarea');
+document.getElementById('characterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
     
-    textInputs.forEach(function(input) {
-        input.addEventListener('keydown', function(e) {
-            // Prevenir que o espaço cause navegação quando o campo estiver focado
-            if (e.code === 'Space' && document.activeElement === input) {
-                e.stopPropagation();
-            }
-        });
-    });
+    // Coletar dados do formulário
+    const formData = new FormData(this);
+    const data = {};
     
-    // Prevenir navegação com espaço em qualquer lugar do formulário
-    document.addEventListener('keydown', function(e) {
-        if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-            e.preventDefault();
+    for (let [key, value] of formData.entries()) {
+        if (key === 'is_public') {
+            data[key] = true; // Checkbox checked
+        } else if (key === 'level' || key === 'strength' || key === 'dexterity' || 
+                   key === 'constitution' || key === 'intelligence' || key === 'wisdom' || 
+                   key === 'charisma' || key === 'armor_class' || key === 'hit_points' || 
+                   key === 'speed') {
+            data[key] = parseInt(value) || 0;
+        } else {
+            data[key] = value;
         }
+    }
+    
+    // Adicionar max_hit_points igual a hit_points
+    data.max_hit_points = data.hit_points;
+    
+    // Enviar dados
+    fetch('{{ url_for("sessions.edit_character_post", session_id=session.id, character_id=character.id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            window.location.href = '{{ url_for("sessions.view_character", session_id=session.id, character_id=character.id) }}';
+        } else {
+            alert('Erro: ' + result.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao atualizar personagem. Tente novamente.');
     });
 });
 </script>
+
+<style>
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.text-center {
+    text-align: center;
+}
+</style>
 {% endblock %}

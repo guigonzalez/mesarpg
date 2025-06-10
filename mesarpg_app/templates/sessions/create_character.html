@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Personagem - {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.live', id=session.id) }}">{{ session.title }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.characters_list', session_id=session.id) }}">Personagens</a></li>
+                    <li class="breadcrumb-item active">Criar</li>
+                </ol>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>Criar Novo Personagem</h3>
+                    <p class="text-muted mb-0">Sistema: {{ session.system }}</p>
+                </div>
+                <div class="card-body">
+                    <form id="characterForm">
+                        <!-- Seleção de Tipo -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="characterType" class="form-label">Tipo de Personagem</label>
+                                <select class="form-select" id="characterType" name="character_type" required>
+                                    <option value="">Selecione o tipo...</option>
+                                    <option value="player">Personagem do Jogador</option>
+                                    <option value="npc">NPC</option>
+                                    <option value="creature">Criatura/Monstro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6" id="categoryContainer" style="display: none;">
+                                <label for="category" class="form-label">Categoria</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">Selecione a categoria...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Campos Dinâmicos -->
+                        <div id="dynamicFields">
+                            <!-- Os campos serão carregados dinamicamente aqui -->
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Criar Personagem
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Sucesso -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sucesso!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Personagem criado com sucesso!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <a href="#" id="viewCharacterBtn" class="btn btn-primary">Ver Personagem</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const characterTypeSelect = document.getElementById('characterType');
+    const categoryContainer = document.getElementById('categoryContainer');
+    const categorySelect = document.getElementById('category');
+    const dynamicFields = document.getElementById('dynamicFields');
+    const characterForm = document.getElementById('characterForm');
+    
+    const system = '{{ session.system }}';
+    
+    // Carregar campos quando o tipo de personagem muda
+    characterTypeSelect.addEventListener('change', function() {
+        const characterType = this.value;
+        
+        if (!characterType) {
+            categoryContainer.style.display = 'none';
+            dynamicFields.innerHTML = '';
+            return;
+        }
+        
+        // Carregar campos dinâmicos
+        loadDynamicFields(system, characterType);
+    });
+    
+    // Carregar campos quando a categoria muda
+    categorySelect.addEventListener('change', function() {
+        const characterType = characterTypeSelect.value;
+        const category = this.value;
+        
+        if (category) {
+            loadFieldsForCategory(system, characterType, category);
+        }
+    });
+    
+    function loadDynamicFields(system, characterType) {
+        console.log(`DEBUG: Enviando para API - Sistema: '${system}', Tipo: '${characterType}'`);
+        fetch(`/sessions/api/character-fields/${encodeURIComponent(system)}/${characterType}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Campos dinâmicos recebidos:', data);
+                console.log('Chaves do objeto fields:', Object.keys(data.fields));
+                console.log('Conteúdo do objeto fields:', data.fields);
+                if (data.success) {
+                    if (characterType === 'player') {
+                        dynamicFields.innerHTML = '';
+                        for (const [category, fields] of Object.entries(data.fields)) {
+                            if (fields && fields.length) {
+                                addFieldSection(category, fields);
+                            }
+                        }
+                        categoryContainer.style.display = 'none';
+                    } else {
+                        // Para NPCs/Criaturas
+                        const categories = data.categories || [];
+                        if (categories.length > 1) {
+                            // Mostrar seletor de categoria
+                            categoryContainer.style.display = 'block';
+                            categorySelect.innerHTML = '<option value="">Selecione a categoria...</option>';
+                            categories.forEach(category => {
+                                const option = document.createElement('option');
+                                option.value = category;
+                                option.textContent = category;
+                                categorySelect.appendChild(option);
+                            });
+                            dynamicFields.innerHTML = '';
+                        } else if (categories.length === 1) {
+                            // Só uma categoria, renderizar direto
+                            categoryContainer.style.display = 'none';
+                            dynamicFields.innerHTML = '';
+                            addFieldSection(categories[0], data.fields[categories[0]]);
+                        } else {
+                            categoryContainer.style.display = 'none';
+                            dynamicFields.innerHTML = '';
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar campos:', error);
+            });
+    }
+    
+    function loadFieldsForCategory(system, characterType, category) {
+        fetch(`/sessions/api/character-fields/${encodeURIComponent(system)}/${characterType}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.fields[category]) {
+                    dynamicFields.innerHTML = '';
+                    addFieldSection(category, data.fields[category]);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar campos da categoria:', error);
+            });
+    }
+    
+    function addFieldSection(category, fields) {
+        const section = document.createElement('div');
+        section.className = 'row mb-3';
+        
+        const sectionTitle = document.createElement('div');
+        sectionTitle.className = 'col-12';
+        sectionTitle.innerHTML = `<h5 class="text-primary">${category}</h5>`;
+        section.appendChild(sectionTitle);
+        
+        fields.forEach(field => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'col-md-6 mb-2';
+            
+            const fieldName = field.nome || field;
+            const fieldType = field.tipo || 'texto';
+            
+            if (fieldType === 'grupo' && field.subcampos) {
+                // Campo de grupo (ex: Atributos)
+                fieldDiv.className = 'col-12 mb-3';
+                fieldDiv.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">${fieldName}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                ${field.subcampos.map(subfield => `
+                                    <div class="col-md-2 mb-2">
+                                        <label class="form-label small">${subfield.nome}</label>
+                                        <input type="number" class="form-control form-control-sm" 
+                                               name="${subfield.nome.toLowerCase().replace(/\s+/g, '_')}" 
+                                               value="10" min="1" max="30">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (fieldType === 'lista_texto') {
+                // Campo de lista de texto
+                fieldDiv.className = 'col-12 mb-3';
+                fieldDiv.innerHTML = `
+                    <label class="form-label">${fieldName}</label>
+                    <textarea class="form-control" name="${fieldName.toLowerCase().replace(/\s+/g, '_')}" 
+                              rows="3" placeholder="Digite cada item em uma linha separada"></textarea>
+                    <small class="form-text text-muted">Digite cada item em uma linha separada</small>
+                `;
+            } else if (fieldType === 'numérico') {
+                // Campo numérico
+                fieldDiv.innerHTML = `
+                    <label class="form-label">${fieldName}</label>
+                    <input type="number" class="form-control" 
+                           name="${fieldName.toLowerCase().replace(/\s+/g, '_')}" 
+                           value="0" min="0">
+                `;
+            } else {
+                // Campo de texto (padrão)
+                fieldDiv.innerHTML = `
+                    <label class="form-label">${fieldName}</label>
+                    <input type="text" class="form-control" 
+                           name="${fieldName.toLowerCase().replace(/\s+/g, '_')}">
+                `;
+            }
+            
+            section.appendChild(fieldDiv);
+        });
+        
+        dynamicFields.appendChild(section);
+    }
+    
+    // Envio do formulário
+    characterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const data = {
+            name: formData.get('name'),
+            character_type: formData.get('character_type'),
+            level: parseInt(formData.get('level')) || 1,
+            description: formData.get('description'),
+            notes: formData.get('notes'),
+            image_url: formData.get('image_url'),
+            is_public: formData.get('is_public') === 'on'
+        };
+        
+        // Adicionar campos dinâmicos
+        const dynamicInputs = dynamicFields.querySelectorAll('input');
+        dynamicInputs.forEach(input => {
+            if (input.value.trim()) {
+                data[input.name] = input.value;
+            }
+        });
+        
+        // Enviar dados
+        fetch(`/sessions/{{ session.id }}/characters/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('successMessage').textContent = data.message;
+                document.getElementById('viewCharacterBtn').href = `/sessions/{{ session.id }}/characters/${data.character_id}`;
+                
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            } else {
+                alert('Erro ao criar personagem: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao criar personagem');
+        });
+    });
+
+    // Carregar campos dinâmicos automaticamente ao abrir a página, se já houver valor selecionado
+    if (characterTypeSelect.value) {
+        loadDynamicFields(system, characterTypeSelect.value);
+    }
+});
+</script>
+{% endblock %} 

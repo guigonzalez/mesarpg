@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}{{ npc.name }} - {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">
+                                <i class="fas fa-mask me-2"></i>{{ npc.name }}
+                            </h4>
+                            <p class="text-muted mb-0">{{ session.title }} - {{ npc.npc_type }}</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Container para campos específicos do sistema (readonly) -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Ficha Completa (Visualização)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="systemFieldsContainerView">
+                        <!-- Os campos específicos serão inseridos aqui via JavaScript -->
+                        <div class="text-center py-4">
+                            <i class="fas fa-cog fa-spin fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">Carregando ficha...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/character_templates_clean.js') }}"></script>
+<script>
+// Função para gerar o formulário simplificado em modo visualização
+function generateViewForm(systemName, type, containerId, npcData) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    // Reutiliza a mesma estrutura do generateSimplifiedForm, mas todos os campos ficam disabled
+    const templateKey = type === 'npc' ? 'npc' : 'monster';
+    const template = SIMPLIFIED_TEMPLATES[systemName]?.[templateKey];
+    if (!template) {
+        container.innerHTML = '<div class="alert alert-warning">Template não encontrado para visualização.</div>';
+        return;
+    }
+    // Título da seção
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'mb-4';
+    titleDiv.innerHTML = `
+        <h6 class="text-primary mb-3 border-bottom pb-2">
+            <i class="fas fa-bolt me-2"></i>${template.title}
+        </h6>
+    `;
+    container.appendChild(titleDiv);
+    // Container dos campos
+    const fieldsRow = document.createElement('div');
+    fieldsRow.className = 'row g-3';
+    template.fields.forEach(field => {
+        const colDiv = document.createElement('div');
+        colDiv.className = getColumnClass(field.type);
+        let value = npcData[field.name] || '';
+        let inputHTML = '';
+        switch (field.type) {
+            case 'number':
+                inputHTML = `<input type="number" class="form-control text-center" id="${field.name}" name="${field.name}" value="${value}" disabled>`;
+                break;
+            case 'text':
+                inputHTML = `<input type="text" class="form-control" id="${field.name}" name="${field.name}" value="${value}" disabled>`;
+                break;
+            case 'textarea':
+                inputHTML = `<textarea class="form-control" id="${field.name}" name="${field.name}" rows="3" disabled>${value}</textarea>`;
+                break;
+            default:
+                inputHTML = `<input type="text" class="form-control" id="${field.name}" name="${field.name}" value="${value}" disabled>`;
+        }
+        colDiv.innerHTML = `
+            <label class="form-label" for="${field.name}">${field.label}</label>
+            ${inputHTML}
+        `;
+        fieldsRow.appendChild(colDiv);
+    });
+    container.appendChild(fieldsRow);
+}
+
+// Carregar template de visualização quando a página carrega
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Mapeamento manual para o template simplificado D&D 5e
+    const npcData = {
+        nome_npc: `{{ npc.name|default('') }}`,
+        raca_classe: `{{ npc.race|default('') }} {{ npc.class|default('') }}`.trim(),
+        atributos_principais: `{{ npc.atributos|default('') }}`,
+        pv_npc: `{{ npc.pv|default('') }}`,
+        ca_npc: `{{ npc.ca|default('') }}`,
+        iniciativa_npc: `{{ npc.iniciativa|default('') }}`,
+        pericias_principais: `{{ npc.pericias|default('') }}`,
+        habilidades_npc: `{{ npc.habilidades|default('') }}`,
+        motivacao: `{{ npc.motivacao|default('') }}`,
+        recompensa: `{{ npc.recompensa|default('') }}`
+    };
+    const systemName = 'D&D 5e';
+    const templateKey = 'npc';
+    console.log('DEBUG systemName:', systemName, '| templateKey:', templateKey, '| npcData:', npcData, '| SIMPLIFIED_TEMPLATES:', SIMPLIFIED_TEMPLATES);
+    console.log('templateKey:', templateKey);
+    console.log(SIMPLIFIED_TEMPLATES['D&D 5e'].npc);
+    generateViewForm(systemName, templateKey, 'systemFieldsContainerView', npcData);
+});
+</script>
+
+<style>
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+#systemFieldsContainerView {
+    min-height: 200px;
+}
+.text-center input {
+    font-weight: bold;
+}
+</style>
+
+{# DEBUG: Exibir todos os campos do NPC #}
+<pre>
+{% for key, value in npc.__dict__.items() %}
+{{ key }}: {{ value }}
+{% endfor %}
+</pre>
+{% endblock %} 

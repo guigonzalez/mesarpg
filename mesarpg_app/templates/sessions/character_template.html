@@ -17,8 +17,8 @@
                             <p class="text-muted mb-0">{{ session.title }}</p>
                         </div>
                         <div class="d-flex gap-2">
-                            <a href="{{ url_for('sessions.character_sheets', id=session.id) }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
                             </a>
                         </div>
                     </div>

@@ -17,14 +17,9 @@
                     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#playersModal">
                         <i class="fas fa-users me-1"></i>Jogadores
                     </button>
-                    <a href="{{ url_for('sessions.character_sheets', id=session.id) }}" class="btn btn-sm btn-outline-success">
-                        <i class="fas fa-scroll me-1"></i>Personagens
+                    <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-users me-1"></i>Personagens
                     </a>
-                    {% if session.master_id == current_user.id %}
-                    <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-sm btn-outline-warning">
-                        <i class="fas fa-mask me-1"></i>NPCs
-                    </a>
-                    {% endif %}
                     <a href="{{ url_for('campaign.diary', session_id=session.id) }}" class="btn btn-sm btn-outline-info">
                         <i class="fas fa-book me-1"></i>Diário
                     </a>

@@ -17,7 +17,7 @@
                             <p class="text-muted mb-0">{{ session.title }}{% if npc %} - {{ npc.name }}{% endif %}</p>
                         </div>
                         <div class="d-flex gap-2">
-                            <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-outline-secondary">
+                            <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>Voltar
                             </a>
                         </div>
@@ -84,7 +84,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('sessions.npcs_list', id=session.id) }}" class="btn btn-outline-secondary">
+                            <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-1"></i>Cancelar
                             </a>
                             <button type="button" class="btn btn-success" onclick="{% if npc %}updateNPC(){% else %}saveNPC(){% endif %}">
@@ -149,17 +149,89 @@ function loadNPCTemplate() {
 function populateExistingData() {
     console.log('Preenchendo dados existentes...');
     
+    // Função para encontrar dados de atributos em qualquer campo
+    function findAttributeData() {
+        const possibleFields = [
+            '{{ npc.notes }}',
+            '{{ npc.spells }}',
+            '{{ npc.description }}',
+            '{{ npc.backstory }}',
+            '{{ npc.equipment }}'
+        ];
+        
+        for (let field of possibleFields) {
+            if (field && (field.includes('FOR') || field.includes('DES') || field.includes('CON') || 
+                         field.includes('INT') || field.includes('SAB') || field.includes('CAR') ||
+                         field.includes('Força') || field.includes('Destreza') || field.includes('Constituição') ||
+                         field.includes('Inteligência') || field.includes('Sabedoria') || field.includes('Carisma'))) {
+                return field;
+            }
+        }
+        return '';
+    }
+    
+    // Função para encontrar dados de perícias/habilidades específicas
+    function findSkillData() {
+        const possibleFields = [
+            '{{ npc.notes }}',
+            '{{ npc.spells }}',
+            '{{ npc.description }}',
+            '{{ npc.backstory }}',
+            '{{ npc.equipment }}'
+        ];
+        
+        for (let field of possibleFields) {
+            if (field && (field.includes('Perícia') || field.includes('Acrobacia') || field.includes('Intimidação') || 
+                         field.includes('Percepção') || field.includes('Investigação') || field.includes('Medicina') ||
+                         field.includes('Arcanismo') || field.includes('Atletismo') || field.includes('Enganação') ||
+                         field.includes('Furtividade') || field.includes('História') || field.includes('Intuição') ||
+                         field.includes('Lidar com Animais') || field.includes('Natureza') || field.includes('Persuasão') ||
+                         field.includes('Prestidigitação') || field.includes('Religião') || field.includes('Sobrevivência') ||
+                         field.includes('+') || field.includes('%'))) {
+                return field;
+            }
+        }
+        return '';
+    }
+    
+    const attributeData = findAttributeData();
+    const skillData = findSkillData();
+    
+    console.log('=== DADOS DETECTADOS ===');
+    console.log('Dados de atributos encontrados:', attributeData);
+    console.log('Dados de perícias encontrados:', skillData);
+    console.log('Dados de spells:', '{{ npc.spells }}');
+    console.log('Dados de notes:', '{{ npc.notes }}');
+    console.log('Dados de description:', '{{ npc.description }}');
+    console.log('Dados de backstory:', '{{ npc.backstory }}');
+    console.log('Dados de equipment:', '{{ npc.equipment }}');
+    
     // Mapear campos do personagem para os campos do formulário
     const fieldMappings = {
+        // Campos de nome
         'nome_npc': '{{ npc.name }}',
         'nome_monstro': '{{ npc.name }}',
         'nome_criatura': '{{ npc.name }}',
+        // Campos de nível/ND
         'nivel': '{{ npc.level }}',
         'nivel_monstro': '{{ npc.level }}',
+        'nd': '{{ npc.level }}',
+        'geracao': '{{ npc.level }}',
+        // Campos de raça/tipo/classe
         'raca': '{{ npc.race }}',
         'tipo_monstro': '{{ npc.race }}',
+        'raca_classe': '{{ npc.race }}',
+        'classe_papel': '{{ npc.race }}',
+        'cla': '{{ npc.race }}',
+        'ocupacao_npc': '{{ npc.race }}',
+        'elemento': '{{ npc.race }}',
+        // Campos de background/motivação
         'background': '{{ npc.background }}',
         'historico_npc': '{{ npc.background }}',
+        'motivacao': '{{ npc.description }}',
+        'motivacao_npc': '{{ npc.description }}',
+        'motivacao_vampiro': '{{ npc.description }}',
+        // Campos de atributos detalhados (se existirem)
         'forca': '{{ npc.strength }}',
         'destreza': '{{ npc.dexterity }}',
         'constituicao': '{{ npc.constitution }}',
@@ -168,29 +240,74 @@ function populateExistingData() {
         'sabedoria': '{{ npc.wisdom }}',
         'raciocinio': '{{ npc.wisdom }}',
         'carisma': '{{ npc.charisma }}',
+        // Campos de atributos em texto (apenas nos campos certos)
+        'atributos_principais': attributeData,
+        'atributos_npc': attributeData,
+        'atributos_monstro': attributeData,
+        // Campos de perícias (apenas nos campos certos)
+        'pericias_principais': skillData,
+        'pericias_npc': skillData,
+        // Campos de combate
         'ca': '{{ npc.armor_class }}',
         'defesa': '{{ npc.armor_class }}',
         'defesa_npc': '{{ npc.armor_class }}',
         'defesa_monstro': '{{ npc.armor_class }}',
+        'defesa_criatura': '{{ npc.armor_class }}',
+        'ca_npc': '{{ npc.armor_class }}',
+        'ca_monstro': '{{ npc.armor_class }}',
         'pv': '{{ npc.hit_points }}',
         'pv_npc': '{{ npc.hit_points }}',
         'pv_monstro': '{{ npc.hit_points }}',
         'pv_criatura': '{{ npc.hit_points }}',
+        'pv_vampiro': '{{ npc.hit_points }}',
         'deslocamento': '{{ npc.speed }}',
         'deslocamento_npc': '{{ npc.speed }}',
+        // Campos de descrição/motivação
         'descricao': '{{ npc.description }}',
-        'motivacao_npc': '{{ npc.description }}',
         'instinto': '{{ npc.description }}',
+        // Campos de história
         'historia_personagem': '{{ npc.backstory }}',
-        'historico_npc': '{{ npc.backstory }}',
+        // Campos de equipamentos/aliança
         'equipamentos': '{{ npc.equipment }}',
         'equipamento_npc': '{{ npc.equipment }}',
+        'alianca': '{{ npc.equipment }}',
+        // Campos de habilidades/poderes (apenas nos campos certos)
         'magias': '{{ npc.spells }}',
         'poderes_npc': '{{ npc.spells }}',
         'poderes_monstro': '{{ npc.spells }}',
-        'ataques_especiais': '{{ npc.notes }}',
-        'acoes': '{{ npc.notes }}',
-        'ataques_monstro': '{{ npc.notes }}'
+        'poderes_criatura': '{{ npc.spells }}',
+        'habilidades_npc': '{{ npc.spells }}',
+        'disciplinas': '{{ npc.spells }}',
+        'vantagens': '{{ npc.spells }}',
+        'ataques': '{{ npc.spells }}',
+        'ataques_monstro': '{{ npc.spells }}',
+        'ataque_monstro': '{{ npc.spells }}',
+        'acoes': '{{ npc.spells }}',
+        'ataques_especiais': '{{ npc.spells }}',
+        'habilidade_especial': '{{ npc.spells }}',
+        // Campos de notas/informações adicionais (apenas nos campos certos)
+        'reacoes': '{{ npc.notes }}',
+        'efeitos_psicologicos': '{{ npc.notes }}',
+        'sentidos': '{{ npc.notes }}',
+        'sentidos_criatura': '{{ npc.notes }}',
+        'conhecimento_mitico': '{{ npc.notes }}',
+        'ambiente': '{{ npc.notes }}',
+        'ambiente_monstro': '{{ npc.notes }}',
+        'fraqueza': '{{ npc.notes }}',
+        'estado_mental': '{{ npc.notes }}',
+        'atributo_forte': '{{ npc.notes }}',
+        'fa_fd': '{{ npc.notes }}',
+        'fa_fd_monstro': '{{ npc.notes }}',
+        'sangue': '{{ npc.notes }}',
+        'sanidade_npc': '{{ npc.notes }}',
+        'pm_npc': '{{ npc.notes }}',
+        'pm_monstro': '{{ npc.notes }}',
+        'pm_criatura': '{{ npc.notes }}',
+        'iniciativa_npc': '', // não preencher com attributeData
+        'recompensa': '', // não preencher com attributeData
+        'atributo_social': '{{ npc.notes }}',
+        'testes': '{{ npc.notes }}',
+        'resistencias': '{{ npc.notes }}'
     };
     
     // Preencher os campos
@@ -198,6 +315,7 @@ function populateExistingData() {
         const field = document.getElementById(fieldName);
         if (field && fieldMappings[fieldName]) {
             field.value = fieldMappings[fieldName];
+            console.log(`Campo preenchido: ${fieldName} = "${fieldMappings[fieldName]}"`);
         }
     });
     
@@ -242,31 +360,35 @@ function saveNPC() {
             }
             
             formData[input.name] = value;
+            console.log(`Campo coletado: ${input.name} = "${value}" (tipo: ${input.type})`);
         }
     });
+    
+    console.log('=== DADOS COLETADOS DO FORMULÁRIO ===');
+    console.log(formData);
     
     // Mapear campos específicos para o modelo CharacterSheet
     const mappedData = {
         character_name: formData.nome_npc || formData.nome_monstro || formData.nome_criatura || 'NPC',
         character_class: characterClass,
-        level: formData.nivel || formData.nivel_monstro || 1,
-        race: formData.raca || formData.tipo_monstro || '',
-        background: formData.background || formData.historico_npc || '',
+        level: formData.nivel || formData.nivel_monstro || formData.nd || formData.geracao || 1,
+        race: formData.raca || formData.tipo_monstro || formData.raca_classe || formData.classe_papel || formData.cla || formData.ocupacao_npc || formData.elemento || '',
+        background: formData.background || formData.historico_npc || formData.motivacao || formData.motivacao_npc || formData.motivacao_vampiro || '',
         strength: formData.forca || 10,
         dexterity: formData.destreza || 10,
         constitution: formData.constituicao || formData.vigor || 10,
         intelligence: formData.inteligencia || 10,
         wisdom: formData.sabedoria || formData.raciocinio || 10,
         charisma: formData.carisma || 10,
-        armor_class: formData.ca || formData.defesa || formData.defesa_npc || formData.defesa_monstro || 10,
-        hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || 8,
-        max_hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || 8,
+        armor_class: formData.ca || formData.defesa || formData.defesa_npc || formData.defesa_monstro || formData.defesa_criatura || formData.ca_npc || formData.ca_monstro || 10,
+        hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || formData.pv_vampiro || 8,
+        max_hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || formData.pv_vampiro || 8,
         speed: formData.deslocamento || formData.deslocamento_npc || 30,
-        description: formData.descricao || formData.motivacao_npc || formData.instinto || '',
-        backstory: formData.historia_personagem || formData.historico_npc || '',
-        equipment: formData.equipamentos || formData.equipamento_npc || '',
-        spells: formData.magias || formData.poderes_npc || formData.poderes_monstro || '',
-        notes: formData.ataques_especiais || formData.acoes || formData.ataques_monstro || '',
+        description: formData.descricao || formData.motivacao_npc || formData.instinto || formData.motivacao || formData.motivacao_vampiro || '',
+        backstory: formData.historia_personagem || formData.historico_npc || formData.background || '',
+        equipment: formData.equipamentos || formData.equipamento_npc || formData.alianca || '',
+        spells: formData.magias || formData.poderes_npc || formData.poderes_monstro || formData.poderes_criatura || formData.habilidades_npc || formData.disciplinas || formData.pericias_npc || formData.pericias_principais || formData.vantagens || formData.ataques || formData.ataques_monstro || formData.ataque_monstro || formData.acoes || formData.ataques_especiais || formData.habilidade_especial || '',
+        notes: formData.ataques_especiais || formData.acoes || formData.ataques_monstro || formData.reacoes || formData.efeitos_psicologicos || formData.sentidos || formData.sentidos_criatura || formData.conhecimento_mitico || formData.ambiente || formData.ambiente_monstro || formData.fraqueza || formData.estado_mental || formData.atributo_forte || formData.atributos_principais || formData.atributos_npc || formData.atributos_monstro || formData.fa_fd || formData.fa_fd_monstro || formData.sangue || formData.sanidade_npc || formData.pm_npc || formData.pm_monstro || formData.pm_criatura || formData.iniciativa_npc || formData.recompensa || formData.perigosidade || formData.atributo_social || formData.testes || formData.resistencias || '',
         is_public: true
     };
     
@@ -285,7 +407,7 @@ function saveNPC() {
     .then(data => {
         if (data.success) {
             alert('NPC/Criatura criado com sucesso!');
-            window.location.href = `{{ url_for('sessions.npcs_list', id=session.id) }}`;
+            window.location.href = `{{ url_for('sessions.characters_list', session_id=session.id) }}`;
         } else {
             alert('Erro ao criar NPC/Criatura: ' + (data.error || 'Erro desconhecido'));
         }
@@ -341,24 +463,24 @@ function updateNPC() {
     const mappedData = {
         character_name: formData.nome_npc || formData.nome_monstro || formData.nome_criatura || '{{ npc.name }}',
         character_class: characterClass,
-        level: formData.nivel || formData.nivel_monstro || {{ npc.level }},
-        race: formData.raca || formData.tipo_monstro || '{{ npc.race }}',
-        background: formData.background || formData.historico_npc || '{{ npc.background }}',
+        level: formData.nivel || formData.nivel_monstro || formData.nd || formData.geracao || {{ npc.level }},
+        race: formData.raca || formData.tipo_monstro || formData.raca_classe || formData.classe_papel || formData.cla || formData.ocupacao_npc || formData.elemento || '{{ npc.race }}',
+        background: formData.background || formData.historico_npc || formData.motivacao || formData.motivacao_npc || formData.motivacao_vampiro || '{{ npc.background }}',
         strength: formData.forca || {{ npc.strength }},
         dexterity: formData.destreza || {{ npc.dexterity }},
         constitution: formData.constituicao || formData.vigor || {{ npc.constitution }},
         intelligence: formData.inteligencia || {{ npc.intelligence }},
         wisdom: formData.sabedoria || formData.raciocinio || {{ npc.wisdom }},
         charisma: formData.carisma || {{ npc.charisma }},
-        armor_class: formData.ca || formData.defesa || formData.defesa_npc || formData.defesa_monstro || {{ npc.armor_class }},
-        hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || {{ npc.hit_points }},
-        max_hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || {{ npc.max_hit_points }},
+        armor_class: formData.ca || formData.defesa || formData.defesa_npc || formData.defesa_monstro || formData.defesa_criatura || formData.ca_npc || formData.ca_monstro || {{ npc.armor_class }},
+        hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || formData.pv_vampiro || {{ npc.hit_points }},
+        max_hit_points: formData.pv || formData.pv_npc || formData.pv_monstro || formData.pv_criatura || formData.pv_vampiro || {{ npc.max_hit_points }},
         speed: formData.deslocamento || formData.deslocamento_npc || {{ npc.speed }},
-        description: formData.descricao || formData.motivacao_npc || formData.instinto || '{{ npc.description }}',
-        backstory: formData.historia_personagem || formData.historico_npc || '{{ npc.backstory }}',
-        equipment: formData.equipamentos || formData.equipamento_npc || '{{ npc.equipment }}',
-        spells: formData.magias || formData.poderes_npc || formData.poderes_monstro || '{{ npc.spells }}',
-        notes: formData.ataques_especiais || formData.acoes || formData.ataques_monstro || '{{ npc.notes }}',
+        description: formData.descricao || formData.motivacao_npc || formData.instinto || formData.motivacao || formData.motivacao_vampiro || '{{ npc.description }}',
+        backstory: formData.historia_personagem || formData.historico_npc || formData.background || '{{ npc.backstory }}',
+        equipment: formData.equipamentos || formData.equipamento_npc || formData.alianca || '{{ npc.equipment }}',
+        spells: formData.magias || formData.poderes_npc || formData.poderes_monstro || formData.poderes_criatura || formData.habilidades_npc || formData.disciplinas || formData.pericias_npc || formData.pericias_principais || formData.vantagens || formData.ataques || formData.ataques_monstro || formData.ataque_monstro || formData.acoes || formData.ataques_especiais || formData.habilidade_especial || '{{ npc.spells }}',
+        notes: formData.ataques_especiais || formData.acoes || formData.ataques_monstro || formData.reacoes || formData.efeitos_psicologicos || formData.sentidos || formData.sentidos_criatura || formData.conhecimento_mitico || formData.ambiente || formData.ambiente_monstro || formData.fraqueza || formData.estado_mental || formData.atributo_forte || formData.atributos_principais || formData.atributos_npc || formData.atributos_monstro || formData.fa_fd || formData.fa_fd_monstro || formData.sangue || formData.sanidade_npc || formData.pm_npc || formData.pm_monstro || formData.pm_criatura || formData.iniciativa_npc || formData.recompensa || formData.perigosidade || formData.atributo_social || formData.testes || formData.resistencias || '{{ npc.notes }}',
         is_public: true
     };
     
@@ -377,7 +499,7 @@ function updateNPC() {
     .then(data => {
         if (data.success) {
             alert('NPC/Criatura atualizado com sucesso!');
-            window.location.href = `{{ url_for('sessions.npcs_list', id=session.id) }}`;
+            window.location.href = `{{ url_for('sessions.characters_list', session_id=session.id) }}`;
         } else {
             alert('Erro ao atualizar NPC/Criatura: ' + (data.error || 'Erro desconhecido'));
         }

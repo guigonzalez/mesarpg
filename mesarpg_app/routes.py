@@ -1,15 +1,16 @@
 import os
 import json
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 import pytz
 from mesarpg_app import db
-from mesarpg_app.models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterSheet, CharacterTemplate, NPC
+from mesarpg_app.models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterTemplate, Character, SystemFieldConfig
 from mesarpg_app.forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm, CharacterSheetForm
 from sqlalchemy.exc import IntegrityError
+import html
 
 # Create blueprints
 main_bp = Blueprint('main', __name__)
@@ -515,381 +516,362 @@ def send_chat_message(session_id):
         }
     })
 
-# Character Sheet routes
-@sessions_bp.route('/<int:id>/characters')
-@login_required
-def character_sheets(id):
-    session = Session.query.get_or_404(id)
-    
-    # Verificar se o usuário pode acessar esta sessão
-    if session.master_id != current_user.id:
-        application = SessionApplication.query.filter_by(
-            session_id=id,
-            player_id=current_user.id,
-            status='approved'
-        ).first()
-        if not application:
-            flash('Você não tem acesso a esta sessão.', 'error')
-            return redirect(url_for('sessions.list'))
-    
-    # Buscar fichas da sessão
-    if session.master_id == current_user.id:
-        # Mestre vê todas as fichas (públicas e privadas)
-        character_sheets = CharacterSheet.query.filter_by(session_id=id).all()
-    else:
-        # Jogador vê apenas suas fichas (públicas e privadas) e fichas públicas de outros
-        character_sheets = CharacterSheet.query.filter(
-            CharacterSheet.session_id == id,
-            db.or_(
-                CharacterSheet.player_id == current_user.id,
-                db.and_(CharacterSheet.player_id != current_user.id, CharacterSheet.is_public == True)
-            )
-        ).all()
-    
-    return render_template('sessions/characters.html', session=session, character_sheets=character_sheets)
+# ============================================================================
+# ROTAS UNIFICADAS PARA PERSONAGENS, NPCS E CRIATURAS
+# ============================================================================
 
-@sessions_bp.route('/<int:id>/characters/new')
+@sessions_bp.route('/<int:session_id>/characters')
 @login_required
-def new_character_sheet(id):
-    session = Session.query.get_or_404(id)
+def characters_list(session_id):
+    """Lista todos os personagens, NPCs e criaturas da sessão"""
+    session = Session.query.get_or_404(session_id)
     
-    # Verificar se o usuário pode acessar esta sessão
-    if session.master_id != current_user.id:
-        application = SessionApplication.query.filter_by(
-            session_id=id,
-            player_id=current_user.id,
-            status='approved'
-        ).first()
-        if not application:
-            flash('Você não tem acesso a esta sessão.', 'error')
-            return redirect(url_for('sessions.list'))
+    # Verificar permissões
+    is_master = session.master_id == current_user.id
+    is_player = SessionApplication.query.filter_by(
+        session_id=session_id,
+        player_id=current_user.id,
+        status='approved'
+    ).first() is not None
     
-    form = CharacterSheetForm()
+    if not (is_master or is_player):
+        flash('Você não tem permissão para ver os personagens desta sessão.', 'error')
+        return redirect(url_for('sessions.view', id=session_id))
     
-    if form.validate_on_submit():
-        character_sheet = CharacterSheet(
-            session_id=id,
-            player_id=current_user.id,
-            character_name=form.character_name.data,
-            character_class=form.character_class.data,
-            level=form.level.data,
-            race=form.race.data,
-            background=form.background.data,
-            strength=form.strength.data,
-            dexterity=form.dexterity.data,
-            constitution=form.constitution.data,
-            intelligence=form.intelligence.data,
-            wisdom=form.wisdom.data,
-            charisma=form.charisma.data,
-            armor_class=form.armor_class.data,
-            hit_points=form.hit_points.data,
-            max_hit_points=form.max_hit_points.data,
-            speed=form.speed.data,
-            description=form.description.data,
-            backstory=form.backstory.data,
-            equipment=form.equipment.data,
-            spells=form.spells.data,
-            notes=form.notes.data,
-            character_image_url=form.character_image_url.data,
-            is_public=form.is_public.data
+    # Buscar personagens por tipo
+    players = Character.query.filter_by(session_id=session_id, character_type='player').all()
+    npcs = Character.query.filter_by(session_id=session_id, character_type='npc').all()
+    creatures = Character.query.filter_by(session_id=session_id, character_type='creature').all()
+    
+    return render_template('sessions/characters_list.html', 
+                         session=session, 
+                         players=players, 
+                         npcs=npcs, 
+                         creatures=creatures,
+                         is_master=is_master)
+
+@sessions_bp.route('/<int:session_id>/characters/create')
+@login_required
+def create_character(session_id):
+    """Página para criar novo personagem, NPC ou criatura"""
+    session = Session.query.get_or_404(session_id)
+    
+    # Verificar permissões
+    is_master = session.master_id == current_user.id
+    is_player = SessionApplication.query.filter_by(
+        session_id=session_id,
+        player_id=current_user.id,
+        status='approved'
+    ).first() is not None
+    
+    if not (is_master or is_player):
+        flash('Você não tem permissão para criar personagens nesta sessão.', 'error')
+        return redirect(url_for('sessions.live', id=session_id))
+    
+    # Obter configurações de campos dinâmicos
+    systems = SystemFieldConfig.get_all_systems()
+    npc_categories = SystemFieldConfig.get_npc_categories(session.system)
+    character_categories = SystemFieldConfig.get_character_categories(session.system)
+    
+    return render_template('sessions/create_character.html', 
+                         session=session, 
+                         is_master=is_master,
+                         systems=systems,
+                         npc_categories=npc_categories,
+                         character_categories=character_categories)
+
+@sessions_bp.route('/<int:session_id>/characters/create', methods=['POST'])
+@login_required
+def create_character_post(session_id):
+    """Criar novo personagem, NPC ou criatura"""
+    session = Session.query.get_or_404(session_id)
+    
+    # Verificar permissões
+    is_master = session.master_id == current_user.id
+    is_player = SessionApplication.query.filter_by(
+        session_id=session_id,
+        player_id=current_user.id,
+        status='approved'
+    ).first() is not None
+    
+    if not (is_master or is_player):
+        return jsonify({'error': 'Permissão negada'}), 403
+    
+    # Dados do formulário
+    data = request.get_json()
+    
+    try:
+        # Separar campos padrão dos campos dinâmicos
+        standard_fields = {
+            'name': data.get('name', 'Personagem'),
+            'character_type': data.get('character_type', 'player'),
+            'level': data.get('level', 1),
+            'race': data.get('race', ''),
+            'character_class': data.get('character_class', ''),
+            'background': data.get('background', ''),
+            'strength': data.get('strength', 10),
+            'dexterity': data.get('dexterity', 10),
+            'constitution': data.get('constitution', 10),
+            'intelligence': data.get('intelligence', 10),
+            'wisdom': data.get('wisdom', 10),
+            'charisma': data.get('charisma', 10),
+            'armor_class': data.get('armor_class', 10),
+            'hit_points': data.get('hit_points', 8),
+            'max_hit_points': data.get('hit_points', 8),
+            'speed': data.get('speed', 30),
+            'description': data.get('description', ''),
+            'backstory': data.get('backstory', ''),
+            'equipment': data.get('equipment', ''),
+            'spells': data.get('spells', ''),
+            'notes': data.get('notes', ''),
+            'image_url': data.get('image_url', ''),
+            'is_public': data.get('is_public', True)
+        }
+        
+        # Campos dinâmicos (todos os outros campos)
+        dynamic_fields = {}
+        standard_field_names = set(standard_fields.keys())
+        for key, value in data.items():
+            if key not in standard_field_names and value and str(value).strip():
+                dynamic_fields[key] = value
+        
+        character = Character(
+            session_id=session_id,
+            created_by=current_user.id,
+            **standard_fields
         )
         
-        db.session.add(character_sheet)
+        # Salvar campos dinâmicos
+        if dynamic_fields:
+            character.set_dynamic_fields(dynamic_fields)
+        
+        db.session.add(character)
         db.session.commit()
         
-        flash('Ficha de personagem criada com sucesso!', 'success')
-        return redirect(url_for('sessions.character_sheets', id=id))
-    
-    return render_template('sessions/new_character.html', session=session, form=form)
+        return jsonify({
+            'success': True,
+            'character_id': character.id,
+            'message': f'{character.character_type.title()} criado com sucesso!'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao criar personagem: {e}")
+        return jsonify({'error': 'Erro interno do servidor'}), 500
 
 @sessions_bp.route('/<int:session_id>/characters/<int:character_id>')
 @login_required
-def view_character_sheet(session_id, character_id):
+def view_character(session_id, character_id):
+    """Visualizar personagem, NPC ou criatura"""
     session = Session.query.get_or_404(session_id)
-    character = CharacterSheet.query.get_or_404(character_id)
+    character = Character.query.get_or_404(character_id)
     
-    # Verificar se o usuário pode ver esta ficha
+    # Verificar se o personagem pertence à sessão
     if character.session_id != session_id:
-        flash('Ficha não encontrada nesta sessão.', 'error')
-        return redirect(url_for('sessions.character_sheets', id=session_id))
+        flash('Personagem não encontrado nesta sessão.', 'error')
+        return redirect(url_for('sessions.characters_list', session_id=session_id))
     
     # Verificar permissões
+    is_master = session.master_id == current_user.id
+    is_player = SessionApplication.query.filter_by(
+        session_id=session_id,
+        player_id=current_user.id,
+        status='approved'
+    ).first() is not None
+    
     can_view = False
-    if session.master_id == current_user.id:
+    if is_master:
         can_view = True
-    elif character.player_id == current_user.id:
+    elif is_player and character.is_public:
         can_view = True
-    elif character.is_public:
-        # Verificar se é jogador aprovado na sessão
-        application = SessionApplication.query.filter_by(
-            session_id=session_id,
-            player_id=current_user.id,
-            status='approved'
-        ).first()
-        can_view = application is not None
+    elif character.created_by == current_user.id:
+        can_view = True
     
     if not can_view:
-        flash('Você não tem permissão para ver esta ficha.', 'error')
-        return redirect(url_for('sessions.character_sheets', id=session_id))
+        flash('Você não tem permissão para ver este personagem.', 'error')
+        return redirect(url_for('sessions.characters_list', session_id=session_id))
     
-    return render_template('sessions/view_character.html', session=session, character=character)
+    return render_template('sessions/view_character.html', 
+                         session=session, 
+                         character=character,
+                         is_master=is_master)
 
-@sessions_bp.route('/<int:session_id>/characters/<int:character_id>/edit', methods=['GET', 'POST'])
+@sessions_bp.route('/<int:session_id>/characters/<int:character_id>/edit')
 @login_required
-def edit_character_sheet(session_id, character_id):
+def edit_character(session_id, character_id):
+    """Editar personagem, NPC ou criatura"""
     session = Session.query.get_or_404(session_id)
-    character = CharacterSheet.query.get_or_404(character_id)
+    character = Character.query.get_or_404(character_id)
     
-    # Verificar se o usuário pode editar esta ficha
-    if character.player_id != current_user.id and session.master_id != current_user.id:
-        flash('Você não tem permissão para editar esta ficha.', 'error')
-        return redirect(url_for('sessions.character_sheets', id=session_id))
+    # Verificar se o personagem pertence à sessão
+    if character.session_id != session_id:
+        flash('Personagem não encontrado nesta sessão.', 'error')
+        return redirect(url_for('sessions.characters_list', session_id=session_id))
     
-    form = CharacterSheetForm(obj=character)
+    # Verificar permissões
+    is_master = session.master_id == current_user.id
+    can_edit = False
     
-    if form.validate_on_submit():
-        form.populate_obj(character)
-        character.updated_at = datetime.utcnow()
-        
-        db.session.commit()
-        
-        flash('Ficha atualizada com sucesso!', 'success')
-        return redirect(url_for('sessions.view_character_sheet', session_id=session_id, character_id=character_id))
+    if is_master:
+        can_edit = True
+    elif character.created_by == current_user.id:
+        can_edit = True
     
-    return render_template('sessions/edit_character.html', session=session, character=character, form=form)
+    if not can_edit:
+        flash('Você não tem permissão para editar este personagem.', 'error')
+        return redirect(url_for('sessions.view_character', session_id=session_id, character_id=character_id))
+    
+    return render_template('sessions/edit_character.html', 
+                         session=session, 
+                         character=character,
+                         is_master=is_master)
 
-@sessions_bp.route('/<int:id>/characters/template')
+@sessions_bp.route('/<int:session_id>/characters/<int:character_id>/edit', methods=['POST'])
 @login_required
-def character_template(id):
-    session = Session.query.get_or_404(id)
-    
-    # Verificar se o usuário pode acessar esta sessão
-    if session.master_id != current_user.id:
-        application = SessionApplication.query.filter_by(
-            session_id=id,
-            player_id=current_user.id,
-            status='approved'
-        ).first()
-        if not application:
-            flash('Você não tem acesso a esta sessão.', 'error')
-            return redirect(url_for('sessions.list'))
-    
-    return render_template('sessions/character_template.html', session=session, template_type='player')
-
-@sessions_bp.route('/<int:id>/npcs')
-@login_required
-def npcs_list(id):
-    session = Session.query.get_or_404(id)
-    
-    # Verificar se é o mestre da sessão
-    if session.master_id != current_user.id:
-        flash('Apenas o mestre pode gerenciar NPCs e Criaturas.', 'error')
-        return redirect(url_for('sessions.character_sheets', id=id))
-    
-    # Buscar NPCs e Criaturas da sessão usando o novo modelo
-    npcs = NPC.query.filter_by(session_id=id, npc_type='NPC').all()
-    creatures = NPC.query.filter_by(session_id=id, npc_type='Criatura').all()
-    
-    return render_template('sessions/npcs.html', session=session, npcs=npcs, creatures=creatures)
-
-@sessions_bp.route('/<int:id>/npcs/template')
-@login_required
-def npc_template(id):
-    session = Session.query.get_or_404(id)
-    
-    # Verificar se é o mestre da sessão
-    if session.master_id != current_user.id:
-        flash('Apenas o mestre pode criar NPCs e Criaturas.', 'error')
-        return redirect(url_for('sessions.character_sheets', id=id))
-    
-    return render_template('sessions/npc_template.html', session=session)
-
-@sessions_bp.route('/<int:session_id>/npcs/<int:character_id>/edit-template')
-@login_required
-def edit_npc_template(session_id, character_id):
+def edit_character_post(session_id, character_id):
+    """Atualizar personagem, NPC ou criatura"""
     session = Session.query.get_or_404(session_id)
-    npc = NPC.query.get_or_404(character_id)
+    character = Character.query.get_or_404(character_id)
     
-    # Verificar se é o mestre da sessão
-    if session.master_id != current_user.id:
-        flash('Apenas o mestre pode editar NPCs e Criaturas.', 'error')
-        return redirect(url_for('sessions.npcs_list', id=session_id))
+    # Verificar se o personagem pertence à sessão
+    if character.session_id != session_id:
+        return jsonify({'error': 'Personagem não encontrado nesta sessão'}), 400
     
-    # Verificar se o NPC pertence à sessão
-    if npc.session_id != session_id:
-        flash('NPC não encontrado nesta sessão.', 'error')
-        return redirect(url_for('sessions.npcs_list', id=session_id))
+    # Verificar permissões
+    is_master = session.master_id == current_user.id
+    can_edit = False
     
-    return render_template('sessions/npc_template.html', session=session, npc=npc, is_editing=True)
-
-@sessions_bp.route('/<int:session_id>/npcs/<int:character_id>/update-template', methods=['POST'])
-@login_required
-def update_npc_template(session_id, character_id):
-    session = Session.query.get_or_404(session_id)
-    npc = NPC.query.get_or_404(character_id)
+    if is_master:
+        can_edit = True
+    elif character.created_by == current_user.id:
+        can_edit = True
     
-    # Verificar se é o mestre da sessão
-    if session.master_id != current_user.id:
-        return jsonify({'error': 'Apenas o mestre pode editar NPCs e Criaturas.'}), 403
+    if not can_edit:
+        return jsonify({'error': 'Permissão negada'}), 403
     
-    # Verificar se o NPC pertence à sessão
-    if npc.session_id != session_id:
-        return jsonify({'error': 'NPC não encontrado nesta sessão.'}), 400
-    
-    # Dados do template vêm do JavaScript/formulário
-    template_data = request.get_json(silent=True)
-    if not isinstance(template_data, dict):
-        return jsonify({'error': 'Dados do template inválidos'}), 400
+    # Dados do formulário
+    data = request.get_json()
     
     try:
-        # Atualizar campos do NPC
-        npc.name = template_data.get('character_name', npc.name)
-        npc.npc_type = template_data.get('character_class', npc.npc_type)
-        npc.level = template_data.get('level', npc.level)
-        npc.race = template_data.get('race', npc.race)
-        npc.background = template_data.get('background', npc.background)
-        npc.strength = template_data.get('strength', npc.strength)
-        npc.dexterity = template_data.get('dexterity', npc.dexterity)
-        npc.constitution = template_data.get('constitution', npc.constitution)
-        npc.intelligence = template_data.get('intelligence', npc.intelligence)
-        npc.wisdom = template_data.get('wisdom', npc.wisdom)
-        npc.charisma = template_data.get('charisma', npc.charisma)
-        npc.armor_class = template_data.get('armor_class', npc.armor_class)
-        npc.hit_points = template_data.get('hit_points', npc.hit_points)
-        npc.max_hit_points = template_data.get('max_hit_points', npc.max_hit_points)
-        npc.speed = template_data.get('speed', npc.speed)
-        npc.description = template_data.get('description', npc.description)
-        npc.backstory = template_data.get('backstory', npc.backstory)
-        npc.equipment = template_data.get('equipment', npc.equipment)
-        npc.spells = template_data.get('spells', npc.spells)
-        npc.notes = template_data.get('notes', npc.notes)
-        npc.updated_at = datetime.utcnow()
+        # Atualizar campos
+        character.name = data.get('name', character.name)
+        character.level = data.get('level', character.level)
+        character.race = data.get('race', character.race)
+        character.character_class = data.get('character_class', character.character_class)
+        character.background = data.get('background', character.background)
+        character.strength = data.get('strength', character.strength)
+        character.dexterity = data.get('dexterity', character.dexterity)
+        character.constitution = data.get('constitution', character.constitution)
+        character.intelligence = data.get('intelligence', character.intelligence)
+        character.wisdom = data.get('wisdom', character.wisdom)
+        character.charisma = data.get('charisma', character.charisma)
+        character.armor_class = data.get('armor_class', character.armor_class)
+        character.hit_points = data.get('hit_points', character.hit_points)
+        character.max_hit_points = data.get('max_hit_points', character.max_hit_points)
+        character.speed = data.get('speed', character.speed)
+        character.description = data.get('description', character.description)
+        character.backstory = data.get('backstory', character.backstory)
+        character.equipment = data.get('equipment', character.equipment)
+        character.spells = data.get('spells', character.spells)
+        character.notes = data.get('notes', character.notes)
+        character.image_url = data.get('image_url', character.image_url)
+        character.is_public = data.get('is_public', character.is_public)
+        character.updated_at = datetime.utcnow()
         
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'npc_id': npc.id,
-            'message': 'NPC/Criatura atualizado com sucesso!'
+            'message': 'Personagem atualizado com sucesso!'
         })
+        
     except Exception as e:
         db.session.rollback()
-        print(f"Erro ao atualizar NPC/Criatura: {e}")
-        return jsonify({
-            'success': False,
-            'error': 'Erro interno do servidor ao atualizar NPC/Criatura'
-        }), 500
+        print(f"Erro ao atualizar personagem: {e}")
+        return jsonify({'error': 'Erro interno do servidor'}), 500
 
-@sessions_bp.route('/<int:id>/characters/from-template', methods=['POST'])
-@login_required  
-def create_from_template(id):
-    session = Session.query.get_or_404(id)
+@sessions_bp.route('/<int:session_id>/characters/<int:character_id>/delete', methods=['POST'])
+@login_required
+def delete_character(session_id, character_id):
+    """Deletar personagem, NPC ou criatura"""
+    session = Session.query.get_or_404(session_id)
+    character = Character.query.get_or_404(character_id)
     
-    # Verificar se é o mestre da sessão
-    if session.master_id != current_user.id:
-        flash('Apenas o mestre pode usar o criador de fichas.', 'error')
-        return redirect(url_for('sessions.character_sheets', id=id))
+    # Verificar se o personagem pertence à sessão
+    if character.session_id != session_id:
+        return jsonify({'error': 'Personagem não encontrado nesta sessão'}), 400
     
-    # Dados do template vêm do JavaScript/formulário
-    template_data = request.get_json(silent=True)
-    if not isinstance(template_data, dict):
-        return jsonify({'error': 'Dados do template inválidos'}), 400
+    # Verificar permissões
+    is_master = session.master_id == current_user.id
+    can_delete = False
     
-    # Converter checkbox para booleano corretamente
-    is_public_value = template_data.get('is_public', True)
-    if isinstance(is_public_value, str):
-        is_public_value = is_public_value.lower() in ['true', 'on', '1', 'yes']
+    if is_master:
+        can_delete = True
+    elif character.created_by == current_user.id:
+        can_delete = True
     
-    # Verificar se é um NPC/Criatura ou personagem de jogador
-    character_class = template_data.get('character_class', '')
+    if not can_delete:
+        return jsonify({'error': 'Permissão negada'}), 403
     
-    if character_class in ['NPC', 'Criatura']:
-        # Criar NPC/Criatura usando o novo modelo
-        npc = NPC(
-            session_id=id,
-            created_by=current_user.id,
-            name=template_data.get('character_name', 'NPC'),
-            npc_type=character_class,
-            level=template_data.get('level', 1),
-            race=template_data.get('race', ''),
-            background=template_data.get('background', ''),
-            strength=template_data.get('strength', 10),
-            dexterity=template_data.get('dexterity', 10),
-            constitution=template_data.get('constitution', 10),
-            intelligence=template_data.get('intelligence', 10),
-            wisdom=template_data.get('wisdom', 10),
-            charisma=template_data.get('charisma', 10),
-            armor_class=template_data.get('armor_class', 10),
-            hit_points=template_data.get('hit_points', 8),
-            max_hit_points=template_data.get('max_hit_points', 8),
-            speed=template_data.get('speed', 30),
-            description=template_data.get('description', ''),
-            backstory=template_data.get('backstory', ''),
-            equipment=template_data.get('equipment', ''),
-            spells=template_data.get('spells', ''),
-            notes=template_data.get('notes', ''),
-            image_url=template_data.get('character_image_url', ''),
-            is_public=is_public_value
-        )
+    try:
+        db.session.delete(character)
+        db.session.commit()
         
-        try:
-            db.session.add(npc)
-            db.session.commit()
-            
-            return jsonify({
-                'success': True,
-                'npc_id': npc.id,
-                'message': f'{character_class} criado com sucesso!'
-            })
-        except Exception as e:
-            db.session.rollback()
-            print(f"Erro ao criar NPC: {e}")
-            return jsonify({
-                'success': False,
-                'error': 'Erro interno do servidor ao criar NPC/Criatura'
-            }), 500
+        return jsonify({
+            'success': True,
+            'message': 'Personagem deletado com sucesso!'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao deletar personagem: {e}")
+        return jsonify({'error': 'Erro interno do servidor'}), 500
+
+@sessions_bp.route('/api/character-fields/<system>/<character_type>')
+@login_required
+def get_character_fields(system, character_type):
+    """API para obter campos dinâmicos baseados no sistema e tipo"""
+    # Decodificar HTML entities no nome do sistema
+    system = html.unescape(system)
+    
+    # Mapeamento de nomes abreviados para nomes completos
+    system_mapping = {
+        'Vampire': 'Vampire: The Masquerade',
+        'CoC': 'Call of Cthulhu',
+        '3D&T': '3D&T Alpha'
+    }
+    
+    # Usar o nome completo se disponível
+    full_system_name = system_mapping.get(system, system)
+    
+    print(f"DEBUG: Sistema recebido: '{system}', Tipo: '{character_type}'")
+    print(f"DEBUG: Sistema mapeado: '{full_system_name}'")
+    
+    if character_type in ['npc', 'creature']:
+        categories = SystemFieldConfig.get_npc_categories(full_system_name)
+        print(f"DEBUG: Categorias NPC: {categories}")
+        fields_data = {}
+        for category in categories:
+            fields = SystemFieldConfig.get_npc_fields(full_system_name, category)
+            print(f"DEBUG: Campos para categoria '{category}': {fields}")
+            fields_data[category] = fields
+        return jsonify({
+            'success': True,
+            'categories': categories,
+            'fields': fields_data
+        })
+    elif character_type == 'player':
+        # Para personagens, usar a categoria 'Personagem'
+        categories = ['Personagem']
+        fields_data = {}
+        for category in categories:
+            fields = SystemFieldConfig.get_character_fields(full_system_name, category)
+            print(f"DEBUG: Campos para categoria '{category}': {fields}")
+            fields_data[category] = fields
+        return jsonify({
+            'success': True,
+            'categories': categories,
+            'fields': fields_data
+        })
     else:
-        # Criar ficha de personagem normal
-        character_sheet = CharacterSheet(
-            session_id=id,
-            player_id=current_user.id,  # Mestre cria a ficha inicialmente
-            character_name=template_data.get('character_name', 'Personagem'),
-            character_class=template_data.get('character_class', ''),
-            level=template_data.get('level', 1),
-            race=template_data.get('race', ''),
-            background=template_data.get('background', ''),
-            strength=template_data.get('strength', 10),
-            dexterity=template_data.get('dexterity', 10),
-            constitution=template_data.get('constitution', 10),
-            intelligence=template_data.get('intelligence', 10),
-            wisdom=template_data.get('wisdom', 10),
-            charisma=template_data.get('charisma', 10),
-            armor_class=template_data.get('armor_class', 10),
-            hit_points=template_data.get('hit_points', 8),
-            max_hit_points=template_data.get('max_hit_points', 8),
-            speed=template_data.get('speed', 30),
-            description=template_data.get('description', ''),
-            backstory=template_data.get('backstory', ''),
-            equipment=template_data.get('equipment', ''),
-            spells=template_data.get('spells', ''),
-            notes=template_data.get('notes', ''),
-            character_image_url=template_data.get('character_image_url', ''),
-            is_public=is_public_value
-        )
-        
-        try:
-            db.session.add(character_sheet)
-            db.session.commit()
-            
-            return jsonify({
-                'success': True,
-                'character_id': character_sheet.id,
-                'message': 'Ficha criada com sucesso!'
-            })
-        except Exception as e:
-            db.session.rollback()
-            print(f"Erro ao criar ficha: {e}")
-            return jsonify({
-                'success': False,
-                'error': 'Erro interno do servidor ao criar ficha'
-            }), 500
+        return jsonify({'error': 'Tipo de personagem inválido'}), 400

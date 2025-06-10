@@ -158,14 +158,20 @@ class ChatMessage(db.Model):
         return f'<ChatMessage {self.user.username}: {self.message[:50]}>'
 
 
-class CharacterSheet(db.Model):
+class Character(db.Model):
+    """Modelo unificado para Personagens, NPCs e Criaturas"""
     id = db.Column(db.Integer, primary_key=True)
     session_id = db.Column(db.Integer, db.ForeignKey('session.id'), nullable=False)
-    player_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    character_name = db.Column(db.String(100), nullable=False)
-    character_class = db.Column(db.String(50))
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Identificação básica
+    name = db.Column(db.String(100), nullable=False)
+    character_type = db.Column(db.String(20), nullable=False)  # 'player', 'npc', 'creature'
+    
+    # Informações básicas
     level = db.Column(db.Integer, default=1)
     race = db.Column(db.String(50))
+    character_class = db.Column(db.String(50))
     background = db.Column(db.String(100))
     
     # Atributos principais
@@ -182,32 +188,60 @@ class CharacterSheet(db.Model):
     max_hit_points = db.Column(db.Integer, default=8)
     speed = db.Column(db.Integer, default=30)
     
-    # Informações do personagem
+    # Informações detalhadas
     description = db.Column(db.Text)
     backstory = db.Column(db.Text)
     equipment = db.Column(db.Text)
     spells = db.Column(db.Text)
     notes = db.Column(db.Text)
     
-    # URL da imagem do personagem
-    character_image_url = db.Column(db.String(255))
+    # URL da imagem
+    image_url = db.Column(db.String(255))
     
-    # Controle de visibilidade
+    # Campos dinâmicos específicos do sistema
+    dynamic_fields = db.Column(db.Text)  # JSON com campos específicos do sistema
+    
+    # Configurações
     is_public = db.Column(db.Boolean, default=True)
     
+    # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relacionamentos
-    session = db.relationship('Session', backref='character_sheets')
-    player = db.relationship('User', backref='character_sheets')
+    session = db.relationship('Session', backref='characters')
+    creator = db.relationship('User', backref='created_characters')
     
     def get_modifier(self, ability_score):
         """Calcula o modificador de um atributo"""
         return (ability_score - 10) // 2
     
+    def get_attributes_text(self):
+        """Retorna os atributos em formato de texto"""
+        attrs = [
+            f"FOR {self.strength} ({self.get_modifier(self.strength):+d})",
+            f"DES {self.dexterity} ({self.get_modifier(self.dexterity):+d})",
+            f"CON {self.constitution} ({self.get_modifier(self.constitution):+d})",
+            f"INT {self.intelligence} ({self.get_modifier(self.intelligence):+d})",
+            f"SAB {self.wisdom} ({self.get_modifier(self.wisdom):+d})",
+            f"CAR {self.charisma} ({self.get_modifier(self.charisma):+d})"
+        ]
+        return ", ".join(attrs)
+    
+    def get_dynamic_fields(self):
+        """Retorna os campos dinâmicos como dicionário"""
+        if self.dynamic_fields:
+            import json
+            return json.loads(self.dynamic_fields)
+        return {}
+    
+    def set_dynamic_fields(self, fields_dict):
+        """Define os campos dinâmicos"""
+        import json
+        self.dynamic_fields = json.dumps(fields_dict)
+
     def __repr__(self):
-        return f'<CharacterSheet {self.character_name}>'
+        return f'<Character {self.name} ({self.character_type})>'
 
 
 class CharacterTemplate(db.Model):
@@ -254,57 +288,341 @@ class CharacterTemplate(db.Model):
         self.default_values = json.dumps(values_dict)
     
     def __repr__(self):
-        return f'<CharacterTemplate {self.template_name} - {self.system_name}>'
+        return f'<CharacterTemplate {self.system_name} - {self.template_name}>'
 
 
-class NPC(db.Model):
-    """Modelo para NPCs e Criaturas da sessão"""
-    id = db.Column(db.Integer, primary_key=True)
-    session_id = db.Column(db.Integer, db.ForeignKey('session.id'), nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Mestre que criou
-    name = db.Column(db.String(100), nullable=False)
-    npc_type = db.Column(db.String(20), nullable=False)  # 'NPC' ou 'Criatura'
-    level = db.Column(db.Integer, default=1)
-    race = db.Column(db.String(50))
-    background = db.Column(db.String(100))
+class SystemFieldConfig:
+    """Classe para gerenciar configurações de campos por sistema e categoria"""
     
-    # Atributos principais
-    strength = db.Column(db.Integer, default=10)
-    dexterity = db.Column(db.Integer, default=10)
-    constitution = db.Column(db.Integer, default=10)
-    intelligence = db.Column(db.Integer, default=10)
-    wisdom = db.Column(db.Integer, default=10)
-    charisma = db.Column(db.Integer, default=10)
+    # Configurações de campos para NPCs/Criaturas por sistema
+    NPC_FIELDS = {
+        'D&D 5e': {
+            'NPC': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Raça / Classe', 'tipo': 'texto'},
+                {'nome': 'Atributos principais', 'tipo': 'texto'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'CA', 'tipo': 'numérico'},
+                {'nome': 'Iniciativa', 'tipo': 'numérico'},
+                {'nome': 'Perícias principais', 'tipo': 'lista_texto'},
+                {'nome': 'Habilidades', 'tipo': 'lista_texto'},
+                {'nome': 'Motivação', 'tipo': 'texto'},
+                {'nome': 'Recompensa', 'tipo': 'texto'}
+            ],
+            'Monstro': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Tipo', 'tipo': 'texto'},
+                {'nome': 'ND', 'tipo': 'numérico'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'CA', 'tipo': 'numérico'},
+                {'nome': 'Deslocamento', 'tipo': 'numérico'},
+                {'nome': 'Atributos', 'tipo': 'grupo', 'subcampos': [
+                    {'nome': 'Força', 'tipo': 'numérico'},
+                    {'nome': 'Destreza', 'tipo': 'numérico'},
+                    {'nome': 'Constituição', 'tipo': 'numérico'},
+                    {'nome': 'Inteligência', 'tipo': 'numérico'},
+                    {'nome': 'Sabedoria', 'tipo': 'numérico'},
+                    {'nome': 'Carisma', 'tipo': 'numérico'}
+                ]},
+                {'nome': 'Ataques', 'tipo': 'lista_texto'},
+                {'nome': 'Sentidos', 'tipo': 'lista_texto'},
+                {'nome': 'Resistências', 'tipo': 'lista_texto'},
+                {'nome': 'Imunidades', 'tipo': 'lista_texto'},
+                {'nome': 'Ações', 'tipo': 'lista_texto'},
+                {'nome': 'Ambiente', 'tipo': 'texto'}
+            ]
+        },
+        'Tormenta20': {
+            'NPC': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Classe / NEX', 'tipo': 'texto'},
+                {'nome': 'Tendência', 'tipo': 'texto'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'Defesa', 'tipo': 'numérico'},
+                {'nome': 'Deslocamento', 'tipo': 'numérico'},
+                {'nome': 'Poderes', 'tipo': 'lista_texto'},
+                {'nome': 'Histórico', 'tipo': 'texto'}
+            ],
+            'Monstro': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Tipo', 'tipo': 'texto'},
+                {'nome': 'Nível', 'tipo': 'numérico'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'Defesa', 'tipo': 'numérico'},
+                {'nome': 'Atributos', 'tipo': 'grupo', 'subcampos': [
+                    {'nome': 'Força', 'tipo': 'numérico'},
+                    {'nome': 'Destreza', 'tipo': 'numérico'},
+                    {'nome': 'Constituição', 'tipo': 'numérico'},
+                    {'nome': 'Inteligência', 'tipo': 'numérico'},
+                    {'nome': 'Sabedoria', 'tipo': 'numérico'},
+                    {'nome': 'Carisma', 'tipo': 'numérico'}
+                ]},
+                {'nome': 'Poderes', 'tipo': 'lista_texto'},
+                {'nome': 'Testes', 'tipo': 'lista_texto'}
+            ]
+        },
+        'Call of Cthulhu': {
+            'NPC': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Ocupação', 'tipo': 'texto'},
+                {'nome': 'Sanidade', 'tipo': 'numérico'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'PM', 'tipo': 'numérico'},
+                {'nome': 'Perícias', 'tipo': 'lista_texto'},
+                {'nome': 'Motivação', 'tipo': 'texto'},
+                {'nome': 'Estado Mental', 'tipo': 'texto'}
+            ],
+            'Criatura': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'Defesa', 'tipo': 'numérico'},
+                {'nome': 'Ações', 'tipo': 'lista_texto'},
+                {'nome': 'Efeitos Psicológicos', 'tipo': 'lista_texto'},
+                {'nome': 'Sentidos', 'tipo': 'lista_texto'},
+                {'nome': 'Conhecimento Mítico', 'tipo': 'numérico'}
+            ]
+        },
+        'Vampire: The Masquerade': {
+            'NPC': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Clã', 'tipo': 'texto'},
+                {'nome': 'Geração', 'tipo': 'numérico'},
+                {'nome': 'Disciplinas', 'tipo': 'lista_texto'},
+                {'nome': 'Motivação', 'tipo': 'texto'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'Sangue', 'tipo': 'numérico'},
+                {'nome': 'Atributo Social', 'tipo': 'texto'}
+            ],
+            'Criatura': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Tipo', 'tipo': 'texto'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'Defesa', 'tipo': 'numérico'},
+                {'nome': 'Poderes', 'tipo': 'lista_texto'},
+                {'nome': 'Instinto', 'tipo': 'texto'},
+                {'nome': 'Perigosidade', 'tipo': 'texto'}
+            ]
+        },
+        'Pathfinder': {
+            'NPC': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Classe / Papel', 'tipo': 'texto'},
+                {'nome': 'Atributos', 'tipo': 'grupo', 'subcampos': [
+                    {'nome': 'Força', 'tipo': 'numérico'},
+                    {'nome': 'Destreza', 'tipo': 'numérico'},
+                    {'nome': 'Constituição', 'tipo': 'numérico'},
+                    {'nome': 'Inteligência', 'tipo': 'numérico'},
+                    {'nome': 'Sabedoria', 'tipo': 'numérico'},
+                    {'nome': 'Carisma', 'tipo': 'numérico'}
+                ]},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'CA', 'tipo': 'numérico'},
+                {'nome': 'Iniciativa', 'tipo': 'numérico'},
+                {'nome': 'Habilidades', 'tipo': 'lista_texto'},
+                {'nome': 'Equipamento', 'tipo': 'lista_texto'},
+                {'nome': 'Aliança', 'tipo': 'texto'}
+            ],
+            'Monstro': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Tipo', 'tipo': 'texto'},
+                {'nome': 'ND', 'tipo': 'numérico'},
+                {'nome': 'Atributos', 'tipo': 'grupo', 'subcampos': [
+                    {'nome': 'Força', 'tipo': 'numérico'},
+                    {'nome': 'Destreza', 'tipo': 'numérico'},
+                    {'nome': 'Constituição', 'tipo': 'numérico'},
+                    {'nome': 'Inteligência', 'tipo': 'numérico'},
+                    {'nome': 'Sabedoria', 'tipo': 'numérico'},
+                    {'nome': 'Carisma', 'tipo': 'numérico'}
+                ]},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'CA', 'tipo': 'numérico'},
+                {'nome': 'Ataques', 'tipo': 'lista_texto'},
+                {'nome': 'Resistências', 'tipo': 'lista_texto'},
+                {'nome': 'Ambiente', 'tipo': 'texto'}
+            ]
+        },
+        '3D&T Alpha': {
+            'NPC': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Elemento', 'tipo': 'texto'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'PM', 'tipo': 'numérico'},
+                {'nome': 'FA/FD', 'tipo': 'numérico'},
+                {'nome': 'Vantagens', 'tipo': 'lista_texto'},
+                {'nome': 'Motivação', 'tipo': 'texto'},
+                {'nome': 'Atributo Forte', 'tipo': 'texto'}
+            ],
+            'Monstro': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'PM', 'tipo': 'numérico'},
+                {'nome': 'FA/FD', 'tipo': 'numérico'},
+                {'nome': 'Ataque', 'tipo': 'texto'},
+                {'nome': 'Habilidade Especial', 'tipo': 'texto'},
+                {'nome': 'Fraqueza', 'tipo': 'texto'}
+            ]
+        }
+    }
     
-    # Stats básicos
-    armor_class = db.Column(db.Integer, default=10)
-    hit_points = db.Column(db.Integer, default=8)
-    max_hit_points = db.Column(db.Integer, default=8)
-    speed = db.Column(db.Integer, default=30)
+    # Configurações de campos para Personagens por sistema
+    CHARACTER_FIELDS = {
+        'D&D 5e': {
+            'Personagem': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Raça', 'tipo': 'texto'},
+                {'nome': 'Classe', 'tipo': 'texto'},
+                {'nome': 'Nível', 'tipo': 'numérico'},
+                {'nome': 'Atributos', 'tipo': 'grupo', 'subcampos': [
+                    {'nome': 'Força', 'tipo': 'numérico'},
+                    {'nome': 'Destreza', 'tipo': 'numérico'},
+                    {'nome': 'Constituição', 'tipo': 'numérico'},
+                    {'nome': 'Inteligência', 'tipo': 'numérico'},
+                    {'nome': 'Sabedoria', 'tipo': 'numérico'},
+                    {'nome': 'Carisma', 'tipo': 'numérico'}
+                ]},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'CA', 'tipo': 'numérico'},
+                {'nome': 'Iniciativa', 'tipo': 'numérico'},
+                {'nome': 'Deslocamento', 'tipo': 'numérico'},
+                {'nome': 'Perícias', 'tipo': 'lista_texto'},
+                {'nome': 'Magias', 'tipo': 'lista_texto'},
+                {'nome': 'Equipamentos', 'tipo': 'lista_texto'},
+                {'nome': 'Idiomas', 'tipo': 'lista_texto'},
+                {'nome': 'Alinhamento', 'tipo': 'texto'},
+                {'nome': 'Antecedente', 'tipo': 'texto'},
+                {'nome': 'História', 'tipo': 'texto'}
+            ]
+        },
+        'Tormenta20': {
+            'Personagem': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Raça', 'tipo': 'texto'},
+                {'nome': 'Classe', 'tipo': 'texto'},
+                {'nome': 'NEX', 'tipo': 'numérico'},
+                {'nome': 'Tendência', 'tipo': 'texto'},
+                {'nome': 'Atributos', 'tipo': 'grupo', 'subcampos': [
+                    {'nome': 'Força', 'tipo': 'numérico'},
+                    {'nome': 'Destreza', 'tipo': 'numérico'},
+                    {'nome': 'Constituição', 'tipo': 'numérico'},
+                    {'nome': 'Inteligência', 'tipo': 'numérico'},
+                    {'nome': 'Sabedoria', 'tipo': 'numérico'},
+                    {'nome': 'Carisma', 'tipo': 'numérico'}
+                ]},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'Defesa', 'tipo': 'numérico'},
+                {'nome': 'Iniciativa', 'tipo': 'numérico'},
+                {'nome': 'Perícias', 'tipo': 'lista_texto'},
+                {'nome': 'Poderes', 'tipo': 'lista_texto'},
+                {'nome': 'Equipamentos', 'tipo': 'lista_texto'},
+                {'nome': 'História', 'tipo': 'texto'}
+            ]
+        },
+        'Call of Cthulhu': {
+            'Personagem': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Ocupação', 'tipo': 'texto'},
+                {'nome': 'Sanidade', 'tipo': 'numérico'},
+                {'nome': 'Pontos de Magia', 'tipo': 'numérico'},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'Perícias', 'tipo': 'lista_texto'},
+                {'nome': 'História', 'tipo': 'texto'},
+                {'nome': 'Eventos Traumáticos', 'tipo': 'lista_texto'}
+            ]
+        },
+        'Vampire: The Masquerade': {
+            'Personagem': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Clã', 'tipo': 'texto'},
+                {'nome': 'Geração', 'tipo': 'numérico'},
+                {'nome': 'Natureza', 'tipo': 'texto'},
+                {'nome': 'Comportamento', 'tipo': 'texto'},
+                {'nome': 'Conceito', 'tipo': 'texto'},
+                {'nome': 'Atributos', 'tipo': 'grupo', 'subcampos': [
+                    {'nome': 'Força', 'tipo': 'numérico'},
+                    {'nome': 'Destreza', 'tipo': 'numérico'},
+                    {'nome': 'Constituição', 'tipo': 'numérico'},
+                    {'nome': 'Inteligência', 'tipo': 'numérico'},
+                    {'nome': 'Sabedoria', 'tipo': 'numérico'},
+                    {'nome': 'Carisma', 'tipo': 'numérico'}
+                ]},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'Sangue', 'tipo': 'numérico'},
+                {'nome': 'Humanidade', 'tipo': 'numérico'},
+                {'nome': 'Disciplinas', 'tipo': 'lista_texto'},
+                {'nome': 'Equipamentos', 'tipo': 'lista_texto'},
+                {'nome': 'História', 'tipo': 'texto'}
+            ]
+        },
+        'Pathfinder': {
+            'Personagem': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Raça', 'tipo': 'texto'},
+                {'nome': 'Classe', 'tipo': 'texto'},
+                {'nome': 'Nível', 'tipo': 'numérico'},
+                {'nome': 'Atributos', 'tipo': 'grupo', 'subcampos': [
+                    {'nome': 'Força', 'tipo': 'numérico'},
+                    {'nome': 'Destreza', 'tipo': 'numérico'},
+                    {'nome': 'Constituição', 'tipo': 'numérico'},
+                    {'nome': 'Inteligência', 'tipo': 'numérico'},
+                    {'nome': 'Sabedoria', 'tipo': 'numérico'},
+                    {'nome': 'Carisma', 'tipo': 'numérico'}
+                ]},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'CA', 'tipo': 'numérico'},
+                {'nome': 'Iniciativa', 'tipo': 'numérico'},
+                {'nome': 'Perícias', 'tipo': 'lista_texto'},
+                {'nome': 'Habilidades', 'tipo': 'lista_texto'},
+                {'nome': 'Magias', 'tipo': 'lista_texto'},
+                {'nome': 'Equipamentos', 'tipo': 'lista_texto'},
+                {'nome': 'História', 'tipo': 'texto'}
+            ]
+        },
+        '3D&T Alpha': {
+            'Personagem': [
+                {'nome': 'Nome', 'tipo': 'texto'},
+                {'nome': 'Elemento', 'tipo': 'texto'},
+                {'nome': 'Classe', 'tipo': 'texto'},
+                {'nome': 'Nível', 'tipo': 'numérico'},
+                {'nome': 'Atributos', 'tipo': 'grupo', 'subcampos': [
+                    {'nome': 'Força', 'tipo': 'numérico'},
+                    {'nome': 'Destreza', 'tipo': 'numérico'},
+                    {'nome': 'Constituição', 'tipo': 'numérico'},
+                    {'nome': 'Inteligência', 'tipo': 'numérico'},
+                    {'nome': 'Sabedoria', 'tipo': 'numérico'},
+                    {'nome': 'Carisma', 'tipo': 'numérico'}
+                ]},
+                {'nome': 'PV', 'tipo': 'numérico'},
+                {'nome': 'PM', 'tipo': 'numérico'},
+                {'nome': 'FA/FD', 'tipo': 'numérico'},
+                {'nome': 'Habilidades', 'tipo': 'lista_texto'},
+                {'nome': 'Vantagens', 'tipo': 'lista_texto'},
+                {'nome': 'Equipamentos', 'tipo': 'lista_texto'},
+                {'nome': 'História', 'tipo': 'texto'}
+            ]
+        }
+    }
     
-    # Informações do NPC/Criatura
-    description = db.Column(db.Text)
-    backstory = db.Column(db.Text)
-    equipment = db.Column(db.Text)
-    spells = db.Column(db.Text)
-    notes = db.Column(db.Text)
+    @classmethod
+    def get_npc_fields(cls, system, category):
+        """Retorna os campos para NPCs/Criaturas de um sistema específico"""
+        return cls.NPC_FIELDS.get(system, {}).get(category, [])
     
-    # URL da imagem
-    image_url = db.Column(db.String(255))
+    @classmethod
+    def get_character_fields(cls, system, category):
+        """Retorna os campos para Personagens de um sistema específico"""
+        return cls.CHARACTER_FIELDS.get(system, {}).get(category, [])
     
-    # Controle de visibilidade (sempre público para a sessão)
-    is_public = db.Column(db.Boolean, default=True)
+    @classmethod
+    def get_all_systems(cls):
+        """Retorna todos os sistemas disponíveis"""
+        return list(cls.NPC_FIELDS.keys())
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    @classmethod
+    def get_npc_categories(cls, system):
+        """Retorna as categorias disponíveis para NPCs de um sistema"""
+        return list(cls.NPC_FIELDS.get(system, {}).keys())
     
-    # Relacionamentos
-    session = db.relationship('Session', backref='npcs')
-    creator = db.relationship('User', backref='created_npcs')
-    
-    def get_modifier(self, ability_score):
-        """Calcula o modificador de um atributo"""
-        return (ability_score - 10) // 2
-    
-    def __repr__(self):
-        return f'<NPC {self.name} ({self.npc_type})>'
+    @classmethod
+    def get_character_categories(cls, system):
+        """Retorna as categorias disponíveis para Personagens de um sistema"""
+        return list(cls.CHARACTER_FIELDS.get(system, {}).keys())
