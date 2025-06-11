@@ -7,10 +7,11 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 import pytz
 from mesarpg_app import db
-from mesarpg_app.models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterTemplate, Character, SystemFieldConfig
+from mesarpg_app.models import User, Session, SessionApplication, Rating, SessionNote, CampaignDiary, ChatMessage, CharacterTemplate, Character, SystemFieldConfig, System, CharacterType, CharacterCategory, CharacterField, CharacterSubfield
 from mesarpg_app.forms import LoginForm, RegisterForm, SessionForm, ProfileForm, SessionApplicationForm, RatingForm, SessionNoteForm, DiaryEntryForm, CharacterSheetForm
 from sqlalchemy.exc import IntegrityError
 import html
+from functools import wraps
 
 # Create blueprints
 main_bp = Blueprint('main', __name__)
@@ -19,6 +20,7 @@ sessions_bp = Blueprint('sessions', __name__)
 profile_bp = Blueprint('profile', __name__)
 masters_bp = Blueprint('masters', __name__)
 campaign_bp = Blueprint('campaign', __name__)
+admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 # Main routes
 @main_bp.route('/')
@@ -527,78 +529,24 @@ def characters_list(session_id):
     session = Session.query.get_or_404(session_id)
     
     # Verificar permissões
-    is_master = session.master_id == current_user.id
-    is_player = SessionApplication.query.filter_by(
-        session_id=session_id,
-        player_id=current_user.id,
-        status='approved'
-    ).first() is not None
-    
-    if not (is_master or is_player):
+    if not _can_access_session(session):
         flash('Você não tem permissão para ver os personagens desta sessão.', 'error')
-        return redirect(url_for('sessions.view', id=session_id))
+        return redirect(url_for('sessions.detail', id=session_id))
     
     # Buscar personagens por tipo
-    players = Character.query.filter_by(session_id=session_id, character_type='player').all()
-    npcs = Character.query.filter_by(session_id=session_id, character_type='npc').all()
-    creatures = Character.query.filter_by(session_id=session_id, character_type='creature').all()
+    characters = Character.query.filter_by(session_id=session_id).all()
     
-    # Buscar campos dinâmicos do sistema/tipo
-    player_fields = SystemFieldConfig.get_character_fields(session.system, 'Personagem')
-    npc_fields = SystemFieldConfig.get_npc_fields(session.system, 'NPC')
-    creature_fields = SystemFieldConfig.get_npc_fields(session.system, 'Criatura')
-
-    # Mapeamento de nomes de campo para atributos padrão, por sistema
-    system = session.system
-    field_mapping = {}
-    if system == 'Tormenta20':
-        field_mapping = {
-            'raça': 'race',
-            'classe': 'character_class',
-            'nex': 'level',
-        }
-    elif system == 'Pathfinder':
-        field_mapping = {
-            'raça': 'race',
-            'classe': 'character_class',
-            'nível': 'level',
-        }
-    elif system == 'Vampire: The Masquerade':
-        field_mapping = {
-            'clã': 'clã',
-            'geração': 'geração',
-            'natureza': 'natureza',
-        }
-    elif system == '3D&T Alpha':
-        field_mapping = {
-            'elemento': 'elemento',
-            'classe': 'classe',
-            'nível': 'nível',
-        }
-    elif system == 'Call of Cthulhu':
-        field_mapping = {
-            'ocupação': 'ocupação',
-            'sanidade': 'sanidade',
-            'pontos de magia': 'pontos de magia',
-        }
-    else:
-        # D&D 5e e outros
-        field_mapping = {
-            'raça': 'race',
-            'classe': 'character_class',
-            'nível': 'level',
-        }
-
+    # Organizar por tipo
+    players = [c for c in characters if c.character_type == 'player']
+    npcs = [c for c in characters if c.character_type == 'npc']
+    creatures = [c for c in characters if c.character_type == 'creature']
+    
     return render_template('sessions/characters_list.html', 
                          session=session, 
                          players=players, 
                          npcs=npcs, 
                          creatures=creatures,
-                         is_master=is_master,
-                         player_fields=player_fields,
-                         npc_fields=npc_fields,
-                         creature_fields=creature_fields,
-                         field_mapping=field_mapping)
+                         is_master=_is_session_master(session))
 
 @sessions_bp.route('/<int:session_id>/characters/create')
 @login_required
@@ -607,16 +555,9 @@ def create_character(session_id):
     session = Session.query.get_or_404(session_id)
     
     # Verificar permissões
-    is_master = session.master_id == current_user.id
-    is_player = SessionApplication.query.filter_by(
-        session_id=session_id,
-        player_id=current_user.id,
-        status='approved'
-    ).first() is not None
-    
-    if not (is_master or is_player):
+    if not _can_access_session(session):
         flash('Você não tem permissão para criar personagens nesta sessão.', 'error')
-        return redirect(url_for('sessions.live', id=session_id))
+        return redirect(url_for('sessions.detail', id=session_id))
     
     # Obter configurações de campos dinâmicos
     systems = SystemFieldConfig.get_all_systems()
@@ -625,7 +566,7 @@ def create_character(session_id):
     
     return render_template('sessions/create_character.html', 
                          session=session, 
-                         is_master=is_master,
+                         is_master=_is_session_master(session),
                          systems=systems,
                          npc_categories=npc_categories,
                          character_categories=character_categories)
@@ -637,118 +578,21 @@ def create_character_post(session_id):
     session = Session.query.get_or_404(session_id)
     
     # Verificar permissões
-    is_master = session.master_id == current_user.id
-    is_player = SessionApplication.query.filter_by(
-        session_id=session_id,
-        player_id=current_user.id,
-        status='approved'
-    ).first() is not None
-    
-    if not (is_master or is_player):
+    if not _can_access_session(session):
         return jsonify({'error': 'Permissão negada'}), 403
     
-    # Dados do formulário
-    data = request.get_json()
-    
-    # Debug: Log dos dados recebidos
-    print(f"DEBUG: Dados recebidos do frontend: {data}")
-    print(f"DEBUG: Campo 'name' recebido: {data.get('name')}")
-    print(f"DEBUG: Campo 'nome' recebido: {data.get('nome')}")
-    
     try:
-        # Mapeamento de campos dinâmicos para campos padrão
-        field_mapping = {
-            'nome': 'name',
-            'raça': 'race',
-            'classe': 'character_class',
-            'nível': 'level',
-            'força': 'strength',
-            'destreza': 'dexterity',
-            'constituição': 'constitution',
-            'inteligência': 'intelligence',
-            'sabedoria': 'wisdom',
-            'carisma': 'charisma',
-            'pv': 'hit_points',
-            'ca': 'armor_class',
-            'iniciativa': 'initiative',
-            'deslocamento': 'speed',
-            'perícias': 'skills',
-            'magias': 'spells',
-            'equipamentos': 'equipment',
-            'idiomas': 'languages',
-            'alinhamento': 'alignment',
-            'antecedente': 'background',
-            'história': 'backstory'
-        }
-        
-        # Aplicar mapeamento de campos dinâmicos para campos padrão
-        for dynamic_key, standard_key in field_mapping.items():
-            if dynamic_key in data and data[dynamic_key]:
-                data[standard_key] = data[dynamic_key]
-                print(f"DEBUG EDIT: Mapeando campo dinâmico '{dynamic_key}' → '{standard_key}' = '{data[dynamic_key]}'")
-        
-        # Separar campos padrão dos campos dinâmicos
-        standard_fields = {
-            'name': data.get('name', 'Personagem'),
-            'character_type': data.get('character_type', 'player'),
-            'level': data.get('level', 1),
-            'race': data.get('race', ''),
-            'character_class': data.get('character_class', ''),
-            'background': data.get('background', ''),
-            'strength': data.get('strength', 10),
-            'dexterity': data.get('dexterity', 10),
-            'constitution': data.get('constitution', 10),
-            'intelligence': data.get('intelligence', 10),
-            'wisdom': data.get('wisdom', 10),
-            'charisma': data.get('charisma', 10),
-            'armor_class': data.get('armor_class', 10),
-            'hit_points': data.get('hit_points', 8),
-            'max_hit_points': data.get('hit_points', 8),
-            'speed': data.get('speed', 30),
-            'description': data.get('description', ''),
-            'backstory': data.get('backstory', ''),
-            'equipment': data.get('equipment', ''),
-            'spells': data.get('spells', ''),
-            'notes': data.get('notes', ''),
-            'image_url': data.get('image_url', ''),
-            'is_public': data.get('is_public', True)
-        }
-        
-        # Se não há nome mas há campo 'nome', usar o campo 'nome'
-        if (not standard_fields['name'] or standard_fields['name'] == 'Personagem') and data.get('nome'):
-            standard_fields['name'] = data.get('nome')
-            print(f"DEBUG: Usando campo 'nome' como name: {standard_fields['name']}")
-        
-        # Garantir que sempre há um nome
-        if not standard_fields['name'] or standard_fields['name'] == 'Personagem':
-            standard_fields['name'] = 'Personagem Sem Nome'
-            print(f"DEBUG: Usando nome padrão: {standard_fields['name']}")
-        
-        print(f"DEBUG: Nome final que será usado: {standard_fields['name']}")
-        
-        # Coletar campos dinâmicos (excluindo os que já foram mapeados para campos padrão)
-        dynamic_fields = {}
-        standard_field_names = set(field_mapping.values())
-        mapped_dynamic_fields = set(field_mapping.keys())  # Campos dinâmicos que foram mapeados
-        
-        for key, value in data.items():
-            # Excluir campos padrão e campos dinâmicos que foram mapeados
-            if (key not in standard_field_names and 
-                key not in ['name', 'character_type', 'level', 'description', 'notes', 'image_url', 'is_public'] and
-                key not in mapped_dynamic_fields):
-                dynamic_fields[key] = value
-                print(f"DEBUG EDIT: Campo dinâmico '{key}' = '{value}'")
-        
-        print(f"DEBUG EDIT: Campos dinâmicos coletados: {dynamic_fields}")
+        data = request.get_json()
+        character_data = _process_character_data(data, session.system)
         
         character = Character(
             session_id=session_id,
             created_by=current_user.id,
-            **standard_fields
+            **character_data['standard_fields']
         )
         
-        # Salvar campos dinâmicos (sempre, mesmo se vazio)
-        character.set_dynamic_fields(dynamic_fields)
+        # Salvar campos dinâmicos
+        character.set_dynamic_fields(character_data['dynamic_fields'])
         
         db.session.add(character)
         db.session.commit()
@@ -764,6 +608,32 @@ def create_character_post(session_id):
         print(f"Erro ao criar personagem: {e}")
         return jsonify({'error': 'Erro interno do servidor'}), 500
 
+@sessions_bp.route('/<int:session_id>/characters/<int:character_id>')
+@login_required
+def view_character(session_id, character_id):
+    """Visualizar personagem, NPC ou criatura"""
+    session = Session.query.get_or_404(session_id)
+    character = Character.query.get_or_404(character_id)
+    
+    # Verificar se o personagem pertence à sessão
+    if character.session_id != session_id:
+        flash('Personagem não encontrado nesta sessão.', 'error')
+        return redirect(url_for('sessions.characters_list', session_id=session_id))
+    
+    # Verificar permissões
+    if not _can_access_session(session):
+        flash('Você não tem permissão para ver este personagem.', 'error')
+        return redirect(url_for('sessions.detail', id=session_id))
+    
+    # Verificar se pode editar
+    can_edit = _can_edit_character(character, session)
+    
+    return render_template('sessions/view_character.html', 
+                         session=session, 
+                         character=character,
+                         can_edit=can_edit,
+                         is_master=_is_session_master(session))
+
 @sessions_bp.route('/<int:session_id>/characters/<int:character_id>/edit')
 @login_required
 def edit_character(session_id, character_id):
@@ -777,22 +647,14 @@ def edit_character(session_id, character_id):
         return redirect(url_for('sessions.characters_list', session_id=session_id))
     
     # Verificar permissões
-    is_master = session.master_id == current_user.id
-    can_edit = False
-    
-    if is_master:
-        can_edit = True
-    elif character.created_by == current_user.id:
-        can_edit = True
-    
-    if not can_edit:
+    if not _can_edit_character(character, session):
         flash('Você não tem permissão para editar este personagem.', 'error')
         return redirect(url_for('sessions.characters_list', session_id=session_id))
     
     return render_template('sessions/edit_character.html', 
                          session=session, 
                          character=character,
-                         is_master=is_master)
+                         is_master=_is_session_master(session))
 
 @sessions_bp.route('/<int:session_id>/characters/<int:character_id>/edit', methods=['POST'])
 @login_required
@@ -806,119 +668,19 @@ def edit_character_post(session_id, character_id):
         return jsonify({'error': 'Personagem não encontrado nesta sessão'}), 400
     
     # Verificar permissões
-    is_master = session.master_id == current_user.id
-    can_edit = False
-    
-    if is_master:
-        can_edit = True
-    elif character.created_by == current_user.id:
-        can_edit = True
-    
-    if not can_edit:
+    if not _can_edit_character(character, session):
         return jsonify({'error': 'Permissão negada'}), 403
     
-    # Dados do formulário
-    data = request.get_json()
-    
-    # Debug: Log dos dados recebidos
-    print(f"DEBUG EDIT: Dados recebidos do frontend: {data}")
-    print(f"DEBUG EDIT: Campo 'name' recebido: {data.get('name')}")
-    print(f"DEBUG EDIT: Campo 'nome' recebido: {data.get('nome')}")
-    
     try:
-        # Mapeamento de campos dinâmicos para campos padrão
-        field_mapping = {
-            'nome': 'name',
-            'raça': 'race',
-            'classe': 'character_class',
-            'nível': 'level',
-            'força': 'strength',
-            'destreza': 'dexterity',
-            'constituição': 'constitution',
-            'inteligência': 'intelligence',
-            'sabedoria': 'wisdom',
-            'carisma': 'charisma',
-            'pv': 'hit_points',
-            'ca': 'armor_class',
-            'iniciativa': 'initiative',
-            'deslocamento': 'speed',
-            'perícias': 'skills',
-            'magias': 'spells',
-            'equipamentos': 'equipment',
-            'idiomas': 'languages',
-            'alinhamento': 'alignment',
-            'antecedente': 'background',
-            'história': 'backstory'
-        }
-        
-        # Aplicar mapeamento de campos dinâmicos para campos padrão
-        for dynamic_key, standard_key in field_mapping.items():
-            if dynamic_key in data and data[dynamic_key]:
-                data[standard_key] = data[dynamic_key]
-                print(f"DEBUG EDIT: Mapeando campo dinâmico '{dynamic_key}' → '{standard_key}' = '{data[dynamic_key]}'")
-        
-        # Separar campos padrão dos campos dinâmicos
-        standard_fields = {
-            'name': data.get('name', character.name),
-            'character_type': data.get('character_type', character.character_type),
-            'level': data.get('level', character.level),
-            'race': data.get('race', character.race),
-            'character_class': data.get('character_class', character.character_class),
-            'background': data.get('background', character.background),
-            'strength': data.get('strength', character.strength),
-            'dexterity': data.get('dexterity', character.dexterity),
-            'constitution': data.get('constitution', character.constitution),
-            'intelligence': data.get('intelligence', character.intelligence),
-            'wisdom': data.get('wisdom', character.wisdom),
-            'charisma': data.get('charisma', character.charisma),
-            'armor_class': data.get('armor_class', character.armor_class),
-            'hit_points': data.get('hit_points', character.hit_points),
-            'max_hit_points': data.get('hit_points', character.hit_points),
-            'speed': data.get('speed', character.speed),
-            'description': data.get('description', character.description),
-            'backstory': data.get('backstory', character.backstory),
-            'equipment': data.get('equipment', character.equipment),
-            'spells': data.get('spells', character.spells),
-            'notes': data.get('notes', character.notes),
-            'image_url': data.get('image_url', character.image_url),
-            'is_public': data.get('is_public', character.is_public)
-        }
-        
-        # Se não há nome mas há campo 'nome', usar o campo 'nome'
-        if (not standard_fields['name'] or standard_fields['name'] == character.name) and data.get('nome'):
-            standard_fields['name'] = data.get('nome')
-            print(f"DEBUG EDIT: Usando campo 'nome' como name: {standard_fields['name']}")
-        
-        # Garantir que sempre há um nome
-        if not standard_fields['name']:
-            standard_fields['name'] = character.name
-            print(f"DEBUG EDIT: Usando nome atual: {standard_fields['name']}")
-        
-        print(f"DEBUG EDIT: Nome final que será usado: {standard_fields['name']}")
-        
-        # Coletar campos dinâmicos (excluindo os que já foram mapeados para campos padrão)
-        dynamic_fields = {}
-        standard_field_names = set(standard_fields.keys())
-        for key, value in data.items():
-            if key not in standard_field_names:
-                # Incluir todos os campos dinâmicos, mesmo vazios, para permitir limpeza
-                dynamic_fields[key] = value if value is not None else ''
-                print(f"DEBUG EDIT: Campo dinâmico '{key}' = '{value}'")
-        
-        print(f"DEBUG EDIT: Campos dinâmicos coletados: {dynamic_fields}")
+        data = request.get_json()
+        character_data = _process_character_data(data, session.system, character)
         
         # Atualizar campos padrão
-        for field, value in standard_fields.items():
-            old_value = getattr(character, field)
+        for field, value in character_data['standard_fields'].items():
             setattr(character, field, value)
-            if old_value != value:
-                print(f"DEBUG EDIT: Campo padrão '{field}' atualizado: '{old_value}' → '{value}'")
         
-        # Salvar campos dinâmicos (sempre, mesmo se vazio)
-        old_dynamic_fields = character.get_dynamic_fields()
-        character.set_dynamic_fields(dynamic_fields)
-        print(f"DEBUG EDIT: Campos dinâmicos atualizados: {old_dynamic_fields} → {dynamic_fields}")
-        
+        # Atualizar campos dinâmicos
+        character.set_dynamic_fields(character_data['dynamic_fields'])
         character.updated_at = datetime.utcnow()
         
         db.session.commit()
@@ -945,24 +707,18 @@ def delete_character(session_id, character_id):
         return jsonify({'error': 'Personagem não encontrado nesta sessão'}), 400
     
     # Verificar permissões
-    is_master = session.master_id == current_user.id
-    can_delete = False
-    
-    if is_master:
-        can_delete = True
-    elif character.created_by == current_user.id:
-        can_delete = True
-    
-    if not can_delete:
+    if not _can_edit_character(character, session):
         return jsonify({'error': 'Permissão negada'}), 403
     
     try:
+        character_name = character.name
+        character_type = character.character_type
         db.session.delete(character)
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': 'Personagem deletado com sucesso!'
+            'message': f'{character_type.title()} "{character_name}" deletado com sucesso!'
         })
         
     except Exception as e:
@@ -1018,3 +774,571 @@ def get_character_fields(system, character_type):
         })
     else:
         return jsonify({'error': 'Tipo de personagem inválido'}), 400
+
+# Helper functions for character CRUD
+def _can_access_session(session):
+    """Verifica se o usuário pode acessar a sessão"""
+    if not current_user.is_authenticated:
+        return False
+    
+    # Mestre sempre pode acessar
+    if session.master_id == current_user.id:
+        return True
+    
+    # Jogador aprovado pode acessar
+    application = SessionApplication.query.filter_by(
+        session_id=session.id,
+        player_id=current_user.id,
+        status='approved'
+    ).first()
+    
+    return application is not None
+
+def _is_session_master(session):
+    """Verifica se o usuário é o mestre da sessão"""
+    return current_user.is_authenticated and session.master_id == current_user.id
+
+def _can_edit_character(character, session):
+    """Verifica se o usuário pode editar o personagem"""
+    if not current_user.is_authenticated:
+        return False
+    
+    # Mestre sempre pode editar
+    if session.master_id == current_user.id:
+        return True
+    
+    # Criador do personagem pode editar
+    if character.created_by == current_user.id:
+        return True
+    
+    return False
+
+def _process_character_data(data, system, existing_character=None):
+    """Processa os dados do formulário de personagem"""
+    # Mapeamento de campos dinâmicos para campos padrão
+    field_mapping = {
+        'nome': 'name',
+        'raça': 'race',
+        'classe': 'character_class',
+        'nível': 'level',
+        'força': 'strength',
+        'destreza': 'dexterity',
+        'constituição': 'constitution',
+        'inteligência': 'intelligence',
+        'sabedoria': 'wisdom',
+        'carisma': 'charisma',
+        'pv': 'hit_points',
+        'ca': 'armor_class',
+        'iniciativa': 'initiative',
+        'deslocamento': 'speed',
+        'perícias': 'skills',
+        'magias': 'spells',
+        'equipamentos': 'equipment',
+        'idiomas': 'languages',
+        'alinhamento': 'alignment',
+        'antecedente': 'background',
+        'história': 'backstory'
+    }
+    
+    # Aplicar mapeamento de campos dinâmicos para campos padrão
+    for dynamic_key, standard_key in field_mapping.items():
+        if dynamic_key in data and data[dynamic_key]:
+            data[standard_key] = data[dynamic_key]
+    
+    # Separar campos padrão dos campos dinâmicos
+    standard_fields = {
+        'name': data.get('name', 'Personagem'),
+        'character_type': data.get('character_type', 'player'),
+        'level': data.get('level', 1),
+        'race': data.get('race', ''),
+        'character_class': data.get('character_class', ''),
+        'background': data.get('background', ''),
+        'strength': data.get('strength', 10),
+        'dexterity': data.get('dexterity', 10),
+        'constitution': data.get('constitution', 10),
+        'intelligence': data.get('intelligence', 10),
+        'wisdom': data.get('wisdom', 10),
+        'charisma': data.get('charisma', 10),
+        'armor_class': data.get('armor_class', 10),
+        'hit_points': data.get('hit_points', 8),
+        'max_hit_points': data.get('hit_points', 8),
+        'speed': data.get('speed', 30),
+        'description': data.get('description', ''),
+        'backstory': data.get('backstory', ''),
+        'equipment': data.get('equipment', ''),
+        'spells': data.get('spells', ''),
+        'notes': data.get('notes', ''),
+        'image_url': data.get('image_url', ''),
+        'is_public': data.get('is_public', True)
+    }
+    
+    # Se estiver editando, usar valores existentes como fallback
+    if existing_character:
+        for field in standard_fields:
+            if not standard_fields[field] and hasattr(existing_character, field):
+                standard_fields[field] = getattr(existing_character, field)
+    
+    # Se não há nome mas há campo 'nome', usar o campo 'nome'
+    if (not standard_fields['name'] or standard_fields['name'] == 'Personagem') and data.get('nome'):
+        standard_fields['name'] = data.get('nome')
+    
+    # Garantir que sempre há um nome
+    if not standard_fields['name'] or standard_fields['name'] == 'Personagem':
+        standard_fields['name'] = 'Personagem Sem Nome'
+    
+    # Coletar campos dinâmicos (excluindo os que já foram mapeados para campos padrão)
+    dynamic_fields = {}
+    standard_field_names = set(field_mapping.values())
+    mapped_dynamic_fields = set(field_mapping.keys())
+    
+    for key, value in data.items():
+        # Excluir campos padrão e campos dinâmicos que foram mapeados
+        if (key not in standard_field_names and 
+            key not in ['name', 'character_type', 'level', 'description', 'notes', 'image_url', 'is_public'] and
+            key not in mapped_dynamic_fields):
+            dynamic_fields[key] = value if value is not None else ''
+    
+    return {
+        'standard_fields': standard_fields,
+        'dynamic_fields': dynamic_fields
+    }
+
+# Admin routes
+def admin_required(f):
+    """Decorator para verificar se o usuário é admin"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for('auth.login'))
+        if current_user.role not in ['admin', 'master']:
+            flash('Acesso negado. Apenas administradores podem acessar esta área.', 'danger')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Admin Dashboard
+@admin_bp.route('/')
+@admin_required
+def dashboard():
+    """Dashboard administrativo"""
+    systems_count = System.query.count()
+    character_types_count = CharacterType.query.count()
+    categories_count = CharacterCategory.query.count()
+    fields_count = CharacterField.query.count()
+    
+    recent_systems = System.query.order_by(System.created_at.desc()).limit(5).all()
+    
+    return render_template('admin/dashboard.html',
+                         systems_count=systems_count,
+                         character_types_count=character_types_count,
+                         categories_count=categories_count,
+                         fields_count=fields_count,
+                         recent_systems=recent_systems)
+
+# Systems CRUD
+@admin_bp.route('/systems')
+@admin_required
+def systems_list():
+    """Lista todos os sistemas"""
+    systems = System.query.order_by(System.name).all()
+    return render_template('admin/systems/list.html', systems=systems)
+
+@admin_bp.route('/systems/create', methods=['GET', 'POST'])
+@admin_required
+def create_system():
+    """Criar novo sistema"""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        
+        if not name:
+            flash('Nome do sistema é obrigatório.', 'danger')
+            return redirect(url_for('admin.create_system'))
+        
+        # Verificar se já existe
+        existing = System.query.filter_by(name=name).first()
+        if existing:
+            flash('Já existe um sistema com este nome.', 'danger')
+            return redirect(url_for('admin.create_system'))
+        
+        system = System(name=name, description=description)
+        db.session.add(system)
+        
+        # Criar tipos de personagem padrão
+        default_types = [
+            {'name': 'player', 'display_name': 'Personagem do Jogador', 'sort_order': 1},
+            {'name': 'npc', 'display_name': 'NPC', 'sort_order': 2},
+            {'name': 'creature', 'display_name': 'Criatura/Monstro', 'sort_order': 3}
+        ]
+        
+        for type_data in default_types:
+            char_type = CharacterType(
+                system_id=system.id,
+                name=type_data['name'],
+                display_name=type_data['display_name'],
+                sort_order=type_data['sort_order']
+            )
+            db.session.add(char_type)
+        
+        try:
+            db.session.commit()
+            flash('Sistema criado com sucesso!', 'success')
+            return redirect(url_for('admin.systems_list'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao criar sistema: {str(e)}', 'danger')
+    
+    return render_template('admin/systems/create.html')
+
+@admin_bp.route('/systems/<int:system_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_system(system_id):
+    """Editar sistema"""
+    system = System.query.get_or_404(system_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        is_active = request.form.get('is_active') == 'on'
+        
+        if not name:
+            flash('Nome do sistema é obrigatório.', 'danger')
+            return redirect(url_for('admin.edit_system', system_id=system_id))
+        
+        # Verificar se já existe (exceto o atual)
+        existing = System.query.filter_by(name=name).filter(System.id != system_id).first()
+        if existing:
+            flash('Já existe um sistema com este nome.', 'danger')
+            return redirect(url_for('admin.edit_system', system_id=system_id))
+        
+        system.name = name
+        system.description = description
+        system.is_active = is_active
+        
+        try:
+            db.session.commit()
+            flash('Sistema atualizado com sucesso!', 'success')
+            return redirect(url_for('admin.systems_list'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar sistema: {str(e)}', 'danger')
+    
+    return render_template('admin/systems/edit.html', system=system)
+
+@admin_bp.route('/systems/<int:system_id>/delete', methods=['POST'])
+@admin_required
+def delete_system(system_id):
+    """Deletar sistema"""
+    system = System.query.get_or_404(system_id)
+    
+    try:
+        db.session.delete(system)
+        db.session.commit()
+        flash('Sistema deletado com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao deletar sistema: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin.systems_list'))
+
+# Character Types CRUD
+@admin_bp.route('/systems/<int:system_id>/character-types')
+@admin_required
+def character_types_list(system_id):
+    """Lista tipos de personagem de um sistema"""
+    system = System.query.get_or_404(system_id)
+    character_types = CharacterType.query.filter_by(system_id=system_id).order_by(CharacterType.sort_order).all()
+    return render_template('admin/character_types/list.html', system=system, character_types=character_types)
+
+@admin_bp.route('/systems/<int:system_id>/character-types/create', methods=['GET', 'POST'])
+@admin_required
+def create_character_type(system_id):
+    """Criar novo tipo de personagem"""
+    system = System.query.get_or_404(system_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        display_name = request.form.get('display_name')
+        description = request.form.get('description')
+        sort_order = int(request.form.get('sort_order', 0))
+        
+        if not name or not display_name:
+            flash('Nome e nome de exibição são obrigatórios.', 'danger')
+            return redirect(url_for('admin.create_character_type', system_id=system_id))
+        
+        # Verificar se já existe
+        existing = CharacterType.query.filter_by(system_id=system_id, name=name).first()
+        if existing:
+            flash('Já existe um tipo de personagem com este nome neste sistema.', 'danger')
+            return redirect(url_for('admin.create_character_type', system_id=system_id))
+        
+        character_type = CharacterType(
+            system_id=system_id,
+            name=name,
+            display_name=display_name,
+            description=description,
+            sort_order=sort_order
+        )
+        db.session.add(character_type)
+        
+        try:
+            db.session.commit()
+            flash('Tipo de personagem criado com sucesso!', 'success')
+            return redirect(url_for('admin.character_types_list', system_id=system_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao criar tipo de personagem: {str(e)}', 'danger')
+    
+    return render_template('admin/character_types/create.html', system=system)
+
+@admin_bp.route('/character-types/<int:type_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_character_type(type_id):
+    """Editar tipo de personagem"""
+    character_type = CharacterType.query.get_or_404(type_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        display_name = request.form.get('display_name')
+        description = request.form.get('description')
+        sort_order = int(request.form.get('sort_order', 0))
+        is_active = request.form.get('is_active') == 'on'
+        
+        if not name or not display_name:
+            flash('Nome e nome de exibição são obrigatórios.', 'danger')
+            return redirect(url_for('admin.edit_character_type', type_id=type_id))
+        
+        # Verificar se já existe (exceto o atual)
+        existing = CharacterType.query.filter_by(
+            system_id=character_type.system_id, 
+            name=name
+        ).filter(CharacterType.id != type_id).first()
+        
+        if existing:
+            flash('Já existe um tipo de personagem com este nome neste sistema.', 'danger')
+            return redirect(url_for('admin.edit_character_type', type_id=type_id))
+        
+        character_type.name = name
+        character_type.display_name = display_name
+        character_type.description = description
+        character_type.sort_order = sort_order
+        character_type.is_active = is_active
+        
+        try:
+            db.session.commit()
+            flash('Tipo de personagem atualizado com sucesso!', 'success')
+            return redirect(url_for('admin.character_types_list', system_id=character_type.system_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar tipo de personagem: {str(e)}', 'danger')
+    
+    return render_template('admin/character_types/edit.html', character_type=character_type)
+
+# Categories CRUD
+@admin_bp.route('/character-types/<int:type_id>/categories')
+@admin_required
+def categories_list(type_id):
+    """Lista categorias de um tipo de personagem"""
+    character_type = CharacterType.query.get_or_404(type_id)
+    categories = CharacterCategory.query.filter_by(character_type_id=type_id).order_by(CharacterCategory.sort_order).all()
+    return render_template('admin/categories/list.html', character_type=character_type, categories=categories)
+
+@admin_bp.route('/character-types/<int:type_id>/categories/create', methods=['GET', 'POST'])
+@admin_required
+def create_category(type_id):
+    """Criar nova categoria"""
+    character_type = CharacterType.query.get_or_404(type_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        sort_order = int(request.form.get('sort_order', 0))
+        
+        if not name:
+            flash('Nome da categoria é obrigatório.', 'danger')
+            return redirect(url_for('admin.create_category', type_id=type_id))
+        
+        # Verificar se já existe
+        existing = CharacterCategory.query.filter_by(character_type_id=type_id, name=name).first()
+        if existing:
+            flash('Já existe uma categoria com este nome neste tipo de personagem.', 'danger')
+            return redirect(url_for('admin.create_category', type_id=type_id))
+        
+        category = CharacterCategory(
+            character_type_id=type_id,
+            name=name,
+            description=description,
+            sort_order=sort_order
+        )
+        db.session.add(category)
+        
+        try:
+            db.session.commit()
+            flash('Categoria criada com sucesso!', 'success')
+            return redirect(url_for('admin.categories_list', type_id=type_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao criar categoria: {str(e)}', 'danger')
+    
+    return render_template('admin/categories/create.html', character_type=character_type)
+
+@admin_bp.route('/categories/<int:category_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_category(category_id):
+    """Editar categoria"""
+    category = CharacterCategory.query.get_or_404(category_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        sort_order = int(request.form.get('sort_order', 0))
+        is_active = request.form.get('is_active') == 'on'
+        
+        if not name:
+            flash('Nome da categoria é obrigatório.', 'danger')
+            return redirect(url_for('admin.edit_category', category_id=category_id))
+        
+        # Verificar se já existe (exceto o atual)
+        existing = CharacterCategory.query.filter_by(
+            character_type_id=category.character_type_id, 
+            name=name
+        ).filter(CharacterCategory.id != category_id).first()
+        
+        if existing:
+            flash('Já existe uma categoria com este nome neste tipo de personagem.', 'danger')
+            return redirect(url_for('admin.edit_category', category_id=category_id))
+        
+        category.name = name
+        category.description = description
+        category.sort_order = sort_order
+        category.is_active = is_active
+        
+        try:
+            db.session.commit()
+            flash('Categoria atualizada com sucesso!', 'success')
+            return redirect(url_for('admin.categories_list', type_id=category.character_type_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar categoria: {str(e)}', 'danger')
+    
+    return render_template('admin/categories/edit.html', category=category)
+
+# Fields CRUD
+@admin_bp.route('/categories/<int:category_id>/fields')
+@admin_required
+def fields_list(category_id):
+    """Lista campos de uma categoria"""
+    category = CharacterCategory.query.get_or_404(category_id)
+    fields = CharacterField.query.filter_by(category_id=category_id).order_by(CharacterField.sort_order).all()
+    return render_template('admin/fields/list.html', category=category, fields=fields)
+
+@admin_bp.route('/categories/<int:category_id>/fields/create', methods=['GET', 'POST'])
+@admin_required
+def create_field(category_id):
+    """Criar novo campo"""
+    category = CharacterCategory.query.get_or_404(category_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        field_type = request.form.get('field_type')
+        description = request.form.get('description')
+        placeholder = request.form.get('placeholder')
+        default_value = request.form.get('default_value')
+        is_required = request.form.get('is_required') == 'on'
+        sort_order = int(request.form.get('sort_order', 0))
+        
+        if not name or not field_type:
+            flash('Nome e tipo do campo são obrigatórios.', 'danger')
+            return redirect(url_for('admin.create_field', category_id=category_id))
+        
+        # Verificar se já existe
+        existing = CharacterField.query.filter_by(category_id=category_id, name=name).first()
+        if existing:
+            flash('Já existe um campo com este nome nesta categoria.', 'danger')
+            return redirect(url_for('admin.create_field', category_id=category_id))
+        
+        field = CharacterField(
+            category_id=category_id,
+            name=name,
+            field_type=field_type,
+            description=description,
+            placeholder=placeholder,
+            default_value=default_value,
+            is_required=is_required,
+            sort_order=sort_order
+        )
+        db.session.add(field)
+        
+        # Se for campo de grupo, criar subcampos
+        if field_type == 'grupo':
+            subfields_data = request.form.getlist('subfield_name[]')
+            subfields_type = request.form.getlist('subfield_type[]')
+            
+            for i, (sub_name, sub_type) in enumerate(zip(subfields_data, subfields_type)):
+                if sub_name and sub_type:
+                    subfield = CharacterSubfield(
+                        parent_field_id=field.id,
+                        name=sub_name,
+                        field_type=sub_type,
+                        sort_order=i
+                    )
+                    db.session.add(subfield)
+        
+        try:
+            db.session.commit()
+            flash('Campo criado com sucesso!', 'success')
+            return redirect(url_for('admin.fields_list', category_id=category_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao criar campo: {str(e)}', 'danger')
+    
+    return render_template('admin/fields/create.html', category=category)
+
+@admin_bp.route('/fields/<int:field_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_field(field_id):
+    """Editar campo"""
+    field = CharacterField.query.get_or_404(field_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        field_type = request.form.get('field_type')
+        description = request.form.get('description')
+        placeholder = request.form.get('placeholder')
+        default_value = request.form.get('default_value')
+        is_required = request.form.get('is_required') == 'on'
+        sort_order = int(request.form.get('sort_order', 0))
+        is_active = request.form.get('is_active') == 'on'
+        
+        if not name or not field_type:
+            flash('Nome e tipo do campo são obrigatórios.', 'danger')
+            return redirect(url_for('admin.edit_field', field_id=field_id))
+        
+        # Verificar se já existe (exceto o atual)
+        existing = CharacterField.query.filter_by(
+            category_id=field.category_id, 
+            name=name
+        ).filter(CharacterField.id != field_id).first()
+        
+        if existing:
+            flash('Já existe um campo com este nome nesta categoria.', 'danger')
+            return redirect(url_for('admin.edit_field', field_id=field_id))
+        
+        field.name = name
+        field.field_type = field_type
+        field.description = description
+        field.placeholder = placeholder
+        field.default_value = default_value
+        field.is_required = is_required
+        field.sort_order = sort_order
+        field.is_active = is_active
+        
+        try:
+            db.session.commit()
+            flash('Campo atualizado com sucesso!', 'success')
+            return redirect(url_for('admin.fields_list', category_id=field.category_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar campo: {str(e)}', 'danger')
+    
+    return render_template('admin/fields/edit.html', field=field)

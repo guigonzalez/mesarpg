@@ -66,6 +66,12 @@
                             <li><a class="dropdown-item" href="{{ url_for('main.settings') }}">
                                 <i class="fas fa-cog me-2"></i>Configurações
                             </a></li>
+                            {% if current_user.role in ['admin', 'master'] %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">
+                                <i class="fas fa-cogs me-2"></i>Painel Administrativo
+                            </a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
                                 <i class="fas fa-sign-out-alt me-2"></i>Sair

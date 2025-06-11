@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Tipos de Personagem - {{ system.name }} - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-users text-primary"></i>
+                    Tipos de Personagem - {{ system.name }}
+                </h1>
+                <div>
+                    <a href="{{ url_for('admin.systems_list') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                    <a href="{{ url_for('admin.create_character_type', system_id=system.id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Novo Tipo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-list"></i>
+                        Tipos de Personagem do Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if character_types %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Nome de Exibição</th>
+                                        <th>Descrição</th>
+                                        <th>Status</th>
+                                        <th>Ordem</th>
+                                        <th>Categorias</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for type in character_types %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ type.name }}</strong>
+                                        </td>
+                                        <td>{{ type.display_name }}</td>
+                                        <td>
+                                            {% if type.description %}
+                                                {{ type.description[:100] }}{% if type.description|length > 100 %}...{% endif %}
+                                            {% else %}
+                                                <em class="text-muted">Sem descrição</em>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if type.is_active %}
+                                                <span class="badge badge-success">Ativo</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">Inativo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ type.sort_order }}</td>
+                                        <td>
+                                            {% set category_count = type.categories.count() %}
+                                            <span class="badge badge-info">{{ category_count }} categoria{{ 's' if category_count != 1 else '' }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('admin.categories_list', type_id=type.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary" title="Gerenciar categorias">
+                                                    <i class="fas fa-tags"></i>
+                                                </a>
+                                                <a href="{{ url_for('admin.edit_character_type', type_id=type.id) }}" 
+                                                   class="btn btn-sm btn-outline-info" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="confirmDelete('{{ type.display_name }}', {{ type.id }})" title="Deletar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-4x text-muted mb-4"></i>
+                            <h4 class="text-muted">Nenhum tipo de personagem encontrado</h4>
+                            <p class="text-muted mb-4">Comece criando tipos de personagem para este sistema.</p>
+                            <a href="{{ url_for('admin.create_character_type', system_id=system.id) }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus"></i>
+                                Criar Primeiro Tipo
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o tipo de personagem <strong id="typeName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita e excluirá:
+                    <ul class="mb-0 mt-2">
+                        <li>Todas as categorias deste tipo</li>
+                        <li>Todos os campos e subcampos associados</li>
+                        <li>Todas as configurações relacionadas</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i>
+                        Excluir Tipo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(typeName, typeId) {
+    document.getElementById('typeName').textContent = typeName;
+    document.getElementById('deleteForm').action = `/admin/character-types/${typeId}/delete`;
+    $('#deleteModal').modal('show');
+}
+</script>
+{% endblock %} 

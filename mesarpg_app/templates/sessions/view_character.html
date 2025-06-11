@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}{{ character.name }} - {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('sessions.list') }}">Sessões</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('sessions.detail', id=session.id) }}">{{ session.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('sessions.characters_list', session_id=session.id) }}">Personagens</a></li>
+            <li class="breadcrumb-item active">{{ character.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header do Personagem -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center">
+                {% if character.image_url %}
+                <img src="{{ character.image_url }}" alt="{{ character.name }}" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                {% else %}
+                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-user fa-2x text-white"></i>
+                </div>
+                {% endif %}
+                <div>
+                    <h1 class="mb-1">{{ character.name }}</h1>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">{{ character.character_type.title() }}</span>
+                        {% if character.level %}
+                        <span class="badge bg-secondary">Nível {{ character.level }}</span>
+                        {% endif %}
+                        {% if character.race %}
+                        <span class="badge bg-info">{{ character.race }}</span>
+                        {% endif %}
+                        {% if character.character_class %}
+                        <span class="badge bg-success">{{ character.character_class }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if can_edit %}
+            <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=character.id) }}" 
+               class="btn btn-primary">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+            <button class="btn btn-danger" onclick="deleteCharacter()">
+                <i class="fas fa-trash"></i> Deletar
+            </button>
+            {% endif %}
+            <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Informações Básicas -->
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Atributos -->
+            {% if character.strength or character.dexterity or character.constitution or character.intelligence or character.wisdom or character.charisma %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-dice-d20"></i> Atributos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if character.strength %}
+                        <div class="col-md-2 text-center">
+                            <div class="border rounded p-2">
+                                <div class="fw-bold">{{ character.strength }}</div>
+                                <small class="text-muted">Força</small>
+                                <div class="small">{{ character.get_modifier(character.strength) }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if character.dexterity %}
+                        <div class="col-md-2 text-center">
+                            <div class="border rounded p-2">
+                                <div class="fw-bold">{{ character.dexterity }}</div>
+                                <small class="text-muted">Destreza</small>
+                                <div class="small">{{ character.get_modifier(character.dexterity) }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if character.constitution %}
+                        <div class="col-md-2 text-center">
+                            <div class="border rounded p-2">
+                                <div class="fw-bold">{{ character.constitution }}</div>
+                                <small class="text-muted">Constituição</small>
+                                <div class="small">{{ character.get_modifier(character.constitution) }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if character.intelligence %}
+                        <div class="col-md-2 text-center">
+                            <div class="border rounded p-2">
+                                <div class="fw-bold">{{ character.intelligence }}</div>
+                                <small class="text-muted">Inteligência</small>
+                                <div class="small">{{ character.get_modifier(character.intelligence) }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if character.wisdom %}
+                        <div class="col-md-2 text-center">
+                            <div class="border rounded p-2">
+                                <div class="fw-bold">{{ character.wisdom }}</div>
+                                <small class="text-muted">Sabedoria</small>
+                                <div class="small">{{ character.get_modifier(character.wisdom) }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if character.charisma %}
+                        <div class="col-md-2 text-center">
+                            <div class="border rounded p-2">
+                                <div class="fw-bold">{{ character.charisma }}</div>
+                                <small class="text-muted">Carisma</small>
+                                <div class="small">{{ character.get_modifier(character.charisma) }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Stats Básicos -->
+            {% if character.hit_points or character.armor_class or character.speed %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Estatísticas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if character.hit_points %}
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-heart text-danger me-2"></i>
+                                <div>
+                                    <div class="fw-bold">{{ character.hit_points }}/{{ character.max_hit_points }}</div>
+                                    <small class="text-muted">Pontos de Vida</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if character.armor_class %}
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shield-alt text-primary me-2"></i>
+                                <div>
+                                    <div class="fw-bold">{{ character.armor_class }}</div>
+                                    <small class="text-muted">Classe de Armadura</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if character.speed %}
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-running text-success me-2"></i>
+                                <div>
+                                    <div class="fw-bold">{{ character.speed }}m</div>
+                                    <small class="text-muted">Deslocamento</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Campos Dinâmicos -->
+            {% set dynamic_fields = character.get_dynamic_fields() %}
+            {% if dynamic_fields %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> Informações Específicas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for field_name, field_value in dynamic_fields.items() %}
+                        {% if field_value %}
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="fw-bold text-capitalize">{{ field_name }}</div>
+                                <div class="text-muted">
+                                    {% if field_value is string and field_value|length > 100 %}
+                                        {{ field_value[:100] }}...
+                                    {% else %}
+                                        {{ field_value }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Descrição -->
+            {% if character.description %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Descrição</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ character.description }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- História -->
+            {% if character.backstory %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> História</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ character.backstory }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Equipamentos -->
+            {% if character.equipment %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-sword"></i> Equipamentos</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ character.equipment }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Magias -->
+            {% if character.spells %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-magic"></i> Magias</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ character.spells }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Notas -->
+            {% if character.notes %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-sticky-note"></i> Notas</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ character.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Informações do Criador -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-user"></i> Criado por</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1">{{ character.creator.full_name or character.creator.username }}</p>
+                    <small class="text-muted">Criado em {{ character.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                    {% if character.updated_at != character.created_at %}
+                    <br><small class="text-muted">Atualizado em {{ character.updated_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            {% if can_edit %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-tools"></i> Ações</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=character.id) }}" 
+                           class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> Editar Personagem
+                        </a>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCharacter()">
+                            <i class="fas fa-trash"></i> Deletar Personagem
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja deletar o personagem <strong>{{ character.name }}</strong>?</p>
+                <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">Deletar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteCharacter() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+function confirmDelete() {
+    fetch('{{ url_for("sessions.delete_character", session_id=session.id, character_id=character.id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mostrar mensagem de sucesso
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+            
+            // Redirecionar após 2 segundos
+            setTimeout(() => {
+                window.location.href = '{{ url_for("sessions.characters_list", session_id=session.id) }}';
+            }, 2000);
+        } else {
+            alert('Erro ao deletar personagem: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erro ao deletar personagem');
+    });
+}
+</script>
+{% endblock %} 

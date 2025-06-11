@@ -37,41 +37,64 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Nome</th>
-                                    {% set campos = player_fields[1:4] %}
-                                    {% for i in range(3) %}
-                                        <th>{{ campos[i].nome if campos|length > i else '' }}</th>
-                                    {% endfor %}
-                                    <th style="width: 100px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for player in players %}
-                                <tr>
-                                    <td>{{ player.name }}</td>
-                                    {% set dynamic = player.get_dynamic_fields() %}
-                                    {% for i in range(3) %}
-                                        {% if campos|length > i %}
-                                            {% set key = campos[i].nome.lower() %}
-                                            {% set attr = field_mapping.get(key, key) %}
-                                            <td>{{ dynamic.get(attr, '') or player[attr] if player[attr] is defined else '' }}</td>
+                    <div class="row">
+                        {% for player in players %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card character-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% if player.image_url %}
+                                        <img src="{{ player.image_url }}" alt="{{ player.name }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                         {% else %}
-                                            <td></td>
+                                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
                                         {% endif %}
-                                    {% endfor %}
-                                    <td>
-                                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=player.id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit me-1"></i>Editar
+                                        <div>
+                                            <h6 class="mb-0">{{ player.name }}</h6>
+                                            <small class="text-muted">
+                                                {% if player.race %}{{ player.race }}{% endif %}
+                                                {% if player.character_class %} - {{ player.character_class }}{% endif %}
+                                                {% if player.level %} (Nível {{ player.level }}){% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Campos dinâmicos principais -->
+                                    {% set dynamic = player.get_dynamic_fields() %}
+                                    {% if dynamic %}
+                                    <div class="mb-2">
+                                        {% for key, value in dynamic.items() %}
+                                            {% if value and loop.index <= 3 %}
+                                            <div class="small">
+                                                <strong>{{ key|title }}:</strong> 
+                                                {% if value|length > 20 %}
+                                                    {{ value[:20] }}...
+                                                {% else %}
+                                                    {{ value }}
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=player.id) }}" 
+                                           class="btn btn-sm btn-outline-primary flex-fill">
+                                            <i class="fas fa-eye me-1"></i>Ver
                                         </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        {% if is_master or player.created_by == current_user.id %}
+                                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=player.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -86,41 +109,64 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Nome</th>
-                                    {% set campos = npc_fields[1:4] %}
-                                    {% for i in range(3) %}
-                                        <th>{{ campos[i].nome if campos|length > i else '' }}</th>
-                                    {% endfor %}
-                                    <th style="width: 100px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for npc in npcs %}
-                                <tr>
-                                    <td>{{ npc.name }}</td>
-                                    {% set dynamic = npc.get_dynamic_fields() %}
-                                    {% for i in range(3) %}
-                                        {% if campos|length > i %}
-                                            {% set key = campos[i].nome.lower() %}
-                                            {% set attr = field_mapping.get(key, key) %}
-                                            <td>{{ dynamic.get(attr, '') or npc[attr] if npc[attr] is defined else '' }}</td>
+                    <div class="row">
+                        {% for npc in npcs %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card character-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% if npc.image_url %}
+                                        <img src="{{ npc.image_url }}" alt="{{ npc.name }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                         {% else %}
-                                            <td></td>
+                                        <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-mask text-white"></i>
+                                        </div>
                                         {% endif %}
-                                    {% endfor %}
-                                    <td>
-                                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=npc.id) }}" class="btn btn-sm btn-outline-success">
-                                            <i class="fas fa-edit me-1"></i>Editar
+                                        <div>
+                                            <h6 class="mb-0">{{ npc.name }}</h6>
+                                            <small class="text-muted">
+                                                {% if npc.race %}{{ npc.race }}{% endif %}
+                                                {% if npc.character_class %} - {{ npc.character_class }}{% endif %}
+                                                {% if npc.level %} (Nível {{ npc.level }}){% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Campos dinâmicos principais -->
+                                    {% set dynamic = npc.get_dynamic_fields() %}
+                                    {% if dynamic %}
+                                    <div class="mb-2">
+                                        {% for key, value in dynamic.items() %}
+                                            {% if value and loop.index <= 3 %}
+                                            <div class="small">
+                                                <strong>{{ key|title }}:</strong> 
+                                                {% if value|length > 20 %}
+                                                    {{ value[:20] }}...
+                                                {% else %}
+                                                    {{ value }}
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=npc.id) }}" 
+                                           class="btn btn-sm btn-outline-success flex-fill">
+                                            <i class="fas fa-eye me-1"></i>Ver
                                         </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        {% if is_master or npc.created_by == current_user.id %}
+                                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=npc.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -135,41 +181,64 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Nome</th>
-                                    {% set campos = creature_fields[1:4] %}
-                                    {% for i in range(3) %}
-                                        <th>{{ campos[i].nome if campos|length > i else '' }}</th>
-                                    {% endfor %}
-                                    <th style="width: 100px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for creature in creatures %}
-                                <tr>
-                                    <td>{{ creature.name }}</td>
-                                    {% set dynamic = creature.get_dynamic_fields() %}
-                                    {% for i in range(3) %}
-                                        {% if campos|length > i %}
-                                            {% set key = campos[i].nome.lower() %}
-                                            {% set attr = field_mapping.get(key, key) %}
-                                            <td>{{ dynamic.get(attr, '') or creature[attr] if creature[attr] is defined else '' }}</td>
+                    <div class="row">
+                        {% for creature in creatures %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card character-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% if creature.image_url %}
+                                        <img src="{{ creature.image_url }}" alt="{{ creature.name }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                         {% else %}
-                                            <td></td>
+                                        <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-dragon text-dark"></i>
+                                        </div>
                                         {% endif %}
-                                    {% endfor %}
-                                    <td>
-                                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=creature.id) }}" class="btn btn-sm btn-outline-warning">
-                                            <i class="fas fa-edit me-1"></i>Editar
+                                        <div>
+                                            <h6 class="mb-0">{{ creature.name }}</h6>
+                                            <small class="text-muted">
+                                                {% if creature.race %}{{ creature.race }}{% endif %}
+                                                {% if creature.character_class %} - {{ creature.character_class }}{% endif %}
+                                                {% if creature.level %} (Nível {{ creature.level }}){% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Campos dinâmicos principais -->
+                                    {% set dynamic = creature.get_dynamic_fields() %}
+                                    {% if dynamic %}
+                                    <div class="mb-2">
+                                        {% for key, value in dynamic.items() %}
+                                            {% if value and loop.index <= 3 %}
+                                            <div class="small">
+                                                <strong>{{ key|title }}:</strong> 
+                                                {% if value|length > 20 %}
+                                                    {{ value[:20] }}...
+                                                {% else %}
+                                                    {{ value }}
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=creature.id) }}" 
+                                           class="btn btn-sm btn-outline-warning flex-fill">
+                                            <i class="fas fa-eye me-1"></i>Ver
                                         </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        {% if is_master or creature.created_by == current_user.id %}
+                                        <a href="{{ url_for('sessions.edit_character', session_id=session.id, character_id=creature.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -198,16 +267,28 @@
     transition: transform 0.2s;
 }
 
-.card:hover {
-    transform: translateY(-2px);
+.character-card {
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
 }
 
-.card-header {
-    border-bottom: none;
+.character-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    border-color: #007bff;
+}
+
+.character-card .card-body {
+    padding: 1rem;
 }
 
 .btn-sm {
     font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.flex-fill {
+    flex: 1 1 auto;
 }
 </style>
 {% endblock %} 

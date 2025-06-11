@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Sistema - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-plus text-primary"></i>
+                    Criar Novo Sistema
+                </h1>
+                <div>
+                    <a href="{{ url_for('admin.systems_list') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-dice-d20"></i>
+                        Informações do Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name" class="font-weight-bold">
+                                Nome do Sistema <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   placeholder="Ex: D&D 5e, Tormenta20, Call of Cthulhu" required>
+                            <small class="form-text text-muted">
+                                Nome único que identifica o sistema de RPG
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description" class="font-weight-bold">
+                                Descrição
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="4"
+                                      placeholder="Descreva brevemente o sistema, suas características principais, etc."></textarea>
+                            <small class="form-text text-muted">
+                                Descrição opcional para ajudar a identificar o sistema
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="is_active" name="is_active" checked>
+                                <label class="custom-control-label" for="is_active">
+                                    Sistema ativo
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Sistemas inativos não aparecem nas opções de criação de personagem
+                            </small>
+                        </div>
+
+                        <hr>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Tipos de Personagem Padrão:</strong>
+                            <p class="mb-0 mt-2">
+                                Ao criar um sistema, serão automaticamente criados os seguintes tipos de personagem:
+                            </p>
+                            <ul class="mb-0 mt-2">
+                                <li><strong>Personagem do Jogador:</strong> Para personagens controlados pelos jogadores</li>
+                                <li><strong>NPC:</strong> Para personagens não-jogadores</li>
+                                <li><strong>Criatura/Monstro:</strong> Para monstros e criaturas</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Criar Sistema
+                            </button>
+                            <a href="{{ url_for('admin.systems_list') }}" class="btn btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-lightbulb"></i>
+                        Dicas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold text-primary">
+                            <i class="fas fa-check-circle"></i>
+                            Boas Práticas
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-success"></i>
+                                Use nomes claros e reconhecíveis
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-success"></i>
+                                Inclua a versão do sistema no nome
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-success"></i>
+                                Descreva características únicas do sistema
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold text-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Exemplos de Sistemas
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-1">
+                                <i class="fas fa-dice-d20 text-info"></i>
+                                D&D 5e
+                            </li>
+                            <li class="mb-1">
+                                <i class="fas fa-dice-d20 text-info"></i>
+                                Tormenta20
+                            </li>
+                            <li class="mb-1">
+                                <i class="fas fa-dice-d20 text-info"></i>
+                                Call of Cthulhu
+                            </li>
+                            <li class="mb-1">
+                                <i class="fas fa-dice-d20 text-info"></i>
+                                Vampire: The Masquerade
+                            </li>
+                            <li class="mb-1">
+                                <i class="fas fa-dice-d20 text-info"></i>
+                                Pathfinder
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h6 class="font-weight-bold text-info">
+                            <i class="fas fa-cogs"></i>
+                            Próximos Passos
+                        </h6>
+                        <p class="small text-muted">
+                            Após criar o sistema, você poderá:
+                        </p>
+                        <ol class="small text-muted">
+                            <li>Configurar tipos de personagem</li>
+                            <li>Criar categorias para cada tipo</li>
+                            <li>Definir campos específicos</li>
+                            <li>Testar a criação de personagens</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validação do formulário
+document.querySelector('form').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    
+    if (!name) {
+        e.preventDefault();
+        alert('Por favor, preencha o nome do sistema.');
+        document.getElementById('name').focus();
+        return false;
+    }
+    
+    // Verificar se o nome tem pelo menos 2 caracteres
+    if (name.length < 2) {
+        e.preventDefault();
+        alert('O nome do sistema deve ter pelo menos 2 caracteres.');
+        document.getElementById('name').focus();
+        return false;
+    }
+});
+</script>
+{% endblock %} 

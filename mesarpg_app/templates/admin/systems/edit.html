@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Sistema - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-edit text-primary"></i>
+                    Editar Sistema: {{ system.name }}
+                </h1>
+                <div>
+                    <a href="{{ url_for('admin.systems_list') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-dice-d20"></i>
+                        Informações do Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name" class="font-weight-bold">
+                                Nome do Sistema <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ system.name }}" required>
+                            <small class="form-text text-muted">
+                                Nome único que identifica o sistema de RPG
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description" class="font-weight-bold">
+                                Descrição
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="4"
+                                      placeholder="Descreva brevemente o sistema, suas características principais, etc.">{{ system.description or '' }}</textarea>
+                            <small class="form-text text-muted">
+                                Descrição opcional para ajudar a identificar o sistema
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="is_active" name="is_active"
+                                       {% if system.is_active %}checked{% endif %}>
+                                <label class="custom-control-label" for="is_active">
+                                    Sistema ativo
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Sistemas inativos não aparecem nas opções de criação de personagem
+                            </small>
+                        </div>
+
+                        <hr>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Salvar Alterações
+                            </button>
+                            <a href="{{ url_for('admin.systems_list') }}" class="btn btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i>
+                        Informações do Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Criado em:</strong><br>
+                        {{ system.created_at.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Última atualização:</strong><br>
+                        {{ system.updated_at.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Status atual:</strong><br>
+                        {% if system.is_active %}
+                            <span class="badge badge-success">Ativo</span>
+                        {% else %}
+                            <span class="badge badge-secondary">Inativo</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Tipos de personagem:</strong><br>
+                        {% set type_count = system.character_types.count() %}
+                        <span class="badge badge-info">{{ type_count }} tipo{{ 's' if type_count != 1 else '' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs"></i>
+                        Ações Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.character_types_list', system_id=system.id) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-users"></i>
+                            Gerenciar Tipos de Personagem
+                        </a>
+                        
+                        <a href="#" class="btn btn-outline-info btn-sm" onclick="alert('Funcionalidade em desenvolvimento')">
+                            <i class="fas fa-copy"></i>
+                            Duplicar Sistema
+                        </a>
+                        
+                        <a href="#" class="btn btn-outline-success btn-sm" onclick="alert('Funcionalidade em desenvolvimento')">
+                            <i class="fas fa-download"></i>
+                            Exportar Configurações
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validação do formulário
+document.querySelector('form').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    
+    if (!name) {
+        e.preventDefault();
+        alert('Por favor, preencha o nome do sistema.');
+        document.getElementById('name').focus();
+        return false;
+    }
+    
+    // Verificar se o nome tem pelo menos 2 caracteres
+    if (name.length < 2) {
+        e.preventDefault();
+        alert('O nome do sistema deve ter pelo menos 2 caracteres.');
+        document.getElementById('name').focus();
+        return false;
+    }
+});
+</script>
+{% endblock %} 

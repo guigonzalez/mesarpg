@@ -50,13 +50,14 @@ def create_app():
         return User.query.get(int(user_id))
 
     # Register blueprints
-    from mesarpg_app.routes import main_bp, auth_bp, sessions_bp, profile_bp, masters_bp, campaign_bp
+    from mesarpg_app.routes import main_bp, auth_bp, sessions_bp, profile_bp, masters_bp, campaign_bp, admin_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(sessions_bp, url_prefix='/sessions')
     app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(masters_bp, url_prefix='/masters')
     app.register_blueprint(campaign_bp, url_prefix='/campaign')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
 
     with app.app_context():
         # Import all models to ensure tables are created

@@ -4,37 +4,56 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Breadcrumb -->
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.live', id=session.id) }}">{{ session.title }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.detail', id=session.id) }}">{{ session.title }}</a></li>
                     <li class="breadcrumb-item"><a href="{{ url_for('sessions.characters_list', session_id=session.id) }}">Personagens</a></li>
-                    <li class="breadcrumb-item active">{{ character.name }}</li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}">{{ character.name }}</a></li>
+                    <li class="breadcrumb-item active">Editar</li>
                 </ol>
             </nav>
             
+            <!-- Formulário Principal -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Editar {{ character.name }}</h3>
-                    <p class="text-muted mb-0">Sistema: {{ session.system }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">Editar {{ character.name }}</h3>
+                            <p class="text-muted mb-0">Sistema: {{ session.system }}</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-eye"></i> Ver Personagem
+                            </a>
+                            <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <form id="characterForm">
                         <!-- Seleção de Tipo -->
-                        <div class="row mb-3">
+                        <div class="row mb-4">
                             <div class="col-md-6">
-                                <label for="characterType" class="form-label">Tipo de Personagem</label>
-                                <select class="form-select" id="characterType" name="character_type" required>
+                                <label for="characterType" class="form-label fw-bold">
+                                    <i class="fas fa-user-tag me-2"></i>Tipo de Personagem
+                                </label>
+                                <select class="form-select form-select-lg" id="characterType" name="character_type" required>
                                     <option value="">Selecione o tipo...</option>
-                                    <option value="player" {% if character.character_type == 'player' %}selected{% endif %}>Personagem do Jogador</option>
-                                    <option value="npc" {% if character.character_type == 'npc' %}selected{% endif %}>NPC</option>
-                                    <option value="creature" {% if character.character_type == 'creature' %}selected{% endif %}>Criatura/Monstro</option>
+                                    <option value="player" {% if character.character_type == 'player' %}selected{% endif %}>👤 Personagem do Jogador</option>
+                                    <option value="npc" {% if character.character_type == 'npc' %}selected{% endif %}>🎭 NPC</option>
+                                    <option value="creature" {% if character.character_type == 'creature' %}selected{% endif %}>🐉 Criatura/Monstro</option>
                                 </select>
                             </div>
                             <div class="col-md-6" id="categoryContainer" style="display: none;">
-                                <label for="category" class="form-label">Categoria</label>
-                                <select class="form-select" id="category" name="category">
+                                <label for="category" class="form-label fw-bold">
+                                    <i class="fas fa-layer-group me-2"></i>Categoria
+                                </label>
+                                <select class="form-select form-select-lg" id="category" name="category">
                                     <option value="">Selecione a categoria...</option>
                                 </select>
                             </div>
@@ -42,14 +61,21 @@
 
                         <!-- Campos Dinâmicos -->
                         <div id="dynamicFields">
-                            <!-- Os campos serão carregados dinamicamente aqui -->
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary mb-3" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <h5 class="text-muted">Carregando campos do personagem...</h5>
+                                <p class="text-muted">Aguarde enquanto preparamos o formulário</p>
+                            </div>
                         </div>
 
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Voltar
+                        <!-- Botões de Ação -->
+                        <div class="d-flex justify-content-between pt-4 border-top">
+                            <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
                                 <i class="fas fa-save"></i> Salvar Alterações
                             </button>
                         </div>
@@ -64,16 +90,42 @@
 <div class="modal fade" id="successModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Sucesso!</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle me-2"></i>Sucesso!
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p id="successMessage">Personagem atualizado com sucesso!</p>
+            <div class="modal-body text-center">
+                <i class="fas fa-user-check fa-3x text-success mb-3"></i>
+                <h5 id="successMessage">Personagem atualizado com sucesso!</h5>
+                <p class="text-muted">As alterações foram salvas e estão prontas para uso.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                <a href="{{ url_for('sessions.characters_list', session_id=session.id) }}" class="btn btn-primary">Voltar à Lista</a>
+                <a href="{{ url_for('sessions.view_character', session_id=session.id, character_id=character.id) }}" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> Ver Personagem
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Erro -->
+<div class="modal fade" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Erro
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="errorMessage">Ocorreu um erro ao atualizar o personagem.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
             </div>
         </div>
     </div>
@@ -82,15 +134,13 @@
 
 {% block extra_scripts %}
 <script>
-// Forçar reload do JavaScript para evitar cache
-console.log('DEBUG: Script de edição de personagem carregado - versão 1.0');
-
 document.addEventListener('DOMContentLoaded', function() {
     const characterTypeSelect = document.getElementById('characterType');
     const categoryContainer = document.getElementById('categoryContainer');
     const categorySelect = document.getElementById('category');
     const dynamicFields = document.getElementById('dynamicFields');
     const characterForm = document.getElementById('characterForm');
+    const submitBtn = document.getElementById('submitBtn');
     
     const system = '{{ session.system }}';
     const characterData = {{ character.get_dynamic_fields()|tojson|safe }};
@@ -121,15 +171,13 @@ document.addEventListener('DOMContentLoaded', function() {
         is_public: {{ 'true' if character.is_public else 'false' }}
     };
     
-    console.log('DEBUG: Dados completos do personagem carregados:', allCharacterData);
-    
     // Carregar campos quando o tipo de personagem muda
     characterTypeSelect.addEventListener('change', function() {
         const characterType = this.value;
         
         if (!characterType) {
             categoryContainer.style.display = 'none';
-            dynamicFields.innerHTML = '';
+            showEmptyState();
             return;
         }
         
@@ -147,20 +195,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    function showEmptyState() {
+        dynamicFields.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-user-edit fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Selecione o tipo de personagem para editar</h5>
+                <p class="text-muted">Os campos específicos do sistema serão carregados automaticamente</p>
+            </div>
+        `;
+    }
+    
+    function showLoadingState() {
+        dynamicFields.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <h5 class="text-muted">Carregando campos...</h5>
+                <p class="text-muted">Aguarde enquanto preparamos o formulário</p>
+            </div>
+        `;
+    }
+    
     function loadDynamicFields(system, characterType) {
-        console.log(`DEBUG: Enviando para API - Sistema: '${system}', Tipo: '${characterType}'`);
+        showLoadingState();
+        
         fetch(`/sessions/api/character-fields/${encodeURIComponent(system)}/${characterType}`)
             .then(response => response.json())
             .then(data => {
-                console.log('Campos dinâmicos recebidos:', data);
                 if (data.success) {
                     if (characterType === 'player') {
-                        dynamicFields.innerHTML = '';
-                        for (const [category, fields] of Object.entries(data.fields)) {
-                            if (fields && fields.length) {
-                                addFieldSection(category, fields);
-                            }
-                        }
+                        // Para personagens, sempre usar a categoria 'Personagem'
+                        const fields = data.fields['Personagem'] || [];
+                        renderFields('Personagem', fields);
                         categoryContainer.style.display = 'none';
                     } else {
                         // Para NPCs/Criaturas
@@ -175,232 +242,159 @@ document.addEventListener('DOMContentLoaded', function() {
                                 option.textContent = category;
                                 categorySelect.appendChild(option);
                             });
-                            dynamicFields.innerHTML = '';
+                            showEmptyState();
                         } else if (categories.length === 1) {
                             // Só uma categoria, renderizar direto
                             categoryContainer.style.display = 'none';
-                            dynamicFields.innerHTML = '';
-                            addFieldSection(categories[0], data.fields[categories[0]]);
+                            const fields = data.fields[categories[0]] || [];
+                            renderFields(categories[0], fields);
                         } else {
                             categoryContainer.style.display = 'none';
-                            dynamicFields.innerHTML = '';
+                            showEmptyState();
                         }
                     }
+                } else {
+                    showError('Erro ao carregar campos do sistema');
                 }
             })
             .catch(error => {
                 console.error('Erro ao carregar campos:', error);
+                showError('Erro de conexão ao carregar campos');
             });
     }
     
     function loadFieldsForCategory(system, characterType, category) {
+        showLoadingState();
+        
         fetch(`/sessions/api/character-fields/${encodeURIComponent(system)}/${characterType}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.fields[category]) {
-                    dynamicFields.innerHTML = '';
-                    addFieldSection(category, data.fields[category]);
+                    renderFields(category, data.fields[category]);
+                } else {
+                    showError('Erro ao carregar campos da categoria');
                 }
             })
             .catch(error => {
                 console.error('Erro ao carregar campos da categoria:', error);
+                showError('Erro de conexão ao carregar campos');
             });
     }
     
-    function addFieldSection(category, fields) {
-        const section = document.createElement('div');
-        section.className = 'row mb-3';
+    function renderFields(category, fields) {
+        if (!fields || fields.length === 0) {
+            showEmptyState();
+            return;
+        }
         
-        const sectionTitle = document.createElement('div');
-        sectionTitle.className = 'col-12';
-        sectionTitle.innerHTML = `<h5 class="text-primary">${category}</h5>`;
-        section.appendChild(sectionTitle);
+        let html = `<div class="row mb-3"><div class="col-12"><h4 class="text-primary mb-3"><i class="fas fa-list me-2"></i>${category}</h4></div></div>`;
         
         fields.forEach(field => {
-            const fieldDiv = document.createElement('div');
-            fieldDiv.className = 'col-md-6 mb-2';
-            
-            const fieldName = field.nome || field;
-            const fieldType = field.tipo || 'texto';
-            const fieldKey = fieldName.toLowerCase().replace(/\s+/g, '_');
-            
-            // Obter valor atual do personagem
-            let currentValue = '';
-            
-            // Mapeamento de campos para garantir compatibilidade
-            const fieldMappings = {
-                'nome': ['name', 'nome'],
-                'raça': ['race', 'raça'],
-                'classe': ['character_class', 'classe'],
-                'nível': ['level', 'nível'],
-                'força': ['strength', 'força'],
-                'destreza': ['dexterity', 'destreza'],
-                'constituição': ['constitution', 'constituição'],
-                'inteligência': ['intelligence', 'inteligência'],
-                'sabedoria': ['wisdom', 'sabedoria'],
-                'carisma': ['charisma', 'carisma'],
-                'pv': ['hit_points', 'pv'],
-                'ca': ['armor_class', 'ca'],
-                'iniciativa': ['initiative', 'iniciativa'],
-                'deslocamento': ['speed', 'deslocamento'],
-                'perícias': ['skills', 'perícias'],
-                'magias': ['spells', 'magias'],
-                'equipamentos': ['equipment', 'equipamentos'],
-                'idiomas': ['languages', 'idiomas'],
-                'alinhamento': ['alignment', 'alinhamento'],
-                'antecedente': ['background', 'antecedente'],
-                'história': ['backstory', 'história']
-            };
-            
-            // Tentar encontrar o valor usando diferentes chaves possíveis
-            const possibleKeys = fieldMappings[fieldKey] || [fieldKey];
-            for (const key of possibleKeys) {
-                if (allCharacterData[key] !== undefined && allCharacterData[key] !== null && allCharacterData[key] !== '') {
-                    currentValue = allCharacterData[key];
-                    console.log(`DEBUG: Campo '${fieldName}' (${fieldKey}) carregado com valor: "${currentValue}" (chave: ${key})`);
-                    break;
-                }
-            }
-            
-            if (fieldType === 'grupo' && field.subcampos) {
-                // Campo de grupo (ex: Atributos)
-                fieldDiv.className = 'col-12 mb-3';
-                fieldDiv.innerHTML = `
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0">${fieldName}</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                ${field.subcampos.map(subfield => {
-                                    const subfieldKey = subfield.nome.toLowerCase().replace(/\s+/g, '_');
-                                    
-                                    // Mapeamento específico para subcampos
-                                    const subfieldMappings = {
-                                        'força': ['strength', 'força'],
-                                        'destreza': ['dexterity', 'destreza'],
-                                        'constituição': ['constitution', 'constituição'],
-                                        'inteligência': ['intelligence', 'inteligência'],
-                                        'sabedoria': ['wisdom', 'sabedoria'],
-                                        'carisma': ['charisma', 'carisma']
-                                    };
-                                    
-                                    // Tentar encontrar o valor usando diferentes chaves possíveis
-                                    const possibleSubKeys = subfieldMappings[subfieldKey] || [subfieldKey];
-                                    let subfieldValue = '10'; // valor padrão
-                                    
-                                    for (const key of possibleSubKeys) {
-                                        if (allCharacterData[key] !== undefined && allCharacterData[key] !== null && allCharacterData[key] !== '') {
-                                            subfieldValue = allCharacterData[key];
-                                            console.log(`DEBUG: Subcampo '${subfield.nome}' (${subfieldKey}) carregado com valor: "${subfieldValue}" (chave: ${key})`);
-                                            break;
-                                        }
-                                    }
-                                    
-                                    return `
-                                        <div class="col-md-2 mb-2">
-                                            <label class="form-label small">${subfield.nome}</label>
-                                            <input type="number" class="form-control form-control-sm" 
-                                                   name="${subfieldKey}" 
-                                                   value="${subfieldValue}" min="1" max="30">
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (fieldType === 'lista_texto') {
-                // Campo de lista de texto
-                fieldDiv.className = 'col-12 mb-3';
-                fieldDiv.innerHTML = `
-                    <label class="form-label">${fieldName}</label>
-                    <textarea class="form-control" name="${fieldKey}" 
-                              rows="3" placeholder="Digite cada item em uma linha separada">${currentValue}</textarea>
-                    <small class="form-text text-muted">Digite cada item em uma linha separada</small>
-                `;
-            } else if (fieldType === 'numérico') {
-                // Campo numérico
-                fieldDiv.innerHTML = `
-                    <label class="form-label">${fieldName}</label>
-                    <input type="number" class="form-control" 
-                           name="${fieldKey}" 
-                           value="${currentValue || '0'}" min="0">
-                `;
-            } else {
-                // Campo de texto (padrão)
-                fieldDiv.innerHTML = `
-                    <label class="form-label">${fieldName}</label>
-                    <input type="text" class="form-control" 
-                           name="${fieldKey}" value="${currentValue}">
-                `;
-            }
-            
-            section.appendChild(fieldDiv);
+            html += createFieldHTML(field);
         });
         
-        dynamicFields.appendChild(section);
+        dynamicFields.innerHTML = html;
+        
+        // Preencher campos com dados existentes
+        populateFields();
+    }
+    
+    function createFieldHTML(field) {
+        const fieldName = field.nome || field;
+        const fieldType = field.tipo || 'texto';
+        const fieldId = fieldName.toLowerCase().replace(/\s+/g, '_');
+        
+        let html = '<div class="col-md-6 mb-3">';
+        
+        if (fieldType === 'grupo' && field.subcampos) {
+            // Campo de grupo (ex: Atributos)
+            html += `<label class="form-label fw-bold">${fieldName}</label>`;
+            html += '<div class="row g-2">';
+            field.subcampos.forEach(subfield => {
+                const subfieldId = subfield.nome.toLowerCase().replace(/\s+/g, '_');
+                html += `
+                    <div class="col-6">
+                        <label for="${subfieldId}" class="form-label small">${subfield.nome}</label>
+                        <input type="number" class="form-control" id="${subfieldId}" name="${subfield.nome.toLowerCase()}" 
+                               placeholder="0" min="1" max="30" value="10">
+                    </div>
+                `;
+            });
+            html += '</div>';
+        } else if (fieldType === 'numérico') {
+            html += `
+                <label for="${fieldId}" class="form-label fw-bold">${fieldName}</label>
+                <input type="number" class="form-control" id="${fieldId}" name="${fieldName.toLowerCase()}" 
+                       placeholder="0" min="0" value="">
+            `;
+        } else if (fieldType === 'lista_texto') {
+            html += `
+                <label for="${fieldId}" class="form-label fw-bold">${fieldName}</label>
+                <textarea class="form-control" id="${fieldId}" name="${fieldName.toLowerCase()}" 
+                          rows="3" placeholder="Digite os itens, um por linha..."></textarea>
+            `;
+        } else {
+            // Campo de texto padrão
+            html += `
+                <label for="${fieldId}" class="form-label fw-bold">${fieldName}</label>
+                <input type="text" class="form-control" id="${fieldId}" name="${fieldName.toLowerCase()}" 
+                       placeholder="Digite ${fieldName.toLowerCase()}...">
+            `;
+        }
+        
+        html += '</div>';
+        return html;
+    }
+    
+    function populateFields() {
+        // Preencher campos com dados existentes
+        Object.keys(allCharacterData).forEach(key => {
+            const input = document.querySelector(`[name="${key}"]`);
+            if (input) {
+                input.value = allCharacterData[key];
+            }
+        });
+    }
+    
+    function showError(message) {
+        dynamicFields.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                <h5 class="text-danger">Erro</h5>
+                <p class="text-muted">${message}</p>
+                <button class="btn btn-outline-primary" onclick="location.reload()">
+                    <i class="fas fa-redo"></i> Tentar Novamente
+                </button>
+            </div>
+        `;
     }
     
     // Envio do formulário
     characterForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        console.log('DEBUG: Formulário de edição submetido');
+        const formData = new FormData(characterForm);
+        const data = {};
         
-        const formData = new FormData(this);
-        const data = {
-            name: formData.get('name') || '{{ character.name }}',
-            character_type: formData.get('character_type'),
-            level: parseInt(formData.get('level')) || 1,
-            description: formData.get('description'),
-            notes: formData.get('notes'),
-            image_url: formData.get('image_url'),
-            is_public: formData.get('is_public') === 'on'
-        };
-        
-        console.log('DEBUG: Dados básicos coletados:', data);
-        
-        // Adicionar campos dinâmicos
-        const dynamicInputs = dynamicFields.querySelectorAll('input, textarea');
-        console.log('DEBUG: Campos dinâmicos encontrados:', dynamicInputs.length);
-        
-        dynamicInputs.forEach(input => {
-            console.log(`DEBUG: Campo dinâmico - name: "${input.name}", value: "${input.value}"`);
-            // Sempre adicionar o campo, mesmo se estiver vazio, para permitir limpeza
-            data[input.name] = input.value;
-            
-            // Mapear campo "nome" para "name" (campo principal do personagem)
-            if (input.name === 'nome') {
-                data.name = input.value;
-                console.log(`DEBUG: Campo 'nome' encontrado, mapeando para 'name': "${input.value}"`);
-            }
-        });
-        
-        // Garantir que sempre tenha um nome
-        if (!data.name) {
-            // Tentar encontrar o campo nome nos campos dinâmicos
-            const nomeInput = dynamicFields.querySelector('input[name="nome"]');
-            if (nomeInput && nomeInput.value.trim()) {
-                data.name = nomeInput.value.trim();
-                console.log(`DEBUG: Nome encontrado via querySelector: "${data.name}"`);
-            } else {
-                console.log('DEBUG: Nenhum nome encontrado, mostrando alerta');
-                alert('Por favor, preencha o nome do personagem.');
-                return;
-            }
+        // Converter FormData para objeto
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
         }
         
-        // Log detalhado de todos os dados coletados
-        console.log('DEBUG: Todos os dados coletados do formulário:');
-        Object.entries(data).forEach(([key, value]) => {
-            console.log(`  ${key}: "${value}"`);
+        // Adicionar campos dinâmicos
+        const dynamicInputs = dynamicFields.querySelectorAll('input, textarea, select');
+        dynamicInputs.forEach(input => {
+            if (input.name && input.value) {
+                data[input.name] = input.value;
+            }
         });
         
-        console.log('Dados sendo enviados:', data);
+        // Desabilitar botão durante envio
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
         
         // Enviar dados
-        fetch(`/sessions/{{ session.id }}/characters/{{ character.id }}/edit`, {
+        fetch('{{ url_for("sessions.edit_character_post", session_id=session.id, character_id=character.id) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -410,24 +404,71 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Mostrar modal de sucesso
                 document.getElementById('successMessage').textContent = data.message;
                 
                 const successModal = new bootstrap.Modal(document.getElementById('successModal'));
                 successModal.show();
             } else {
-                alert('Erro ao atualizar personagem: ' + data.error);
+                // Mostrar modal de erro
+                document.getElementById('errorMessage').textContent = data.error || 'Erro desconhecido';
+                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                errorModal.show();
             }
         })
         .catch(error => {
             console.error('Erro:', error);
-            alert('Erro ao atualizar personagem');
+            document.getElementById('errorMessage').textContent = 'Erro de conexão';
+            const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            errorModal.show();
+        })
+        .finally(() => {
+            // Reabilitar botão
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
         });
     });
-
-    // Carregar campos dinâmicos automaticamente ao abrir a página
+    
+    // Carregar campos automaticamente ao abrir a página
     if (characterTypeSelect.value) {
         loadDynamicFields(system, characterTypeSelect.value);
     }
 });
 </script>
+
+<style>
+.form-select-lg {
+    font-size: 1.1rem;
+    padding: 0.75rem 1rem;
+}
+
+.form-control {
+    border-radius: 0.5rem;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+</style>
 {% endblock %}
