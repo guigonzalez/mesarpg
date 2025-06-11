@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Campo - {{ category.name }} - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-plus text-success"></i>
+                    Criar Campo - {{ category.name }}
+                </h1>
+                <div>
+                    <a href="{{ url_for('admin.fields_list', category_id=category.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 mx-auto">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-plus"></i>
+                        Criar Novo Campo
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name">Nome (interno)</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <small class="form-text text-muted">Nome único usado internamente pelo sistema</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="display_name">Nome de Exibição</label>
+                            <input type="text" class="form-control" id="display_name" name="display_name" required>
+                            <small class="form-text text-muted">Nome que será exibido para os usuários</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="field_type">Tipo de Campo</label>
+                            <select class="form-control" id="field_type" name="field_type" required>
+                                <option value="">Selecione um tipo...</option>
+                                <option value="texto">Texto</option>
+                                <option value="numérico">Numérico</option>
+                                <option value="lista_texto">Lista de Texto</option>
+                                <option value="lista_numérico">Lista Numérica</option>
+                                <option value="seleção">Seleção</option>
+                                <option value="múltipla_seleção">Múltipla Seleção</option>
+                                <option value="data">Data</option>
+                                <option value="booleano">Booleano</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Descrição</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            <small class="form-text text-muted">Descrição opcional do campo</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="sort_order">Ordem</label>
+                            <input type="number" class="form-control" id="sort_order" name="sort_order" value="0">
+                            <small class="form-text text-muted">Ordem de exibição do campo</small>
+                        </div>
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+                            <label class="form-check-label" for="is_active">Ativo</label>
+                        </div>
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="is_required" name="is_required">
+                            <label class="form-check-label" for="is_required">Obrigatório</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="default_value">Valor Padrão</label>
+                            <input type="text" class="form-control" id="default_value" name="default_value">
+                            <small class="form-text text-muted">Valor padrão do campo (opcional)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="validation_rules">Regras de Validação (JSON)</label>
+                            <textarea class="form-control" id="validation_rules" name="validation_rules" rows="3" placeholder='{"min": 1, "max": 20}'></textarea>
+                            <small class="form-text text-muted">Exemplo: {"min": 1, "max": 20} para valores numéricos</small>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i>
+                            Criar Campo
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

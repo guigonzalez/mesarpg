@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Campo - {{ field.display_name }} - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-edit text-info"></i>
+                    Editar Campo - {{ field.display_name }}
+                </h1>
+                <div>
+                    <a href="{{ url_for('admin.fields_list', category_id=field.category_id) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 mx-auto">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-edit"></i>
+                        Editar Campo
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name">Nome (interno)</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ field.name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="display_name">Nome de Exibição</label>
+                            <input type="text" class="form-control" id="display_name" name="display_name" value="{{ field.display_name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="field_type">Tipo de Campo</label>
+                            <select class="form-control" id="field_type" name="field_type" required>
+                                <option value="texto" {% if field.field_type == 'texto' %}selected{% endif %}>Texto</option>
+                                <option value="numérico" {% if field.field_type == 'numérico' %}selected{% endif %}>Numérico</option>
+                                <option value="lista_texto" {% if field.field_type == 'lista_texto' %}selected{% endif %}>Lista de Texto</option>
+                                <option value="lista_numérico" {% if field.field_type == 'lista_numérico' %}selected{% endif %}>Lista Numérica</option>
+                                <option value="seleção" {% if field.field_type == 'seleção' %}selected{% endif %}>Seleção</option>
+                                <option value="múltipla_seleção" {% if field.field_type == 'múltipla_seleção' %}selected{% endif %}>Múltipla Seleção</option>
+                                <option value="data" {% if field.field_type == 'data' %}selected{% endif %}>Data</option>
+                                <option value="booleano" {% if field.field_type == 'booleano' %}selected{% endif %}>Booleano</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Descrição</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ field.description }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="sort_order">Ordem</label>
+                            <input type="number" class="form-control" id="sort_order" name="sort_order" value="{{ field.sort_order }}">
+                        </div>
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active" {% if field.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">Ativo</label>
+                        </div>
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="is_required" name="is_required" {% if field.is_required %}checked{% endif %}>
+                            <label class="form-check-label" for="is_required">Obrigatório</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="default_value">Valor Padrão</label>
+                            <input type="text" class="form-control" id="default_value" name="default_value" value="{{ field.default_value or '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="validation_rules">Regras de Validação (JSON)</label>
+                            <textarea class="form-control" id="validation_rules" name="validation_rules" rows="3">{{ field.validation_rules or '{}' }}</textarea>
+                            <small class="form-text text-muted">Exemplo: {"min": 1, "max": 20} para valores numéricos</small>
+                        </div>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-save"></i>
+                            Salvar Alterações
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

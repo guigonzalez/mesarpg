@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Campos - {{ category.name }} - MesaRPG{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-list text-primary"></i>
+                    Campos - {{ category.name }}
+                </h1>
+                <div>
+                    <a href="{{ url_for('admin.categories_list', type_id=category.character_type_id) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                    <a href="{{ url_for('admin.create_field', category_id=category.id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Novo Campo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-list"></i>
+                        Campos da Categoria
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if fields %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Nome de Exibição</th>
+                                        <th>Tipo</th>
+                                        <th>Descrição</th>
+                                        <th>Status</th>
+                                        <th>Ordem</th>
+                                        <th>Obrigatório</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for field in fields %}
+                                    <tr>
+                                        <td><strong>{{ field.name }}</strong></td>
+                                        <td>{{ field.display_name }}</td>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ field.field_type }}</span>
+                                        </td>
+                                        <td>
+                                            {% if field.description %}
+                                                {{ field.description[:100] }}{% if field.description|length > 100 %}...{% endif %}
+                                            {% else %}
+                                                <em class="text-muted">Sem descrição</em>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if field.is_active %}
+                                                <span class="badge badge-success">Ativo</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">Inativo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ field.sort_order }}</td>
+                                        <td>
+                                            {% if field.is_required %}
+                                                <span class="badge badge-warning">Sim</span>
+                                            {% else %}
+                                                <span class="badge badge-light">Não</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('admin.edit_field', field_id=field.id) }}" 
+                                                   class="btn btn-sm btn-outline-info" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="confirmDelete('{{ field.display_name }}', {{ field.id }})" title="Deletar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-list fa-4x text-muted mb-4"></i>
+                            <h4 class="text-muted">Nenhum campo encontrado</h4>
+                            <p class="text-muted mb-4">Comece criando campos para esta categoria.</p>
+                            <a href="{{ url_for('admin.create_field', category_id=category.id) }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus"></i>
+                                Criar Primeiro Campo
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o campo <strong id="fieldName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita e excluirá:
+                    <ul class="mb-0 mt-2">
+                        <li>Todos os subcampos associados</li>
+                        <li>Todas as configurações relacionadas</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i>
+                        Excluir Campo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(fieldName, fieldId) {
+    document.getElementById('fieldName').textContent = fieldName;
+    document.getElementById('deleteForm').action = `/admin/fields/${fieldId}/delete`;
+    $('#deleteModal').modal('show');
+}
+</script>
+{% endblock %} 
