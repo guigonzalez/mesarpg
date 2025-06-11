@@ -56,12 +56,11 @@ def create_default_systems():
     print("Verificando sistemas padrão...")
     
     # D&D 5e
-    dnd_system = System.query.filter_by(name='dnd5e').first()
+    dnd_system = System.query.filter_by(name='Dungeons & Dragons 5ª Edição').first()
     if not dnd_system:
         print("Criando sistema D&D 5e...")
         dnd_system = System(
-            name='dnd5e',
-            display_name='Dungeons & Dragons 5ª Edição',
+            name='Dungeons & Dragons 5ª Edição',
             description='Sistema de RPG de fantasia medieval da Wizards of the Coast',
             is_active=True,
             created_at=datetime.utcnow()
@@ -155,12 +154,11 @@ def create_default_systems():
         print("Sistema D&D 5e criado com sucesso!")
     
     # Call of Cthulhu
-    coc_system = System.query.filter_by(name='coc').first()
+    coc_system = System.query.filter_by(name='Call of Cthulhu').first()
     if not coc_system:
         print("Criando sistema Call of Cthulhu...")
         coc_system = System(
-            name='coc',
-            display_name='Call of Cthulhu',
+            name='Call of Cthulhu',
             description='Sistema de RPG de horror cósmico da Chaosium',
             is_active=True,
             created_at=datetime.utcnow()

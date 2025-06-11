@@ -330,7 +330,8 @@ class CharacterCategory(db.Model):
     """Modelo para gerenciar categorias de personagem"""
     id = db.Column(db.Integer, primary_key=True)
     character_type_id = db.Column(db.Integer, db.ForeignKey('character_type.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False)  # 'Personagem', 'NPC', 'Monstro', 'Criatura'
+    name = db.Column(db.String(100), nullable=False)  # 'basic_info', 'attributes', etc.
+    display_name = db.Column(db.String(100), nullable=False)  # 'Informações Básicas', 'Atributos', etc.
     description = db.Column(db.Text)
     is_active = db.Column(db.Boolean, default=True)
     sort_order = db.Column(db.Integer, default=0)
@@ -349,6 +350,7 @@ class CharacterField(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey('character_category.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)  # 'Nome', 'Força', 'PV', etc.
+    display_name = db.Column(db.String(100), nullable=False)  # 'Nome do Personagem', 'Força', 'Pontos de Vida', etc.
     field_type = db.Column(db.String(20), nullable=False)  # 'texto', 'numérico', 'lista_texto', 'grupo'
     description = db.Column(db.Text)
     placeholder = db.Column(db.String(200))

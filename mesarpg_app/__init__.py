@@ -7,7 +7,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
-from flask_migrate import Migrate
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -19,18 +18,21 @@ db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 def create_app():
     # create the app
     app = Flask(__name__)
-    app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
+    app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     # configure the database
     if os.getenv('DATABASE_URL'):
-        # Produção (Railway)
-        app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('DATABASE_URL')
+        # Produção (Railway) - ajustar URL para PostgreSQL
+        database_url = os.getenv('DATABASE_URL')
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     else:
         # Desenvolvimento local
         app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///mesarpg.db'
@@ -49,7 +51,6 @@ def create_app():
     # initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
-    migrate = Migrate(app, db)
 
     # Import models and user loader
     from mesarpg_app.models import User
@@ -68,23 +69,31 @@ def create_app():
     app.register_blueprint(campaign_bp, url_prefix='/campaign')
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
-    # Setup automático em produção
-    if os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('DATABASE_URL'):
+    # Setup automático em produção (apenas uma vez)
+    if os.getenv('DATABASE_URL') and not os.getenv('SETUP_COMPLETED'):
         with app.app_context():
             try:
-                # Importar e executar setup
-                from setup_production import create_admin_user, create_default_systems
+                print("Iniciando setup automático...")
                 
                 # Criar tabelas se não existirem
                 db.create_all()
+                print("Tabelas criadas com sucesso!")
+                
+                # Importar e executar setup
+                from setup_production import create_admin_user, create_default_systems
                 
                 # Criar admin e sistemas padrão
                 create_admin_user()
                 create_default_systems()
                 
+                # Marcar setup como completo
+                os.environ['SETUP_COMPLETED'] = 'true'
                 print("Setup automático executado com sucesso!")
+                
             except Exception as e:
                 print(f"Erro no setup automático: {str(e)}")
+                # Não falhar a aplicação se o setup der erro
+                pass
 
     return app
 

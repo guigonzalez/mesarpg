@@ -1,20 +1,24 @@
-# Configuração do Gunicorn para produção
+# Configuração do Gunicorn para Railway
+import os
 import multiprocessing
 
+# Obter porta do Railway ou usar padrão
+port = int(os.environ.get('PORT', 8000))
+
 # Configurações básicas
-bind = "0.0.0.0:8000"
-workers = 1
+bind = f"0.0.0.0:{port}"
+workers = 1  # Railway funciona melhor com 1 worker
 worker_class = "sync"
 worker_connections = 1000
 
 # Configurações de timeout
-timeout = 30
+timeout = 120  # Aumentar timeout para setup automático
 keepalive = 2
 
 # Configurações de restart
 max_requests = 1000
 max_requests_jitter = 100
-preload_app = True
+preload_app = False  # Desabilitar preload para evitar problemas de setup
 
 # Configurações de logging
 accesslog = "-"

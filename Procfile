@@ -1,1 +1,1 @@
-web: gunicorn --bind 0.0.0.0: main:flask_app
+web: gunicorn --config gunicorn.conf.py main:flask_app

@@ -1,73 +1,79 @@
 #!/usr/bin/env python3
 """
-Script de Setup para Railway - MesaRPG
-Execute este script no console do Railway para configurar o sistema.
+Script de Setup Específico para Railway - MesaRPG
+Versão mais robusta para evitar crashes no deploy.
 """
 
 import os
 import sys
+import time
 from datetime import datetime
 
 # Adicionar o diretório do projeto ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-def main():
-    """Função principal do script"""
-    print("=== Setup Railway - MesaRPG ===")
-    print(f"Data/Hora: {datetime.now()}")
-    print()
-    
-    # Verificar variáveis de ambiente
-    print("Verificando variáveis de ambiente...")
-    admin_username = os.getenv('ADMIN_USERNAME', 'admin')
-    admin_email = os.getenv('ADMIN_EMAIL', 'admin@mesarpg.com')
-    admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
-    
-    print(f"ADMIN_USERNAME: {admin_username}")
-    print(f"ADMIN_EMAIL: {admin_email}")
-    print(f"ADMIN_PASSWORD: {'*' * len(admin_password) if admin_password else 'NÃO DEFINIDA'}")
-    print(f"DATABASE_URL: {'Definida' if os.getenv('DATABASE_URL') else 'NÃO DEFINIDA'}")
-    print()
+def setup_railway():
+    """Setup completo para Railway"""
+    print("=== SETUP RAILWAY MESARPG ===")
     
     try:
-        # Importar e executar setup
-        from setup_production import main as setup_main
-        setup_main()
+        # Verificar variáveis de ambiente
+        print("Verificando variáveis de ambiente...")
         
-    except Exception as e:
-        print(f"Erro durante o setup: {str(e)}")
-        print()
-        print("Tentando setup manual...")
+        required_vars = ['DATABASE_URL', 'SECRET_KEY']
+        missing_vars = []
         
-        try:
-            from mesarpg_app import create_app, db
-            from mesarpg_app.models import User
+        for var in required_vars:
+            if not os.getenv(var):
+                missing_vars.append(var)
+        
+        if missing_vars:
+            print(f"AVISO: Variáveis de ambiente ausentes: {missing_vars}")
+            print("O setup pode falhar se essas variáveis forem necessárias.")
+        
+        # Criar aplicação
+        print("Criando aplicação Flask...")
+        from mesarpg_app import create_app, db
+        app = create_app()
+        
+        with app.app_context():
+            print("Criando tabelas do banco de dados...")
+            db.create_all()
+            print("Tabelas criadas com sucesso!")
             
-            app = create_app()
-            with app.app_context():
-                db.create_all()
-                
-                # Verificar se admin existe
-                admin = User.query.filter_by(role='admin').first()
-                if not admin:
-                    print("Criando admin manual...")
-                    admin = User(
-                        username=admin_username,
-                        email=admin_email,
-                        role='admin',
-                        is_active=True,
-                        created_at=datetime.utcnow()
-                    )
-                    admin.set_password(admin_password)
-                    db.session.add(admin)
-                    db.session.commit()
-                    print(f"Admin criado: {admin_username}")
-                else:
-                    print(f"Admin já existe: {admin.username}")
-                    
-        except Exception as e2:
-            print(f"Erro no setup manual: {str(e2)}")
-            sys.exit(1)
+            # Aguardar um pouco para garantir que o banco está pronto
+            time.sleep(2)
+            
+            # Importar e executar setup
+            print("Executando setup de dados...")
+            from setup_production import create_admin_user, create_default_systems
+            
+            # Criar admin
+            print("Criando usuário admin...")
+            admin = create_admin_user()
+            
+            # Criar sistemas padrão
+            print("Criando sistemas padrão...")
+            create_default_systems()
+            
+            print("=== SETUP CONCLUÍDO COM SUCESSO ===")
+            print(f"Admin criado: {admin.username}")
+            print("Sistemas padrão criados!")
+            
+    except Exception as e:
+        print(f"ERRO no setup: {str(e)}")
+        print("Detalhes do erro:")
+        import traceback
+        traceback.print_exc()
+        return False
+    
+    return True
 
-if __name__ == '__main__':
-    main() 
+if __name__ == "__main__":
+    success = setup_railway()
+    if success:
+        print("Setup executado com sucesso!")
+        sys.exit(0)
+    else:
+        print("Setup falhou!")
+        sys.exit(1) 
